@@ -1151,6 +1151,167 @@ function renderLeaderboard() {
 }
 
 /* ==========================================================================
+   ANDROID DEVELOPER-STYLE 7-TAPS ADMIN & KIOSK FULLSCREEN CONTROLLER
+   ========================================================================== */
+function showAndroidToast(msg) {
+  const existing = document.querySelector('.android-toast-bubble');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'android-toast-bubble';
+  toast.innerHTML = `<span>🤖</span> <span>${msg}</span>`;
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translate(-50%, 25px) scale(0.92)';
+    setTimeout(() => toast.remove(), 320);
+  }, 2200);
+}
+
+function requestFullscreenSafely() {
+  const elem = document.documentElement;
+  try {
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen().catch(() => {});
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    }
+  } catch (e) {
+    console.warn('Fullscreen error:', e);
+  }
+}
+
+function exitFullscreenSafely() {
+  try {
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    }
+  } catch (e) {
+    console.warn('Exit fullscreen error:', e);
+  }
+}
+
+let adminTapCount = 0;
+let adminTapTimer = null;
+let isAdminUnlocked = false;
+
+function triggerAdminTap(e) {
+  if (e) e.stopPropagation();
+
+  clearTimeout(adminTapTimer);
+  adminTapCount++;
+
+  // Reset counter after 2.5s without tapping
+  adminTapTimer = setTimeout(() => {
+    adminTapCount = 0;
+  }, 2500);
+
+  if (adminTapCount >= 3 && adminTapCount < 7) {
+    const remaining = 7 - adminTapCount;
+    sound.playTap();
+    const msg = state.lang === 'en'
+      ? `You are ${remaining} steps away from Administrator Mode...`
+      : `Faltan ${remaining} toques para activar el Modo Administrador...`;
+    showAndroidToast(msg);
+  } else if (adminTapCount >= 7) {
+    adminTapCount = 0;
+    isAdminUnlocked = true;
+    sound.playFanfare();
+    const msg = state.lang === 'en'
+      ? `🔓 Administrator Mode Unlocked! Fullscreen released.`
+      : `🔓 ¡Modo Administrador Desbloqueado! Pantalla completa liberada.`;
+    showAndroidToast(msg);
+
+    // Release fullscreen to reveal tablet browser bar
+    exitFullscreenSafely();
+
+    // Show admin controls
+    if (DOM.btnAdminQuick) DOM.btnAdminQuick.classList.remove('hidden');
+    if (DOM.btnFullscreen) DOM.btnFullscreen.classList.remove('hidden');
+
+    // Open Admin Modal immediately
+    openAdminModal();
+  }
+}
+
+function setupKioskMode() {
+  const overlay = document.getElementById('kioskTouchOverlay');
+  const btnLockKiosk = document.getElementById('btnLockKioskFullscreen');
+  const btnExitKioskBar = document.getElementById('btnExitKioskBar');
+  const adminHotspot = document.getElementById('adminSecretHotspot');
+  const headerLogo = document.getElementById('brandLogoWrap');
+
+  // Any tap on the initial overlay requests fullscreen and hides overlay
+  if (overlay) {
+    overlay.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      sound.playTap();
+      if (!isAdminUnlocked) {
+        requestFullscreenSafely();
+      }
+      overlay.classList.add('hidden');
+    });
+  }
+
+  // First user interaction anywhere on screen auto-enters fullscreen
+  const autoFullscreenGesture = () => {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && !isAdminUnlocked) {
+      requestFullscreenSafely();
+    }
+    if (overlay) overlay.classList.add('hidden');
+    document.removeEventListener('pointerdown', autoFullscreenGesture);
+  };
+  document.addEventListener('pointerdown', autoFullscreenGesture);
+
+  // Bind 7-tap admin mode listeners on secret hotspots
+  if (adminHotspot) adminHotspot.addEventListener('pointerdown', triggerAdminTap);
+  if (DOM.dockBrandLogo) DOM.dockBrandLogo.addEventListener('pointerdown', triggerAdminTap);
+  if (headerLogo) headerLogo.addEventListener('pointerdown', triggerAdminTap);
+
+  // Admin Modal: Lock Kiosk in Fullscreen
+  if (btnLockKiosk) {
+    btnLockKiosk.addEventListener('click', () => {
+      sound.playTap();
+      isAdminUnlocked = false;
+      closeAdminModal();
+      requestFullscreenSafely();
+      if (DOM.btnAdminQuick) DOM.btnAdminQuick.classList.add('hidden');
+      if (DOM.btnFullscreen) DOM.btnFullscreen.classList.add('hidden');
+      showToast(state.lang === 'en' ? '🔒 Kiosk Fullscreen Locked' : '🔒 Pantalla Completa Kiosco Bloqueada');
+    });
+  }
+
+  // Admin Modal: Exit to browser bar
+  if (btnExitKioskBar) {
+    btnExitKioskBar.addEventListener('click', () => {
+      sound.playTap();
+      isAdminUnlocked = true;
+      exitFullscreenSafely();
+      closeAdminModal();
+      showToast(state.lang === 'en' ? '🌐 Browser Toolbar Active' : '🌐 Barra del Navegador Activa');
+    });
+  }
+
+  // If passenger exits fullscreen accidentally, re-prompt overlay on next touch
+  const onFullscreenChange = () => {
+    const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    if (!isFs && !isAdminUnlocked) {
+      if (overlay) overlay.classList.remove('hidden');
+    }
+  };
+  document.addEventListener('fullscreenchange', onFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+}
+
+/* ==========================================================================
    DRIVER ADMIN & SETTINGS (PIN 1234)
    ========================================================================== */
 function setupAdmin() {
@@ -1408,9 +1569,10 @@ function setupEventListeners() {
     });
   }
 
-  // Giveaway & Admin
+  // Giveaway, Admin & Kiosk Mode
   setupGiveaway();
   setupAdmin();
+  setupKioskMode();
 }
 
 // Bootstrap on DOM loaded

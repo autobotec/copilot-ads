@@ -42,6 +42,9 @@
 
   <div id="app" class="kiosk-container">
 
+    <!-- INVISIBLE SECRET HOTSPOT (7 TAPS FOR ADMIN / DEVELOPER MODE) -->
+    <div id="adminSecretHotspot" class="admin-secret-hotspot" title=""></div>
+
     <!-- TOP BAR: BRANDING, STATUS & GLOBAL CONTROLS -->
     <header class="top-header">
       <div class="header-left">
@@ -85,13 +88,13 @@
           <span id="soundIcon">🔊</span>
         </button>
 
-        <!-- FULLSCREEN KIOSK -->
-        <button class="control-btn" id="btnFullscreen" title="Pantalla Completa Kiosco">
+        <!-- FULLSCREEN KIOSK (ACCESIBLE SOLO POR ADMIN TRAS 7 TOQUES) -->
+        <button class="control-btn hidden" id="btnFullscreen" title="Pantalla Completa Kiosco">
           <span>⛶</span>
         </button>
 
-        <!-- DRIVER ADMIN QUICK BUTTON -->
-        <button class="control-btn driver-btn" id="btnAdminQuick" title="Ajustes Conductor (PIN 1234)">
+        <!-- DRIVER ADMIN QUICK BUTTON (ACCESIBLE SOLO POR ADMIN TRAS 7 TOQUES) -->
+        <button class="control-btn driver-btn hidden" id="btnAdminQuick" title="Ajustes Conductor (PIN 1234)">
           <span>⚙️</span>
         </button>
       </div>
@@ -848,8 +851,30 @@
             <button class="ad-btn secondary" id="btnResetStats">Reiniciar Estadísticas</button>
             <button class="ad-btn primary" id="btnSaveDriverConfig">Guardar Cambios</button>
           </div>
+
+          <!-- KIOSK FULLSCREEN LOCK / EXIT ACTIONS -->
+          <div class="admin-kiosk-box">
+            <button class="btn-lock-kiosk" id="btnLockKioskFullscreen">
+              <span>🔒</span> Bloquear de nuevo en Pantalla Completa
+            </button>
+            <button class="btn-exit-kiosk-bar" id="btnExitKioskBar">
+              <span>🌐</span> Salir de Pantalla Completa (Ver Barra Navegador)
+            </button>
+          </div>
         </div>
 
+      </div>
+    </div>
+
+    <!-- FULLSCREEN KIOSK AUTO-START / RE-LOCK OVERLAY -->
+    <div class="kiosk-touch-overlay" id="kioskTouchOverlay">
+      <div class="kiosk-touch-card">
+        <div class="kiosk-touch-robot">🤖</div>
+        <h2 class="kiosk-touch-title">Copilot Driver Kiosk</h2>
+        <p class="kiosk-touch-subtitle" id="kioskOverlaySub">Toca la pantalla para iniciar en modo pantalla completa</p>
+        <button class="kiosk-touch-btn" id="btnKioskOverlayStart">
+          <span>⛶</span> <span id="kioskOverlayBtnText">TOCAR PARA INICIAR</span>
+        </button>
       </div>
     </div>
 

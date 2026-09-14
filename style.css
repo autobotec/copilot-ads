@@ -2925,3 +2925,181 @@ html, body {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ==========================================================================
+   ANDROID DEVELOPER-STYLE FLOATING TOAST (7 TAPS EASTER EGG)
+   ========================================================================== */
+.android-toast-bubble {
+  position: fixed;
+  bottom: 75px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(18, 24, 38, 0.96);
+  border: 1.5px solid rgba(0, 240, 255, 0.45);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 240, 255, 0.2);
+  border-radius: 28px;
+  color: #f8fafc;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 26px;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+  animation: androidToastAnim 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes androidToastAnim {
+  from { opacity: 0; transform: translate(-50%, 25px) scale(0.92); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+/* INVISIBLE SECRET HOTSPOT */
+.admin-secret-hotspot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 75px;
+  height: 60px;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+/* KIOSK TOUCH OVERLAY */
+.kiosk-touch-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(7, 10, 18, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  animation: fadeIn 0.4s ease;
+  user-select: none;
+}
+
+.kiosk-touch-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 38px 48px;
+  background: rgba(16, 24, 48, 0.96);
+  border: 2px solid var(--splash-cyan);
+  border-radius: 28px;
+  box-shadow: 0 20px 60px rgba(0, 240, 255, 0.3), 0 0 40px rgba(255, 0, 128, 0.2);
+  max-width: 520px;
+  animation: pulseKioskCard 2s infinite alternate ease-in-out;
+}
+
+@keyframes pulseKioskCard {
+  0% { transform: scale(1); box-shadow: 0 20px 60px rgba(0, 240, 255, 0.25); }
+  100% { transform: scale(1.02); box-shadow: 0 25px 70px rgba(255, 0, 128, 0.35); }
+}
+
+.kiosk-touch-robot {
+  font-size: 58px;
+  margin-bottom: 12px;
+  animation: bounceKioskRobot 1.8s infinite ease-in-out;
+}
+
+@keyframes bounceKioskRobot {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.kiosk-touch-title {
+  font-family: var(--font-accent);
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.kiosk-touch-subtitle {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 24px;
+}
+
+.kiosk-touch-btn {
+  background: linear-gradient(135deg, var(--splash-cyan), var(--splash-pink));
+  color: #070a12;
+  font-family: var(--font-accent);
+  font-size: 16px;
+  font-weight: 800;
+  padding: 14px 32px;
+  border-radius: var(--radius-pill);
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 6px 20px rgba(0, 240, 255, 0.4);
+  cursor: pointer;
+  pointer-events: none;
+}
+
+.admin-kiosk-box {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-lock-kiosk {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, var(--splash-cyan), var(--splash-pink));
+  color: #070a12;
+  font-family: var(--font-accent);
+  font-weight: 800;
+  font-size: 14px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+  transition: transform var(--transition-fast);
+}
+
+.btn-lock-kiosk:active {
+  transform: scale(0.98);
+}
+
+.btn-exit-kiosk-bar {
+  width: 100%;
+  padding: 11px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+  font-family: var(--font-accent);
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background var(--transition-fast);
+}
+
+.btn-exit-kiosk-bar:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
