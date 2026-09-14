@@ -214,22 +214,24 @@ html, body {
   z-index: 1;
   width: 100vw;
   height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: 14px 20px 14px 20px;
-  gap: 12px;
+  padding: 8px 12px;
+  gap: 6px;
 }
 
 /* --------------------------------------------------------------------------
    5. TOP HEADER
    -------------------------------------------------------------------------- */
 .top-header {
-  height: 56px;
-  min-height: 56px;
+  height: 46px;
+  min-height: 46px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 12px;
   background: var(--bg-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -1398,14 +1400,18 @@ html, body {
 .ride-info-screen {
   width: 100%;
   height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .ride-info-grid {
   width: 100%;
   height: 100%;
+  min-height: 0;
   display: grid;
-  grid-template-columns: 1.2fr 0.95fr;
-  gap: 14px;
+  grid-template-columns: 1.15fr 0.95fr;
+  gap: 8px;
+  overflow: hidden;
 }
 
 .ride-driver-main-card {
@@ -1413,41 +1419,45 @@ html, body {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-glass);
-  border-radius: var(--radius-xl);
-  padding: 22px 24px;
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-shadow: var(--shadow-card);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  gap: 6px;
 }
 
 .driver-welcome-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 11px;
+  gap: 6px;
+  font-size: 10px;
   font-weight: 800;
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   color: var(--splash-cyan);
-  margin-bottom: 8px;
+  margin-bottom: 2px;
 }
 
 .driver-profile-header {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 12px;
 }
 
 .driver-avatar-splash {
   position: relative;
-  width: 74px;
-  height: 74px;
+  width: 52px;
+  height: 52px;
   flex-shrink: 0;
 }
 
 .avatar-ring-multicolor {
   position: absolute;
-  inset: -3px;
+  inset: -2px;
   border-radius: 50%;
   background: var(--grad-splash);
   animation: rotateStar 10s infinite linear;
@@ -1461,44 +1471,44 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36px;
+  font-size: 26px;
 }
 
 .driver-verified-check {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 22px;
-  height: 22px;
+  bottom: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--splash-cyan);
   color: #0b0f19;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 900;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 10px var(--splash-cyan);
+  box-shadow: 0 0 8px var(--splash-cyan);
 }
 
 .driver-name-title-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .driver-fullname {
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 800;
   color: #fff;
 }
 
 .badge-vip-driver {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
-  letter-spacing: 1px;
-  padding: 3px 8px;
+  letter-spacing: 0.8px;
+  padding: 2px 6px;
   border-radius: var(--radius-pill);
   background: rgba(255, 208, 0, 0.2);
   border: 1px solid var(--splash-yellow);
@@ -1508,119 +1518,119 @@ html, body {
 .driver-stars-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 3px 0 6px 0;
+  gap: 6px;
+  margin: 1px 0 3px 0;
 }
 
 .gold-stars {
   color: var(--splash-yellow);
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .rating-number {
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 13px;
   color: #fff;
 }
 
 .trips-number {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
 }
 
 .driver-car-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
+  gap: 4px;
+  padding: 2px 10px;
   background: rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-pill);
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-main);
 }
 
 .driver-tags-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin: 10px 0;
+  gap: 6px;
+  margin: 4px 0;
 }
 
 .tag-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
+  gap: 4px;
+  padding: 2px 8px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-pill);
-  font-size: 12px;
+  font-size: 10.5px;
   color: var(--text-main);
 }
 
 .driver-bio-box {
   display: flex;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 8px;
+  padding: 6px 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  font-size: 13px;
-  line-height: 1.4;
+  border-radius: var(--radius-md);
+  font-size: 11.5px;
+  line-height: 1.35;
   color: var(--text-muted);
 }
 
 .bio-quote-icon {
-  font-size: 20px;
+  font-size: 16px;
 }
 
 /* INSTANT DRIVER TIP SECTION */
 .ride-tip-direct-box {
-  padding: 14px 16px;
+  padding: 8px 12px;
   background: linear-gradient(135deg, rgba(0, 240, 255, 0.08), rgba(255, 0, 127, 0.08));
   border: 1px solid rgba(0, 240, 255, 0.25);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .tip-direct-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .tip-heart-icon {
-  font-size: 22px;
+  font-size: 18px;
 }
 
 .tip-direct-header h4 {
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 700;
   color: #fff;
 }
 
 .tip-direct-header p {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
 }
 
 .tip-amount-selector {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .tip-choice-btn {
   flex: 1;
-  padding: 8px 0;
-  border-radius: var(--radius-md);
+  padding: 5px 0;
+  border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid var(--border-glass);
   color: #fff;
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 800;
   cursor: pointer;
   transition: var(--transition-fast);
@@ -1635,17 +1645,17 @@ html, body {
 
 .btn-send-tip-splash {
   width: 100%;
-  padding: 10px;
+  padding: 7px;
   border-radius: var(--radius-pill);
   border: none;
   background: var(--grad-splash);
   color: #fff;
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 800;
   letter-spacing: 0.5px;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(255, 0, 127, 0.35);
+  box-shadow: 0 4px 15px rgba(255, 0, 127, 0.3);
   transition: var(--transition-fast);
 }
 
@@ -1658,7 +1668,11 @@ html, body {
 .ride-status-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
+  height: 100%;
+  min-height: 0;
+  justify-content: space-between;
+  overflow: hidden;
 }
 
 .trip-progress-card {
@@ -1666,32 +1680,32 @@ html, body {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-glass);
-  border-radius: var(--radius-xl);
-  padding: 18px 20px;
+  border-radius: var(--radius-lg);
+  padding: 10px 14px;
   box-shadow: var(--shadow-card);
 }
 
 .trip-card-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 6px;
 }
 
 .trip-icon {
-  font-size: 24px;
+  font-size: 20px;
 }
 
 .card-mini-tag {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   color: var(--splash-lime);
 }
 
 .trip-destination-title {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
   color: #fff;
 }
@@ -1699,7 +1713,7 @@ html, body {
 .trip-metrics-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 }
 
 .trip-stat {
@@ -1709,46 +1723,46 @@ html, body {
 
 .stat-big {
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 800;
   color: var(--splash-cyan);
   line-height: 1;
 }
 
 .stat-unit {
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 700;
   letter-spacing: 0.5px;
   color: var(--text-dim);
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .trip-progress-track {
   position: relative;
   width: 100%;
-  height: 8px;
+  height: 6px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  margin-bottom: 8px;
+  border-radius: 3px;
+  margin-bottom: 4px;
 }
 
 .trip-progress-bar-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 3px;
   background: var(--grad-splash);
 }
 
 .car-pin-icon {
   position: absolute;
-  top: -10px;
-  font-size: 14px;
+  top: -8px;
+  font-size: 12px;
   transform: translateX(-50%);
 }
 
 .trip-track-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-dim);
 }
 
@@ -1763,8 +1777,8 @@ html, body {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-glass);
-  border-radius: var(--radius-xl);
-  padding: 16px 20px;
+  border-radius: var(--radius-lg);
+  padding: 8px 14px;
   box-shadow: var(--shadow-card);
 }
 
@@ -1772,70 +1786,70 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .weather-temp-wrap {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .weather-big-icon {
-  font-size: 36px;
+  font-size: 26px;
 }
 
 .temp-huge {
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 800;
   color: #fff;
   line-height: 1;
 }
 
 .weather-condition {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .sunset-pill {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--splash-yellow);
   background: rgba(255, 208, 0, 0.1);
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: var(--radius-pill);
 }
 
 .weather-stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  padding-top: 10px;
+  gap: 6px;
+  padding-top: 6px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .w-stat-item {
   display: flex;
   flex-direction: column;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-dim);
 }
 .w-stat-item strong {
-  font-size: 13px;
+  font-size: 11.5px;
   color: #fff;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 /* NOW PLAYING WIDGET */
 .now-playing-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 18px;
+  gap: 10px;
+  padding: 8px 14px;
   background: rgba(168, 85, 247, 0.12);
   border: 1px solid rgba(168, 85, 247, 0.3);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
 }
 
 .music-note-animated {
@@ -2555,12 +2569,12 @@ html, body {
    14. BOTTOM TABLET DOCK (COPILOT STYLE)
    -------------------------------------------------------------------------- */
 .bottom-dock {
-  height: 58px;
-  min-height: 58px;
+  height: 44px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 12px;
   background: var(--bg-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -2576,13 +2590,13 @@ html, body {
 }
 
 .dock-logo-icon {
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .dock-logo-name {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 1px;
   color: #fff;
 }
@@ -2590,20 +2604,20 @@ html, body {
 .dock-nav-pills {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .dock-pill {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: 6px;
+  padding: 5px 12px;
   background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-pill);
   color: var(--text-muted);
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition-fast);

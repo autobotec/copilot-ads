@@ -535,6 +535,10 @@ function switchTab(targetTab) {
   sound.playTap();
   state.activeTab = targetTab;
 
+  if (!isAdminUnlocked && !document.fullscreenElement && !document.webkitFullscreenElement) {
+    requestFullscreenSafely();
+  }
+
   const dockPills = [DOM.tabGames, DOM.tabRideInfo, DOM.tabMediaAds, DOM.tabGiveaway, DOM.tabLeaderboard];
   dockPills.forEach(pill => {
     if (pill) pill.classList.toggle('active', pill.dataset.target === targetTab);
@@ -600,6 +604,10 @@ function launchGame(gameType) {
   clearInterval(state.autostartInterval);
   sound.playSplashPop();
   state.activeGameMode = gameType;
+
+  if (!isAdminUnlocked && !document.fullscreenElement && !document.webkitFullscreenElement) {
+    requestFullscreenSafely();
+  }
 
   if (DOM.gamesHubScreen) DOM.gamesHubScreen.classList.add('hidden');
   if (DOM.gameArenaScreen) DOM.gameArenaScreen.classList.remove('hidden');
@@ -1243,33 +1251,20 @@ function triggerAdminTap(e) {
 }
 
 function setupKioskMode() {
-  const overlay = document.getElementById('kioskTouchOverlay');
   const btnLockKiosk = document.getElementById('btnLockKioskFullscreen');
   const btnExitKioskBar = document.getElementById('btnExitKioskBar');
   const adminHotspot = document.getElementById('adminSecretHotspot');
   const headerLogo = document.getElementById('brandLogoWrap');
 
-  // Any tap on the initial overlay requests fullscreen and hides overlay
-  if (overlay) {
-    overlay.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      sound.playTap();
-      if (!isAdminUnlocked) {
-        requestFullscreenSafely();
-      }
-      overlay.classList.add('hidden');
-    });
-  }
-
-  // First user interaction anywhere on screen auto-enters fullscreen
+  // First user interaction anywhere on screen auto-enters fullscreen seamlessly
   const autoFullscreenGesture = () => {
     if (!document.fullscreenElement && !document.webkitFullscreenElement && !isAdminUnlocked) {
       requestFullscreenSafely();
     }
-    if (overlay) overlay.classList.add('hidden');
-    document.removeEventListener('pointerdown', autoFullscreenGesture);
   };
-  document.addEventListener('pointerdown', autoFullscreenGesture);
+  window.addEventListener('pointerdown', autoFullscreenGesture, { once: true });
+  window.addEventListener('click', autoFullscreenGesture, { once: true });
+  window.addEventListener('touchstart', autoFullscreenGesture, { once: true, passive: true });
 
   // Bind 7-tap admin mode listeners on secret hotspots
   if (adminHotspot) adminHotspot.addEventListener('pointerdown', triggerAdminTap);
@@ -1299,16 +1294,6 @@ function setupKioskMode() {
       showToast(state.lang === 'en' ? '🌐 Browser Toolbar Active' : '🌐 Barra del Navegador Activa');
     });
   }
-
-  // If passenger exits fullscreen accidentally, re-prompt overlay on next touch
-  const onFullscreenChange = () => {
-    const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
-    if (!isFs && !isAdminUnlocked) {
-      if (overlay) overlay.classList.remove('hidden');
-    }
-  };
-  document.addEventListener('fullscreenchange', onFullscreenChange);
-  document.addEventListener('webkitfullscreenchange', onFullscreenChange);
 }
 
 /* ==========================================================================
