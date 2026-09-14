@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="screen-orientation" content="landscape" />
+  <title>Copilot Driver | Rideshare Entertainment & Tablet Ads</title>
+  
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700;800&family=Fredoka:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=6" />
+</head>
+<body class="theme-splash">
+
+  <!-- BACKGROUND SPLASH CANVAS & AMBIENT GLOW -->
+  <div class="splash-background" id="splashBackground">
+    <div class="splash-spot spot-cyan"></div>
+    <div class="splash-spot spot-magenta"></div>
+    <div class="splash-spot spot-yellow"></div>
+    <div class="splash-spot spot-orange"></div>
+    <div class="splash-spot spot-lime"></div>
+    <div class="splash-spot spot-purple"></div>
+    
+    <!-- Dynamic SVG Paint Splatters -->
+    <svg class="splash-svg-splatter splatter-top-left" viewBox="0 0 200 200">
+      <path fill="#00f0ff" opacity="0.35" d="M38.1,-58.5C49.9,-51.6,60.2,-41.8,68.2,-29.4C76.2,-17,81.8,-1.9,78.8,11.8C75.8,25.5,64.2,37.8,51.8,47.9C39.4,57.9,26.2,65.8,11.8,69.5C-2.6,73.1,-18.2,72.6,-32.1,66.2C-46.1,59.8,-58.4,47.6,-66.3,33C-74.1,18.5,-77.6,1.5,-73.4,-13.6C-69.3,-28.6,-57.5,-41.7,-44.4,-48.5C-31.3,-55.3,-16.9,-55.8,-1.7,-53.4C13.4,-51.1,26.4,-65.4,38.1,-58.5Z" transform="translate(100 100)" />
+      <circle cx="160" cy="40" r="8" fill="#ff007f" opacity="0.4" />
+      <circle cx="180" cy="75" r="5" fill="#ffd000" opacity="0.5" />
+      <circle cx="30" cy="150" r="7" fill="#00f5a0" opacity="0.4" />
+    </svg>
+    <svg class="splash-svg-splatter splatter-bottom-right" viewBox="0 0 200 200">
+      <path fill="#ff007f" opacity="0.3" d="M42.2,-64.8C54.7,-58.4,65,-46.8,70.9,-33.2C76.7,-19.6,78.2,-4,74.9,10.6C71.6,25.2,63.5,38.8,52.3,49.5C41.1,60.2,26.8,68.1,11.4,70.8C-4.1,73.4,-20.7,70.9,-35.4,63.6C-50.1,56.3,-62.9,44.2,-70.7,29.3C-78.6,14.4,-81.4,-3.3,-76.3,-18.6C-71.2,-33.8,-58.1,-46.5,-44,-53C-29.8,-59.5,-14.9,-59.8,0.7,-60.8C16.3,-61.8,29.7,-71.2,42.2,-64.8Z" transform="translate(100 100)" />
+      <circle cx="45" cy="40" r="10" fill="#ffd000" opacity="0.4" />
+      <circle cx="165" cy="160" r="6" fill="#00f0ff" opacity="0.45" />
+    </svg>
+  </div>
+
+  <div id="app" class="kiosk-container">
+
+    <!-- TOP BAR: BRANDING, STATUS & GLOBAL CONTROLS -->
+    <header class="top-header">
+      <div class="header-left">
+        <div class="brand-badge" id="btnBrandBadge" title="Copilot Rideshare Entertainment">
+          <div class="brand-splash-logo">
+            <span class="splash-drop drop-cyan"></span>
+            <span class="splash-drop drop-pink"></span>
+            <span class="splash-drop drop-yellow"></span>
+            <span class="logo-emoji">🎨</span>
+          </div>
+          <div class="brand-text">
+            <div class="brand-title">COPILOT <span class="brand-gradient-text">SPLASH</span></div>
+            <div class="brand-subtitle" id="headerSubtitle"><span class="live-dot"></span> EN VIVO · PANTALLA PASAJERO</div>
+          </div>
+        </div>
+
+        <div class="quick-pill-banner" id="quickPillBanner">
+          <span class="pill-fire">🔥</span>
+          <span class="pill-text" id="quickPillText">Juega & Gana hasta <strong>$50 en Efectivo</strong> Hoy</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- LANGUAGE SELECTOR PILL -->
+        <div class="lang-selector-pill" id="langSelector">
+          <button class="lang-btn active" data-lang="es" id="btnLangEs">🇪🇸 ES</button>
+          <button class="lang-btn" data-lang="en" id="btnLangEn">🇺🇸 EN</button>
+        </div>
+
+        <!-- PASSENGER SCORE PILL -->
+        <div class="score-pill">
+          <span class="score-icon">⭐</span>
+          <div class="score-data">
+            <span class="score-label" id="scoreLabelText">TUS PUNTOS</span>
+            <span class="score-val" id="userScore">0</span>
+          </div>
+        </div>
+
+        <!-- AUDIO TOGGLE -->
+        <button class="control-btn" id="btnSound" title="Silenciar / Activar Sonido">
+          <span id="soundIcon">🔊</span>
+        </button>
+
+        <!-- FULLSCREEN KIOSK -->
+        <button class="control-btn" id="btnFullscreen" title="Pantalla Completa Kiosco">
+          <span>⛶</span>
+        </button>
+
+        <!-- DRIVER ADMIN QUICK BUTTON -->
+        <button class="control-btn driver-btn" id="btnAdminQuick" title="Ajustes Conductor (PIN 1234)">
+          <span>⚙️</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN BODY: TAB VIEWS -->
+    <main class="main-layout">
+
+      <!-- ====================================================================
+           PILLAR 1: LIVE GAMES (WELCOME, PICK A GAME! + GAME ARENA)
+           ==================================================================== -->
+      <section class="view-panel active" id="viewGames">
+        
+        <!-- SUBVIEW 1A: PICK A GAME (HUB PRINCIPAL ESTILO COPILOT) -->
+        <div class="games-hub-screen" id="gamesHubScreen">
+          <div class="games-hub-header">
+            <div class="hub-title-row">
+              <div class="hub-tag" id="hubTag">✨ JUEGOS EN VIVO ✨</div>
+              <h1 class="hub-main-title"><span id="hubTitleBefore">¡BIENVENIDO, </span><span class="splash-title-span" id="hubTitleSpan">ELIGE UN JUEGO!</span></h1>
+              <p class="hub-subtitle" id="hubSubtitle">¡Gratis durante tu viaje! Más de <strong>$50,000 en premios</strong> entregados a pasajeros de todo el país.</p>
+            </div>
+
+            <!-- AUTOSTART COUNTDOWN BAR -->
+            <div class="autostart-card" id="autostartCard">
+              <div class="autostart-info">
+                <span class="autostart-icon">⏱️</span>
+                <span class="autostart-text"><span id="autostartLabelText">Inicio automático en</span> <strong id="autostartCounter">8s</strong></span>
+              </div>
+              <div class="autostart-progress-bar">
+                <div class="autostart-progress-fill" id="autostartProgressFill"></div>
+              </div>
+              <button class="autostart-pause-btn" id="btnPauseAutostart">Pausar</button>
+            </div>
+          </div>
+
+          <!-- 4 MINIGAME LAUNCH TILES (ESTILO COPILOT / SPLASH) -->
+          <div class="games-grid">
+
+            <!-- Card 1: Classic Trivia -->
+            <div class="game-launch-card card-cyan" id="cardLaunchClassic">
+              <div class="game-card-glow"></div>
+              <div class="game-card-icon-wrap">
+                <span class="game-icon">❓</span>
+                <span class="game-badge" id="cardClassicBadge">TRIVIA CLÁSICA</span>
+              </div>
+              <h3 class="game-name">Classic Trivia</h3>
+              <p class="game-desc" id="cardClassicDesc">Cine, música, cultura general y ciencia con 12s en el cronómetro.</p>
+              <div class="game-card-footer">
+                <span class="game-players" id="cardClassicPlayers">👥 140K jugando</span>
+                <button class="btn-play-game btn-cyan" id="btnPlayClassic">JUGAR YA ▶</button>
+              </div>
+            </div>
+
+            <!-- Card 2: Picture Trivia -->
+            <div class="game-launch-card card-magenta" id="cardLaunchPicture">
+              <div class="game-card-glow"></div>
+              <div class="game-card-icon-wrap">
+                <span class="game-icon">📸</span>
+                <span class="game-badge" id="cardPicBadge">RETO VISUAL</span>
+              </div>
+              <h3 class="game-name">Picture Trivia</h3>
+              <p class="game-desc" id="cardPicDesc">Adivina películas, maravillas del mundo y estrellas por la imagen.</p>
+              <div class="game-card-footer">
+                <span class="game-players" id="cardPicPlayers">🔥 Racha x2</span>
+                <button class="btn-play-game btn-magenta" id="btnPlayPic">JUGAR YA ▶</button>
+              </div>
+            </div>
+
+            <!-- Card 3: Splash Says (Copilot Says / Color Memory) -->
+            <div class="game-launch-card card-yellow" id="cardLaunchSimon">
+              <div class="game-card-glow"></div>
+              <div class="game-card-icon-wrap">
+                <span class="game-icon">🎨</span>
+                <span class="game-badge" id="cardSimonBadge">MEMORIA COPILOT</span>
+              </div>
+              <h3 class="game-name">Copilot Splash Says</h3>
+              <p class="game-desc" id="cardSimonDesc">Repite la secuencia de colores y sonidos. ¿Hasta qué nivel llegarás?</p>
+              <div class="game-card-footer">
+                <span class="game-players" id="cardSimonPlayers">🧠 Agilidad mental</span>
+                <button class="btn-play-game btn-yellow" id="btnPlaySimon">JUGAR YA ▶</button>
+              </div>
+            </div>
+
+            <!-- Card 4: Speed Match (Parejas) -->
+            <div class="game-launch-card card-lime" id="cardLaunchMatch">
+              <div class="game-card-glow"></div>
+              <div class="game-card-icon-wrap">
+                <span class="game-icon">⚡</span>
+                <span class="game-badge" id="cardMatchBadge">CONTRARRELOJ</span>
+              </div>
+              <h3 class="game-name">Speed Match</h3>
+              <p class="game-desc" id="cardMatchDesc">Encuentra todas las parejas de cartas antes de que el reloj marque cero.</p>
+              <div class="game-card-footer">
+                <span class="game-players" id="cardMatchPlayers">⏱️ 40 Segundos</span>
+                <button class="btn-play-game btn-lime" id="btnPlayMatch">JUGAR YA ▶</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SUBVIEW 1B: GAME ARENA (DONDE SE JUEGA EL JUEGO SELECCIONADO) -->
+        <div class="game-arena-screen hidden" id="gameArenaScreen">
+          <div class="arena-top-nav">
+            <button class="arena-back-btn" id="btnBackToGamesHub">
+              <span id="backToGamesIcon">←</span> <span id="backToGamesText">Elegir Otro Juego</span>
+            </button>
+            <div class="arena-game-tag" id="arenaGameTag">🎮 MODO DE JUEGO</div>
+            <div class="arena-score-badge">
+              <span id="arenaScoreLabelText">Puntaje:</span> <strong id="arenaScoreVal">0</strong>
+            </div>
+          </div>
+
+          <!-- Dynamic Container for the loaded game -->
+          <div class="arena-content-mount" id="arenaContentMount">
+            
+            <!-- TRIVIA WRAPPER (DEFAULT IN ARENA) -->
+            <div class="trivia-arena-container" id="triviaArenaContainer">
+              <div class="trivia-header-row">
+                <div class="category-tag" id="triviaCategory">
+                  <span id="triviaCatIcon">🎬</span>
+                  <span id="triviaCatName">Cine & Series</span>
+                </div>
+
+                <div class="trivia-stats">
+                  <div class="streak-badge" id="streakBadge">
+                    <span class="flame">🔥</span>
+                    <span id="streakCount">Racha x1</span>
+                  </div>
+                  <div class="question-progress" id="questionCounter">Pregunta 1 de 10</div>
+                </div>
+
+                <!-- CIRCULAR COUNTDOWN TIMER -->
+                <div class="timer-container">
+                  <svg class="timer-svg" viewBox="0 0 60 60">
+                    <circle class="timer-bg" cx="30" cy="30" r="26"></circle>
+                    <circle class="timer-progress" id="timerCircle" cx="30" cy="30" r="26"></circle>
+                  </svg>
+                  <div class="timer-text" id="timerNumber">12</div>
+                </div>
+              </div>
+
+              <!-- Picture clue card (for picture trivia mode) -->
+              <div class="picture-clue-card hidden" id="pictureClueCard">
+                <div class="picture-clue-visual" id="picClueVisual">🗼</div>
+                <div class="picture-clue-caption" id="picClueCaption">Pista visual</div>
+              </div>
+
+              <div class="trivia-card">
+                <h2 class="trivia-question" id="triviaQuestion">
+                  Cargando pregunta interactiva de Copilot Driver...
+                </h2>
+
+                <div class="trivia-options-grid" id="triviaOptions">
+                  <!-- Dynamically populated buttons -->
+                </div>
+
+                <!-- FEEDBACK OVERLAY AFTER ANSWER -->
+                <div class="trivia-feedback hidden" id="triviaFeedback">
+                  <div class="feedback-badge" id="feedbackBadge">¡CORRECTO! +100 PTS</div>
+                  <p class="feedback-fact" id="feedbackFact">Dato curioso aquí...</p>
+                  <div class="feedback-timer-bar">
+                    <div class="feedback-bar-fill" id="feedbackBarFill"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ====================================================================
+           PILLAR 2: RIDE INFORMATION ("YOU'RE RIDING WITH ALEX...")
+           ==================================================================== -->
+      <section class="view-panel" id="viewRideInfo">
+        <div class="ride-info-screen">
+          <div class="ride-info-grid">
+
+            <!-- LEFT COL: DRIVER PROFILE & BIO CARD -->
+            <div class="ride-driver-main-card">
+              <div class="driver-welcome-badge">
+                <span class="pulse-ring"></span>
+                <span id="rideWelcomeBadgeText">VIAJAS CON TU CONDUCTOR OFICIAL</span>
+              </div>
+
+              <div class="driver-profile-header">
+                <div class="driver-avatar-splash">
+                  <div class="avatar-ring-multicolor"></div>
+                  <div class="driver-avatar-inner" id="driverProfileAvatar">👨‍✈️</div>
+                  <span class="driver-verified-check">✓</span>
+                </div>
+                <div class="driver-info-meta">
+                  <div class="driver-name-title-row">
+                    <h2 class="driver-fullname" id="infoDriverName">Alex Morgan</h2>
+                    <span class="badge-vip-driver" id="badgeVipDriver">TOP DRIVER</span>
+                  </div>
+                  <div class="driver-stars-row">
+                    <span class="gold-stars">★★★★★</span>
+                    <strong class="rating-number" id="infoDriverRating">4.99</strong>
+                    <span class="trips-number" id="infoDriverTrips">(2,840+ viajes completados)</span>
+                  </div>
+                  <div class="driver-car-pill" id="infoDriverCar">
+                    <span>🚗</span> Tesla Model Y · Blanco Perlado
+                  </div>
+                </div>
+              </div>
+
+              <!-- Badges row -->
+              <div class="driver-tags-row">
+                <span class="tag-chip"><span id="tagCleanText">✨ Auto Impecable</span></span>
+                <span class="tag-chip"><span id="tagLangText">🗣️ Español & English</span></span>
+                <span class="tag-chip"><span id="tagMusicText">🎵 Música Chill</span></span>
+                <span class="tag-chip"><span id="tagCityText">📍 Conoce la Ciudad</span></span>
+              </div>
+
+              <!-- Driver bio note -->
+              <div class="driver-bio-box">
+                <div class="bio-quote-icon">💬</div>
+                <div class="bio-text-wrap">
+                  <strong id="driverMessageLabelText">Mensaje de Alex:</strong>
+                  <p id="infoDriverBio">"¡Hola y bienvenido a bordo! Siéntete como en casa: hay cargadores rápidos en los respaldos, toallitas desinfectantes y agua fría. Si prefieres otra música o ajustar el aire acondicionado, ¡solo dímelo!"</p>
+                </div>
+              </div>
+
+              <!-- INSTANT DRIVER TIP SECTION -->
+              <div class="ride-tip-direct-box">
+                <div class="tip-direct-header">
+                  <div class="tip-heart-icon">💙</div>
+                  <div>
+                    <h4 id="tipHeaderTitleText">¿Disfrutaste el servicio? Apoya con una propina</h4>
+                    <p id="tipHeaderSubText">El 100% va directo al conductor a través de Cash App / Venmo / Zelle</p>
+                  </div>
+                </div>
+                <div class="tip-amount-selector">
+                  <button class="tip-choice-btn" data-val="2">$2</button>
+                  <button class="tip-choice-btn active" data-val="5">$5</button>
+                  <button class="tip-choice-btn" data-val="10">$10</button>
+                  <button class="tip-choice-btn" data-val="20">$20</button>
+                  <button class="tip-choice-btn" id="btnCustomTip">Otro</button>
+                </div>
+                <button class="btn-send-tip-splash" id="btnOpenTipFromRide">
+                  <span>💵</span> <span id="btnSendTipLabel">Enviar Propina de $5 a Alex</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- RIGHT COL: ROUTE STATUS, LIVE WEATHER & LOCAL INFO -->
+            <div class="ride-status-sidebar">
+              
+              <!-- TRIP PROGRESS CARD -->
+              <div class="trip-progress-card">
+                <div class="trip-card-header">
+                  <span class="trip-icon">🗺️</span>
+                  <div>
+                    <span class="card-mini-tag" id="routeTagText">RUTA EN CURSO</span>
+                    <h3 class="trip-destination-title" id="routeDestText">Hacia Miami Beach · Ocean Dr</h3>
+                  </div>
+                </div>
+
+                <div class="trip-metrics-row">
+                  <div class="trip-stat">
+                    <span class="stat-big" id="tripEta">14</span>
+                    <span class="stat-unit" id="routeEtaUnit">MIN ESTIMADOS</span>
+                  </div>
+                  <div class="trip-stat">
+                    <span class="stat-big" id="tripDistance">5.2</span>
+                    <span class="stat-unit" id="routeKmUnit">KM RESTANTES</span>
+                  </div>
+                  <div class="trip-stat">
+                    <span class="stat-big" id="tripSpeed">42</span>
+                    <span class="stat-unit" id="routeSpeedUnit">KM/H ACTUAL</span>
+                  </div>
+                </div>
+
+                <div class="trip-progress-track">
+                  <div class="trip-progress-bar-fill" style="width: 65%;"></div>
+                  <span class="car-pin-icon" style="left: 63%;">🚗</span>
+                </div>
+                <div class="trip-track-labels">
+                  <span id="routeOriginText">Origen (Downtown)</span>
+                  <span class="arrival-label" id="routeArrivalText">Llegada ~ 1:08 PM</span>
+                </div>
+              </div>
+
+              <!-- WEATHER & TIME CARD -->
+              <div class="weather-full-card">
+                <div class="weather-full-top">
+                  <div class="weather-temp-wrap">
+                    <span class="weather-big-icon">☀️</span>
+                    <div>
+                      <div class="temp-huge">27°C</div>
+                      <div class="weather-condition" id="weatherCondText">Miami Metro · Despejado y Cálido</div>
+                    </div>
+                  </div>
+                  <div class="sunset-pill" id="sunsetPillText">
+                    <span>🌅</span> Puesta: 7:42 PM
+                  </div>
+                </div>
+                <div class="weather-stats-grid">
+                  <div class="w-stat-item">
+                    <span id="humidityLabelText">💧 Humedad</span>
+                    <strong>62%</strong>
+                  </div>
+                  <div class="w-stat-item">
+                    <span id="windLabelText">💨 Viento</span>
+                    <strong>14 km/h</strong>
+                  </div>
+                  <div class="w-stat-item">
+                    <span id="uvLabelText">☀️ Índice UV</span>
+                    <strong id="uvValueText">Alto (7)</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NOW PLAYING MUSIC WIDGET -->
+              <div class="now-playing-card">
+                <div class="music-note-animated">🎵</div>
+                <div class="music-info-meta">
+                  <span class="now-playing-label" id="nowPlayingLabelText">SONANDO EN EL VEHÍCULO</span>
+                  <strong class="track-title" id="rideCurrentTrack">Copilot Lounge & Chill Vibes</strong>
+                  <span class="track-playlist" id="ridePlaylistSub">Playlist Seleccionada por Alex</span>
+                </div>
+                <div class="mini-equalizer">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           PILLAR 3: INTERACTIVE ADS & MEDIA ("CHOOSE YOUR EXPERIENCE")
+           ==================================================================== -->
+      <section class="view-panel" id="viewMediaAds">
+        <div class="media-hub-screen">
+
+          <div class="media-hub-header">
+            <div>
+              <span class="media-badge" id="mediaBadgeText">✨ MULTIMEDIA & ENTRETENIMIENTO ✨</span>
+              <h1 class="media-title"><span id="mediaTitleBefore">ELIGE TU </span><span class="splash-title-span" id="mediaTitleSpan">EXPERIENCIA</span></h1>
+              <p class="media-subtitle" id="mediaSubtitleText">Disfruta de música, videos virales, deportes, Billboard y ofertas exclusivas para pasajeros.</p>
+            </div>
+
+            <!-- MEDIA SUBTABS (Play, Watch, Listen, Billboard, Deals) -->
+            <div class="media-subnav">
+              <button class="media-subnav-btn active" data-mediatab="deals" id="btnMediaDeals">
+                <span>🎁</span> <span id="tabDealsText">Ofertas & Cupones</span>
+              </button>
+              <button class="media-subnav-btn" data-mediatab="billboard" id="btnMediaBillboard">
+                <span>📊</span> <span id="tabBillboardText">Billboard & Deportes</span>
+              </button>
+              <button class="media-subnav-btn" data-mediatab="listen" id="btnMediaListen">
+                <span>🎧</span> <span id="tabListenText">Música & Radio</span>
+              </button>
+              <button class="media-subnav-btn" data-mediatab="watch" id="btnMediaWatch">
+                <span>🎬</span> <span id="tabWatchText">Videos Cortos</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUBTAB CONTENT: DEALS & SPONSORED INTERSTITIAL ADS -->
+          <div class="media-tab-content active" id="mediaTabDeals">
+            <div class="deals-showcase-layout">
+
+              <!-- HERO FEATURED SPONSOR AD -->
+              <div class="ad-card" id="adCard">
+                <div class="ad-top-meta">
+                  <span class="ad-badge" id="adBadge">OFERTA LOCAL EN TU RUTA</span>
+                  <div class="ad-timer-pill">
+                    <span id="adTimerLabel">Continuando viaje en</span>
+                    <strong id="adTimerCount">10s</strong>
+                  </div>
+                </div>
+
+                <div class="ad-content-split">
+                  <div class="ad-left-info" id="adLeftInfo">
+                    <div class="ad-brand-logo" id="adBrandLogo">☕</div>
+                    <h2 class="ad-brand-name" id="adBrandName">VELOCE ESPRESSO & BAKERY</h2>
+                    <h1 class="ad-headline" id="adHeadline">¡Tu café artesanal favorito te espera en la próxima parada!</h1>
+                    <p class="ad-subtext" id="adSubtext">Muestra este anuncio en tu viaje y obtén 30% de descuento inmediato en tu primera orden.</p>
+                    
+                    <div class="ad-promo-box">
+                      <span class="promo-label" id="promoLabelText">CÓDIGO DE DESCUENTO:</span>
+                      <span class="promo-code" id="adPromoCode">COPILOT30</span>
+                    </div>
+                  </div>
+
+                  <!-- MODO VIDEO OPCIONAL -->
+                  <div class="ad-video-container hidden" id="adVideoContainer">
+                    <div class="video-overlay-header">
+                      <span class="video-sponsor-tag" id="videoSponsorTag">▶ SPOT DE VIDEO</span>
+                      <button class="video-sound-btn" id="btnVideoSound" title="Silenciar / Activar Sonido">🔊</button>
+                    </div>
+                    <video id="adVideoPlayer" class="ad-video-element" playsinline webkit-playsinline preload="auto"></video>
+                    <div class="video-progress-line">
+                      <div class="video-progress-fill" id="adVideoProgress"></div>
+                    </div>
+                  </div>
+
+                  <!-- QR CODE ESCANEABLE -->
+                  <div class="ad-right-qr">
+                    <div class="qr-glow-card">
+                      <div class="qr-code-img" id="adQrContainer">
+                        <!-- Dynamic SVG QR Code -->
+                      </div>
+                      <div class="qr-instruction" id="qrInstructionText">
+                        <span>📱</span> Escanea con la cámara de tu móvil para canjear oferta
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ad-bottom-actions">
+                  <button class="ad-btn secondary" id="btnNextAd">Siguiente Anuncio ▶</button>
+                  <button class="ad-btn primary" id="btnClaimAd">Reclamar Oferta en Pantalla</button>
+                </div>
+              </div>
+
+              <!-- OTHER LOCAL SPONSORS MINI ROW -->
+              <div class="deals-mini-list" id="dealsMiniList">
+                <!-- Populated dynamically from adsData.js -->
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SUBTAB CONTENT: BILLBOARD & SPORTS -->
+          <div class="media-tab-content" id="mediaTabBillboard">
+            <div class="billboard-sports-grid">
+              
+              <!-- BILLBOARD TOP 5 ALBUMS -->
+              <div class="billboard-column">
+                <div class="column-title-row">
+                  <span class="col-icon">🏆</span>
+                  <h3 id="billboardColumnTitle">Billboard Top 5 Álbumes del Momento</h3>
+                </div>
+                <div class="billboard-list" id="billboardList">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+
+              <!-- SPORTS HIGHLIGHTS & SCORES -->
+              <div class="sports-column">
+                <div class="column-title-row">
+                  <span class="col-icon">⚽</span>
+                  <h3 id="sportsColumnTitle">Marcadores Deportivos en Vivo</h3>
+                </div>
+                <div class="sports-list" id="sportsList">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SUBTAB CONTENT: LISTEN / MUSIC & RADIO -->
+          <div class="media-tab-content" id="mediaTabListen">
+            <div class="listen-hub-layout">
+              <div class="listen-channels-grid" id="listenChannelsGrid">
+                <!-- Curated playlists populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- SUBTAB CONTENT: WATCH / SHORT VIDEOS -->
+          <div class="media-tab-content" id="mediaTabWatch">
+            <div class="watch-hub-layout">
+              <div class="watch-cards-grid" id="watchCardsGrid">
+                <!-- Videos populated dynamically -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           PILLAR 4: GIVEAWAYS ($50 DAILY JACKPOT)
+           ==================================================================== -->
+      <section class="view-panel" id="viewGiveaway">
+        <div class="giveaway-card">
+          <div class="giveaway-header">
+            <div class="jackpot-badge" id="jackpotBadgeText">✨ SORTEO DIARIO OFICIAL COPILOT ✨</div>
+            <h1 class="giveaway-title"><span id="giveawayTitleBefore">¡Gana </span><span class="cash-highlight" id="giveawayTitleSpan">$50 en Efectivo</span><span id="giveawayTitleAfter"> Hoy!</span></h1>
+            <p class="giveaway-subtitle" id="giveawaySubtitle">Participa gratis durante tu viaje. Sorteo automático todos los días a las 9:00 PM.</p>
+          </div>
+
+          <div class="giveaway-split">
+            <!-- WHEEL / LUCK ZONE -->
+            <div class="wheel-box">
+              <div class="roulette-display">
+                <div class="roulette-item">💵 $50 Cash</div>
+                <div class="roulette-item active">🎟️ Boleto VIP #8492</div>
+                <div class="roulette-item">🎁 $25 Card</div>
+              </div>
+              <button class="btn-spin" id="btnClaimTicket">
+                <span>🎟️</span> Generar mi Boleto Gratis
+              </button>
+              <div class="tickets-counter">
+                <span id="yourTicketsLabel">Tus boletos hoy:</span> <strong id="myTicketsCount">0</strong>
+              </div>
+            </div>
+
+            <!-- RECENT WINNERS LIST -->
+            <div class="winners-box">
+              <div class="winners-title" id="recentWinnersTitle">🏆 Ganadores Recientes en Rideshare</div>
+              <div class="winners-list" id="winnersList">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           PILLAR 5: LEADERBOARD VIEW
+           ==================================================================== -->
+      <section class="view-panel" id="viewLeaderboard">
+        <div class="leaderboard-card">
+          <div class="lb-header">
+            <h2 id="lbTitleText">🏆 Tabla de Récords del Día</h2>
+            <p id="lbSubText">Los pasajeros con mayor puntuación compiten por el Gran Premio Semanal de $100.</p>
+          </div>
+
+          <div class="lb-table-container">
+            <table class="lb-table">
+              <thead>
+                <tr>
+                  <th id="thRank">Lugar</th>
+                  <th id="thRider">Pasajero</th>
+                  <th id="thScore">Puntaje</th>
+                  <th id="thPrize">Premio</th>
+                </tr>
+              </thead>
+              <tbody id="lbTableBody">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="lb-footer">
+            <button class="pill-btn active" id="btnBackToGamesFromLb">Volver a los Juegos</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ====================================================================
+         BOTTOM DOCK / NAVIGATION BAR (COPILOT TABLET STYLE)
+         ==================================================================== -->
+    <footer class="bottom-dock">
+      <div class="dock-left-brand" id="dockBrandLogo">
+        <span class="dock-logo-icon">🤖</span>
+        <span class="dock-logo-name">COPILOT</span>
+      </div>
+
+      <nav class="dock-nav-pills">
+        <button class="dock-pill active" id="tabGames" data-target="games">
+          <span class="dock-icon">🎮</span>
+          <span class="dock-label" id="dockLabelGames">Juegos en Vivo</span>
+        </button>
+
+        <button class="dock-pill" id="tabRideInfo" data-target="rideInfo">
+          <span class="dock-icon">🗺️</span>
+          <span class="dock-label" id="dockLabelRideInfo">Info de Viaje</span>
+        </button>
+
+        <button class="dock-pill" id="tabMediaAds" data-target="mediaAds">
+          <span class="dock-icon">📺</span>
+          <span class="dock-label" id="dockLabelMediaAds">Media & Anuncios</span>
+        </button>
+
+        <button class="dock-pill" id="tabGiveaway" data-target="giveaway">
+          <span class="dock-icon">🎁</span>
+          <span class="dock-label" id="dockLabelGiveaway">Sorteo $50</span>
+        </button>
+
+        <button class="dock-pill" id="tabLeaderboard" data-target="leaderboard">
+          <span class="dock-icon">🏆</span>
+          <span class="dock-label" id="dockLabelLeaderboard">Récords</span>
+        </button>
+      </nav>
+
+      <div class="dock-right-status">
+        <div class="dock-weather">
+          <span>☀️</span>
+          <strong>27°C</strong>
+        </div>
+        <div class="dock-clock">
+          <span class="clock-time" id="clockTime">12:00</span>
+          <span class="clock-period" id="clockPeriod">PM</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ====================================================================
+         MODAL 1: TIP DRIVER (CASH APP / VENMO / ZELLE / QR)
+         ==================================================================== -->
+    <div class="modal-backdrop hidden" id="tipModal">
+      <div class="modal-box tip-modal-box">
+        <button class="modal-close" id="btnCloseTipModal">✕</button>
+
+        <div class="modal-header">
+          <div class="modal-icon">💵</div>
+          <h2><span id="tipModalTitlePre">Propina para</span> <span id="tipModalDriverName">Alex Morgan</span></h2>
+          <p id="tipModalSubText">Elige el método de pago que prefieras o escanea con la cámara de tu móvil.</p>
+        </div>
+
+        <div class="tip-presets">
+          <button class="tip-preset-btn" data-amt="2">$2</button>
+          <button class="tip-preset-btn active" data-amt="5">$5</button>
+          <button class="tip-preset-btn" data-amt="10">$10</button>
+          <button class="tip-preset-btn" data-amt="20">$20</button>
+        </div>
+
+        <div class="tip-qr-container">
+          <div class="tip-qr-preview" id="tipQrGraphic">
+            <!-- Dynamic QR Code -->
+          </div>
+          <div class="tip-handle-badge" id="tipHandle">CashApp: $AlexDriverCopilot</div>
+        </div>
+
+        <div class="tip-methods-list">
+          <span class="method-tag">Cash App</span>
+          <span class="method-tag">Venmo</span>
+          <span class="method-tag">Zelle</span>
+          <span class="method-tag">PayPal</span>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-primary-modal" id="btnConfirmTipSent">¡Listo, Propina Enviada! ❤️</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         MODAL 2: PARTICIPAR EN SORTEO ($50 GIVEAWAY)
+         ==================================================================== -->
+    <div class="modal-backdrop hidden" id="giveawayModal">
+      <div class="modal-box giveaway-modal-box">
+        <button class="modal-close" id="btnCloseGiveawayModal">✕</button>
+
+        <div class="modal-header">
+          <div class="modal-icon">🎉</div>
+          <h2 id="giveawayModalHeading">¡Reclama tu Boleto para el Sorteo de $50!</h2>
+          <p id="giveawayModalSub">Ingresa tu número telefónico o email para notificarte si resultas ganador hoy.</p>
+        </div>
+
+        <form id="giveawayForm" class="giveaway-form">
+          <div class="form-group">
+            <label for="riderContact" id="labelContactText">Teléfono Móvil o Correo:</label>
+            <input type="text" id="riderContact" placeholder="Ej: (305) 555-0199 o tu@email.com" required />
+          </div>
+          <div class="form-group">
+            <label for="riderNickname" id="labelNicknameText">Tu Apodo / Nickname para la Pantalla:</label>
+            <input type="text" id="riderNickname" placeholder="Ej: RocketRider" />
+          </div>
+
+          <button type="submit" class="btn-primary-modal" id="btnSubmitGiveaway">
+            <span>🎟️</span> Registrar Boleto Oficial
+          </button>
+        </form>
+
+        <div class="giveaway-legal" id="legalGiveawayText">
+          * Sin costo de compra. Los ganadores son seleccionados al azar cada noche a las 9:00 PM.
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         MODAL 3: DRIVER ADMIN DASHBOARD (PIN PROTECTED 1234)
+         ==================================================================== -->
+    <div class="modal-backdrop hidden" id="adminModal">
+      <div class="modal-box admin-modal-box">
+        <button class="modal-close" id="btnCloseAdminModal">✕</button>
+
+        <!-- PIN GATE SCREEN -->
+        <div id="adminPinScreen">
+          <div class="modal-header">
+            <div class="modal-icon">🔒</div>
+            <h2 id="adminModalTitle">Panel del Conductor (PIN)</h2>
+            <p id="adminModalSub">Ingresa el PIN de seguridad del conductor (Por defecto: 1234)</p>
+          </div>
+          <div class="pin-input-row">
+            <input type="password" id="adminPinInput" maxlength="4" placeholder="••••" />
+            <button class="btn-primary-modal" id="btnVerifyPin">Acceder</button>
+          </div>
+          <p class="pin-hint" id="adminPinHint">PIN predeterminado: <strong>1234</strong></p>
+        </div>
+
+        <!-- SETTINGS VIEW AFTER AUTH -->
+        <div id="adminSettingsScreen" class="hidden">
+          <div class="modal-header">
+            <div class="modal-icon">⚙️</div>
+            <h2 id="adminSettingsHeading">Configuración de Copilot Driver</h2>
+            <p id="adminSettingsSubheading">Personaliza tu información de conductor, métodos de pago y métricas.</p>
+          </div>
+
+          <!-- DRIVER STATS ROW -->
+          <div class="driver-stats-grid">
+            <div class="stat-card">
+              <span class="stat-num" id="statTripsToday">18</span>
+              <span class="stat-label" id="statTripsTodayLabel">Viajes Hoy</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num" id="statTriviaPlays">42</span>
+              <span class="stat-label" id="statTriviaPlaysLabel">Partidas Jugadas</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num" id="statPointsEarned">4,200</span>
+              <span class="stat-label" id="statPointsEarnedLabel">Puntos Acumulados</span>
+            </div>
+            <div class="stat-card highlight">
+              <span class="stat-num" id="statPayout">$85.00</span>
+              <span class="stat-label" id="statPayoutLabel">Ganancia Estimada Mes</span>
+            </div>
+          </div>
+
+          <!-- EDIT FORM -->
+          <div class="admin-form-grid">
+            <div class="form-group">
+              <label id="lblCfgDriverName">Nombre del Conductor:</label>
+              <input type="text" id="cfgDriverName" value="Alex Morgan" />
+            </div>
+            <div class="form-group">
+              <label id="lblCfgDriverCar">Vehículo / Modelo:</label>
+              <input type="text" id="cfgDriverCar" value="Tesla Model Y · Blanco Perlado" />
+            </div>
+            <div class="form-group">
+              <label id="lblCfgDriverRating">Rating de Estrellas:</label>
+              <input type="number" id="cfgDriverRating" step="0.01" min="4.0" max="5.0" value="4.99" />
+            </div>
+            <div class="form-group">
+              <label id="lblCfgDriverTip">Usuario CashApp / Venmo:</label>
+              <input type="text" id="cfgDriverTipHandle" value="$AlexDriverCopilot" />
+            </div>
+            <div class="form-group">
+              <label id="lblCfgDriverPlaylist">Nombre de Playlist:</label>
+              <input type="text" id="cfgDriverPlaylist" value="Copilot Lounge & Chill Vibes" />
+            </div>
+            <div class="form-group">
+              <label id="lblCfgDriverBio">Mensaje del Conductor:</label>
+              <input type="text" id="cfgDriverBio" value="¡Hola y bienvenido a bordo! Siéntete como en casa." />
+            </div>
+          </div>
+
+          <div class="admin-actions-row">
+            <button class="ad-btn secondary" id="btnResetStats">Reiniciar Estadísticas</button>
+            <button class="ad-btn primary" id="btnSaveDriverConfig">Guardar Cambios</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+  </div>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
