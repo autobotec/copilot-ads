@@ -91,15 +91,21 @@
 }
 
 html, body {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  height: -webkit-fill-available;
   overflow: hidden;
+  position: fixed;
+  inset: 0;
   background-color: var(--bg-kiosk);
   color: var(--text-main);
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.4;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  touch-action: pan-x pan-y;
 }
 
 /* --------------------------------------------------------------------------
@@ -210,33 +216,38 @@ html, body {
    4. KIOSK CONTAINER LAYOUT
    -------------------------------------------------------------------------- */
 .kiosk-container {
-  position: relative;
+  position: fixed;
+  inset: 0;
   z-index: 1;
-  width: 100vw;
-  height: 100vh;
-  max-height: 100vh;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  height: -webkit-fill-available;
+  max-height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: 8px 12px;
-  gap: 6px;
+  box-sizing: border-box;
+  padding: max(6px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  gap: 5px;
 }
 
 /* --------------------------------------------------------------------------
    5. TOP HEADER
    -------------------------------------------------------------------------- */
 .top-header {
-  height: 46px;
-  min-height: 46px;
+  height: 42px;
+  min-height: 42px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px;
+  padding: 0 10px;
   background: var(--bg-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
 }
 
@@ -745,33 +756,36 @@ html, body {
 .game-arena-screen {
   width: 100%;
   height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
+  overflow: hidden;
 }
 
 .arena-top-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 18px;
+  padding: 5px 12px;
   background: var(--bg-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
 }
 
 .arena-back-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
+  gap: 6px;
+  padding: 4px 12px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-pill);
   color: #fff;
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition-fast);
@@ -784,25 +798,27 @@ html, body {
 
 .arena-game-tag {
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 1px;
   color: var(--splash-cyan);
 }
 
 .arena-score-badge {
-  font-size: 13px;
+  font-size: 11.5px;
   color: var(--text-muted);
 }
 .arena-score-badge strong {
   color: var(--splash-yellow);
-  font-size: 15px;
+  font-size: 13px;
 }
 
 .arena-content-mount {
   flex: 1;
+  min-height: 0;
   position: relative;
   overflow: hidden;
+  display: flex;
 }
 
 /* --------------------------------------------------------------------------
@@ -811,51 +827,54 @@ html, body {
 .trivia-arena-container {
   width: 100%;
   height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
+  overflow: hidden;
 }
 
 .trivia-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 18px;
+  padding: 5px 12px;
   background: var(--bg-surface);
   border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
 }
 
 .category-tag {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 12px;
   color: var(--splash-cyan);
 }
 
 .trivia-stats {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .streak-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
+  gap: 4px;
+  padding: 2px 8px;
   background: rgba(255, 106, 0, 0.15);
   border: 1px solid rgba(255, 106, 0, 0.4);
   border-radius: var(--radius-pill);
-  font-size: 12px;
+  font-size: 10.5px;
   font-weight: 800;
   color: var(--splash-orange);
 }
 
 .question-progress {
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--text-muted);
 }
@@ -863,8 +882,9 @@ html, body {
 /* TIMER CIRCLE */
 .timer-container {
   position: relative;
-  width: 46px;
-  height: 46px;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
 }
 
 .timer-svg {
@@ -900,7 +920,7 @@ html, body {
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 12.5px;
   font-weight: 800;
   color: #fff;
 }
@@ -909,20 +929,21 @@ html, body {
 .picture-clue-card {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px 20px;
+  gap: 12px;
+  padding: 6px 14px;
   background: linear-gradient(135deg, rgba(255, 0, 127, 0.15), rgba(168, 85, 247, 0.15));
   border: 1px solid rgba(255, 0, 127, 0.3);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
 }
 
 .picture-clue-visual {
-  font-size: 38px;
+  font-size: 28px;
   filter: drop-shadow(0 0 10px rgba(255, 0, 127, 0.4));
 }
 
 .picture-clue-caption {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: #fff;
 }
@@ -930,46 +951,50 @@ html, body {
 /* TRIVIA CARD */
 .trivia-card {
   flex: 1;
+  min-height: 0;
   position: relative;
   background: var(--bg-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-glass);
-  border-radius: var(--radius-xl);
-  padding: 24px 28px;
+  border-radius: var(--radius-lg);
+  padding: 10px 16px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 20px;
+  justify-content: space-between;
+  gap: 6px;
   box-shadow: var(--shadow-card);
+  overflow: hidden;
 }
 
 .trivia-question {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: clamp(13px, 1.8vw, 17px);
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.3;
   text-align: center;
   color: #fff;
+  margin: auto 0;
 }
 
 .trivia-options-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .option-btn {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 20px;
+  gap: 8px;
+  padding: 7px 12px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   color: #fff;
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: clamp(11.5px, 1.3vw, 13.5px);
   font-weight: 600;
   text-align: left;
   cursor: pointer;
@@ -983,8 +1008,8 @@ html, body {
 }
 
 .option-letter {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   display: flex;
@@ -992,8 +1017,9 @@ html, body {
   justify-content: center;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 14px;
+  font-size: 11px;
   color: var(--splash-cyan);
+  flex-shrink: 0;
 }
 
 .option-btn.correct {
@@ -1025,12 +1051,12 @@ html, body {
   background: rgba(7, 10, 18, 0.94);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 30px;
+  padding: 14px;
   text-align: center;
   z-index: 10;
   animation: fadeInFeedback 0.25s ease;
@@ -1043,12 +1069,12 @@ html, body {
 
 .feedback-badge {
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: clamp(16px, 2.2vw, 22px);
   font-weight: 800;
   letter-spacing: 0.5px;
-  padding: 10px 24px;
+  padding: 6px 18px;
   border-radius: var(--radius-pill);
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 }
 
 .feedback-badge.correct {
@@ -1064,18 +1090,18 @@ html, body {
 }
 
 .feedback-fact {
-  font-size: 15px;
+  font-size: clamp(12px, 1.4vw, 14px);
   color: var(--text-main);
-  max-width: 580px;
-  line-height: 1.45;
-  margin-bottom: 20px;
+  max-width: 520px;
+  line-height: 1.35;
+  margin-bottom: 10px;
 }
 
 .feedback-timer-bar {
-  width: 220px;
-  height: 6px;
+  width: 160px;
+  height: 4px;
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
+  border-radius: 2px;
   overflow: hidden;
 }
 
@@ -2569,17 +2595,18 @@ html, body {
    14. BOTTOM TABLET DOCK (COPILOT STYLE)
    -------------------------------------------------------------------------- */
 .bottom-dock {
-  height: 44px;
-  min-height: 44px;
+  height: 42px;
+  min-height: 42px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px;
+  padding: 0 10px;
   background: var(--bg-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
 }
 
@@ -3115,5 +3142,211 @@ html, body {
 
 .btn-exit-kiosk-bar:hover {
   background: rgba(255, 255, 255, 0.12);
+}
+
+/* ==========================================================================
+   16. UNIVERSAL TABLET & IPAD RESPONSIVE SYSTEM
+   Supports 4:3 iPads, 16:10 Android Tablets, Mini Tablets, and Portrait Mode
+   ========================================================================== */
+
+/* Compact tablet heights (e.g. iPad with Safari toolbar, Android with address bar) */
+@media (max-height: 680px) {
+  .kiosk-container {
+    padding: max(4px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    gap: 4px;
+  }
+  .top-header {
+    height: 38px;
+    min-height: 38px;
+    padding: 0 8px;
+  }
+  .brand-splash-logo {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+  .brand-title {
+    font-size: 15px;
+  }
+  .bonus-banner {
+    padding: 3px 10px;
+    font-size: 11px;
+  }
+  .bottom-dock {
+    height: 38px;
+    min-height: 38px;
+    padding: 0 8px;
+  }
+  .dock-pill {
+    padding: 4px 10px;
+    font-size: 11px;
+    gap: 5px;
+  }
+  .dock-logo-name {
+    font-size: 12px;
+  }
+  .dock-icon {
+    font-size: 13px;
+  }
+
+  /* Trivia arena in compact height */
+  .arena-top-nav, .trivia-header-row {
+    padding: 4px 10px;
+  }
+  .trivia-card {
+    padding: 8px 14px;
+    gap: 4px;
+  }
+  .trivia-question {
+    font-size: clamp(12.5px, 1.6vw, 15.5px);
+  }
+  .option-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .option-letter {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+  .timer-container {
+    width: 32px;
+    height: 32px;
+  }
+  .timer-text {
+    font-size: 11.5px;
+  }
+
+  /* Ride info in compact height */
+  .ride-driver-main-card {
+    padding: 8px 12px;
+    gap: 4px;
+  }
+  .driver-avatar-splash {
+    width: 42px;
+    height: 42px;
+  }
+  .driver-avatar-inner {
+    font-size: 20px;
+  }
+  .driver-fullname {
+    font-size: 15px;
+  }
+  .driver-bio-box {
+    padding: 4px 8px;
+    font-size: 10.5px;
+    line-height: 1.25;
+  }
+  .ride-tip-direct-box {
+    padding: 6px 10px;
+    gap: 4px;
+  }
+  .tip-direct-header h4 {
+    font-size: 11.5px;
+  }
+  .tip-direct-header p {
+    font-size: 9.5px;
+  }
+  .tip-choice-btn {
+    padding: 4px 0;
+    font-size: 11.5px;
+  }
+  .btn-send-tip-splash {
+    padding: 5px;
+    font-size: 11px;
+  }
+  .trip-progress-card, .weather-card {
+    padding: 6px 10px;
+  }
+  .now-playing-card {
+    padding: 6px 10px;
+  }
+
+  /* Games Hub in compact height */
+  .games-hub-header {
+    padding: 6px 12px;
+  }
+  .hub-main-title {
+    font-size: 16px;
+  }
+  .game-launch-card {
+    padding: 8px 10px;
+  }
+  .game-name {
+    font-size: 13.5px;
+  }
+  .game-desc {
+    font-size: 10px;
+    margin-bottom: 3px;
+  }
+  .btn-play-game {
+    padding: 4px 10px;
+    font-size: 10.5px;
+  }
+}
+
+/* Portrait tablets / iPad vertical / Square screens (max-aspect-ratio: 1/1) */
+@media (max-aspect-ratio: 11/10), (orientation: portrait) {
+  .bonus-banner {
+    display: none;
+  }
+  .brand-subtitle {
+    display: none;
+  }
+  .dock-left-brand {
+    display: none;
+  }
+  .dock-nav-pills {
+    width: 100%;
+    justify-content: space-around;
+  }
+  .dock-pill {
+    padding: 5px 8px;
+    font-size: 11px;
+    flex: 1;
+    justify-content: center;
+  }
+  .dock-right-status {
+    display: none;
+  }
+
+  /* Games Grid: 2 columns x 2 rows */
+  .games-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  /* Ride Info Grid: stacked with vertical scroll */
+  .ride-info-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    overflow-y: auto;
+    gap: 8px;
+  }
+  .ride-driver-main-card {
+    min-height: 380px;
+  }
+  .ride-status-sidebar {
+    height: auto;
+    overflow: visible;
+    gap: 8px;
+  }
+
+  /* Trivia Options: stacked if needed */
+  .trivia-options-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  /* Media / Ads */
+  .billboard-sports-grid {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+  .giveaway-split {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
 }
 
