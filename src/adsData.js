@@ -1,18 +1,21 @@
 export const SPONSORED_ADS = [
   {
     id: "ad-video-1",
-    brand: "TU MARCA O NEGOCIO",
+    brand: "COPILOT MEDIA NETWORK",
     badge: "Spot de Video Patrocinado",
-    headline: "¡Promociona tu marca o comparte tus videos aquí!",
-    subtext: "Guarda tus videos en la carpeta 'assets/videos/' y agrégalos a esta lista con su ruta o enlace web.",
-    videoUrl: "assets/videos/demo_promo.mp4", // <-- Aquí colocas tu archivo .mp4 o enlace web
-    qrCodeText: "https://copilot.promo/mi-negocio",
-    promoCode: "PROMO2026",
+    badge_en: "Sponsored Video Spotlight",
+    headline: "¡Promociona tu marca o negocio en cada viaje!",
+    headline_en: "Promote your brand or business on every ride!",
+    subtext: "Llega a miles de pasajeros activos con videos interactivos, ofertas con código QR y engagement inmediato.",
+    subtext_en: "Reach thousands of engaged rideshare passengers with video spots, QR vouchers and direct actions.",
+    videoUrl: "assets/videos/demo_promo.mp4",
+    qrCodeText: "https://copilot.promo/anunciate-aqui",
+    promoCode: "COPILOT2026",
     theme: "amber",
     gradient: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%)",
     accentColor: "#f59e0b",
     icon: "🎥",
-    duration: 8
+    duration: 14
   },
   {
     id: "ad-1",

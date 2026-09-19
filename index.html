@@ -66,6 +66,16 @@
           <span class="pill-fire">🔥</span>
           <span class="pill-text" id="quickPillText">Juega & Gana hasta <strong>$50 en Efectivo</strong> Hoy</span>
         </div>
+
+        <!-- MIX MODE AUTO-ROTATION TOGGLE & STATUS -->
+        <button class="mix-mode-pill active" id="btnToggleMix" title="Activar / Pausar Rotación Automática (Mix)">
+          <span class="mix-spinner-icon">🔄</span>
+          <div class="mix-meta-box">
+            <span class="mix-status-text" id="mixStatusText">MIX ACTIVO</span>
+            <span class="mix-next-tag" id="mixNextTag">Próx: Clima</span>
+          </div>
+          <span class="mix-mini-timer" id="mixMiniTimer">14s</span>
+        </button>
       </div>
 
       <div class="header-right">
@@ -432,6 +442,149 @@
       </section>
 
       <!-- ====================================================================
+           PILLAR 2B: LIVE WEATHER & NEWS FEED (MODO MIX SHOWCASE)
+           ==================================================================== -->
+      <section class="view-panel" id="viewWeatherNews">
+        <div class="weathernews-hub-screen">
+          <div class="weathernews-header">
+            <div class="weathernews-titles">
+              <span class="weathernews-badge" id="weatherNewsBadge">🌤️ CLIMA EN VIVO & NOTICIAS DEL DÍA</span>
+              <h1 class="weathernews-title" id="weatherNewsMainTitle">
+                <span id="wnTitleBefore">RADAR METEOROLÓGICO </span><span class="splash-title-span" id="wnTitleSpan">& NOTICIAS</span>
+              </h1>
+              <p class="weathernews-subtitle" id="weatherNewsSubtitle">
+                Mantente al día con el pronóstico de tu ruta y los titulares de última hora durante tu viaje.
+              </p>
+            </div>
+
+            <div class="weathernews-subnav">
+              <button class="wn-subnav-btn active" data-wntab="weather" id="btnWnWeather">
+                <span>☀️</span> <span id="btnWnWeatherLabel">Clima & Pronóstico</span>
+              </button>
+              <button class="wn-subnav-btn" data-wntab="news" id="btnWnNews">
+                <span>📰</span> <span id="btnWnNewsLabel">Noticias en Vivo</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUBTAB 1: WEATHER EXPANDED & HOURLY FORECAST -->
+          <div class="wn-tab-content active" id="wnTabWeather">
+            <div class="weather-expanded-layout">
+              <!-- Left Big Card: Current conditions -->
+              <div class="weather-hero-card">
+                <div class="wh-top-row">
+                  <div class="wh-city-meta">
+                    <span class="wh-loc-icon">📍</span>
+                    <div>
+                      <h2 class="wh-city-name" id="whCityName">Miami Metro Area</h2>
+                      <span class="wh-dest-tag" id="whDestTag">Hacia: Miami Beach · Ocean Dr</span>
+                    </div>
+                  </div>
+                  <div class="wh-badge-status" id="whBadgeStatus">Despejado & Cálido</div>
+                </div>
+
+                <div class="wh-main-temp-row">
+                  <span class="wh-huge-icon" id="whHugeIcon">☀️</span>
+                  <div class="wh-temp-group">
+                    <div class="wh-temp-number"><span id="whCurrentTemp">28</span><span class="wh-unit">°C</span></div>
+                    <div class="wh-feels-like" id="whFeelsLikeText">Sensación térmica: 31°C · Cálido</div>
+                  </div>
+                </div>
+
+                <div class="wh-details-grid">
+                  <div class="wh-stat-box">
+                    <span class="wh-stat-icon">💧</span>
+                    <div class="wh-stat-data">
+                      <span class="wh-stat-label" id="whHumidityLabel">Humedad</span>
+                      <strong class="wh-stat-val" id="whHumidityVal">64%</strong>
+                    </div>
+                  </div>
+                  <div class="wh-stat-box">
+                    <span class="wh-stat-icon">💨</span>
+                    <div class="wh-stat-data">
+                      <span class="wh-stat-label" id="whWindLabel">Viento</span>
+                      <strong class="wh-stat-val" id="whWindVal">16 km/h</strong>
+                    </div>
+                  </div>
+                  <div class="wh-stat-box">
+                    <span class="wh-stat-icon">☀️</span>
+                    <div class="wh-stat-data">
+                      <span class="wh-stat-label" id="whUvLabel">Índice UV</span>
+                      <strong class="wh-stat-val" id="whUvVal">7 (Alto)</strong>
+                    </div>
+                  </div>
+                  <div class="wh-stat-box">
+                    <span class="wh-stat-icon">🍃</span>
+                    <div class="wh-stat-data">
+                      <span class="wh-stat-label" id="whAqiLabel">Calidad Aire</span>
+                      <strong class="wh-stat-val" id="whAqiVal">Excelente</strong>
+                    </div>
+                  </div>
+                  <div class="wh-stat-box">
+                    <span class="wh-stat-icon">🌧️</span>
+                    <div class="wh-stat-data">
+                      <span class="wh-stat-label" id="whRainLabel">Prob. Lluvia</span>
+                      <strong class="wh-stat-val" id="whRainVal">10%</strong>
+                    </div>
+                  </div>
+                  <div class="wh-stat-box">
+                    <span class="wh-stat-icon">🌅</span>
+                    <div class="wh-stat-data">
+                      <span class="wh-stat-label" id="whSunsetLabel">Puesta Sol</span>
+                      <strong class="wh-stat-val" id="whSunsetVal">7:44 PM</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="wh-tip-banner" id="whTipBanner">
+                  <span>💡</span> <span id="whTipText">Consejo: La brisa marina en Ocean Drive es ideal para pasear. ¡Disfruta tu viaje!</span>
+                </div>
+              </div>
+
+              <!-- Right: Hourly & 3-Day Forecast -->
+              <div class="weather-forecast-side">
+                <div class="forecast-block">
+                  <h3 class="forecast-block-title" id="forecastHourlyTitle">⏱️ Pronóstico para las Próximas Horas</h3>
+                  <div class="hourly-forecast-strip" id="hourlyForecastStrip">
+                    <!-- Populated by JS -->
+                  </div>
+                </div>
+
+                <div class="forecast-block">
+                  <h3 class="forecast-block-title" id="forecastDaysTitle">📅 Próximos 3 Días</h3>
+                  <div class="days-forecast-list" id="daysForecastList">
+                    <!-- Populated by JS -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUBTAB 2: NEWS FEED CARDS -->
+          <div class="wn-tab-content" id="wnTabNews">
+            <div class="news-feed-layout">
+              <!-- Top Breaking Ticker -->
+              <div class="news-breaking-bar" id="newsBreakingBar">
+                <div class="breaking-pulse-badge">
+                  <span class="pulse-dot"></span>
+                  <span id="breakingLabel">ÚLTIMA HORA</span>
+                </div>
+                <div class="breaking-marquee" id="breakingMarquee">
+                  <span id="breakingHeadlineText">Revolución de la IA: Presentan la nueva generación de autos inteligentes con copilotos virtuales</span>
+                </div>
+              </div>
+
+              <!-- News Cards Grid -->
+              <div class="news-cards-grid" id="newsCardsGrid">
+                <!-- Populated dynamically by JS -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ====================================================================
            PILLAR 3: INTERACTIVE ADS & MEDIA ("CHOOSE YOUR EXPERIENCE")
            ==================================================================== -->
       <section class="view-panel" id="viewMediaAds">
@@ -448,6 +601,9 @@
             <div class="media-subnav">
               <button class="media-subnav-btn active" data-mediatab="deals" id="btnMediaDeals">
                 <span>🎁</span> <span id="tabDealsText">Ofertas & Cupones</span>
+              </button>
+              <button class="media-subnav-btn" data-mediatab="videoPromo" id="btnMediaVideoPromo">
+                <span>🎥</span> <span id="tabVideoPromoText">Video Promo</span>
               </button>
               <button class="media-subnav-btn" data-mediatab="billboard" id="btnMediaBillboard">
                 <span>📊</span> <span id="tabBillboardText">Billboard & Deportes</span>
@@ -524,6 +680,49 @@
                 <!-- Populated dynamically from adsData.js -->
               </div>
 
+            </div>
+          </div>
+
+          <!-- SUBTAB CONTENT: PROMOTIONAL VIDEO SHOWCASE -->
+          <div class="media-tab-content" id="mediaTabVideoPromo">
+            <div class="video-promo-showcase-layout">
+              <div class="promo-video-main-card">
+                <div class="pvm-top-bar">
+                  <div class="pvm-badge"><span class="live-dot"></span> <span id="pvmBadgeText">SPOT DE VIDEO PATROCINADO</span></div>
+                  <div class="pvm-controls">
+                    <button class="pvm-sound-btn" id="btnPvmSound" title="Silenciar / Activar Sonido">🔊</button>
+                    <span class="pvm-timer" id="pvmTimer">0:14</span>
+                  </div>
+                </div>
+
+                <div class="pvm-player-wrapper">
+                  <video id="promoVideoMainPlayer" class="pvm-video-element" playsinline webkit-playsinline preload="auto" loop muted>
+                    <source src="assets/videos/demo_promo.mp4" type="video/mp4" />
+                  </video>
+                  <div class="pvm-video-overlay">
+                    <div class="pvm-sponsor-meta">
+                      <span class="pvm-sponsor-brand" id="pvmBrand">COPILOT MEDIA NETWORK</span>
+                      <h2 class="pvm-sponsor-title" id="pvmHeadline">¡Promociona tu marca o negocio en cada viaje!</h2>
+                      <p class="pvm-sponsor-desc" id="pvmSubtext">Llega a miles de pasajeros activos con videos interactivos, ofertas con código QR y engagement inmediato.</p>
+                    </div>
+                    <div class="pvm-qr-card">
+                      <div class="pvm-qr-img" id="pvmQrContainer"></div>
+                      <span class="pvm-qr-tag" id="pvmQrInstruction">📱 Escanea con tu móvil</span>
+                    </div>
+                  </div>
+                  <div class="pvm-progress-track">
+                    <div class="pvm-progress-fill" id="pvmProgressFill"></div>
+                  </div>
+                </div>
+
+                <div class="pvm-bottom-actions">
+                  <div class="pvm-coupon-pill">
+                    <span id="pvmPromoLabel">CÓDIGO:</span> <strong id="pvmPromoCode">COPILOT2026</strong>
+                  </div>
+                  <button class="pvm-action-btn primary" id="btnClaimPromoVideo">Reclamar Oferta en Pantalla</button>
+                  <button class="pvm-action-btn secondary" id="btnNextPromoVideo">Siguiente Spot ▶</button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -662,6 +861,11 @@
         <button class="dock-pill active" id="tabGames" data-target="games">
           <span class="dock-icon">🎮</span>
           <span class="dock-label" id="dockLabelGames">Juegos en Vivo</span>
+        </button>
+
+        <button class="dock-pill" id="tabWeatherNews" data-target="weatherNews">
+          <span class="dock-icon">🌤️</span>
+          <span class="dock-label" id="dockLabelWeatherNews">Clima & Noticias</span>
         </button>
 
         <button class="dock-pill" id="tabRideInfo" data-target="rideInfo">

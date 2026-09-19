@@ -7,6 +7,8 @@ import { PICTURE_TRIVIA_QUESTIONS } from './games/pictureTrivia.js';
 import { ColorMemoryGame } from './games/colorMemory.js';
 import { SpeedMatchGame } from './games/speedMatch.js';
 import { BILLBOARD_TOP_ALBUMS, SPORTS_UPDATES, CURATED_PLAYLISTS, SHORT_VIDEOS } from './mediaData.js';
+import { NEWS_ARTICLES } from './newsData.js';
+import { WEATHER_INFO } from './weatherData.js';
 
 /* ==========================================================================
    STATE MANAGEMENT
@@ -20,6 +22,19 @@ const state = {
   timerSeconds: 12,
   timerInterval: null,
   isAnswerLocked: false,
+
+  // Mix Mode continuous rotation loop (Trivia -> Weather -> News -> Promo Video)
+  mixMode: {
+    enabled: true,
+    isPaused: false,
+    currentStep: 'trivia', // 'trivia' | 'weather' | 'news' | 'promoVideo'
+    secondsLeft: 14,
+    interval: null,
+    interactionCooldown: null,
+    triviaQuestionsPlayed: 0,
+    triviaMaxPerCycle: 2,
+    promoVideoIndex: 0
+  },
 
   // Autostart timer on Games Hub
   autostartSeconds: 8,
@@ -85,22 +100,90 @@ const DOM = {
 
   // Bottom Dock Navigation
   tabGames: document.getElementById('tabGames'),
+  tabWeatherNews: document.getElementById('tabWeatherNews'),
   tabRideInfo: document.getElementById('tabRideInfo'),
   tabMediaAds: document.getElementById('tabMediaAds'),
   tabGiveaway: document.getElementById('tabGiveaway'),
   tabLeaderboard: document.getElementById('tabLeaderboard'),
   dockLabelGames: document.getElementById('dockLabelGames'),
+  dockLabelWeatherNews: document.getElementById('dockLabelWeatherNews'),
   dockLabelRideInfo: document.getElementById('dockLabelRideInfo'),
   dockLabelMediaAds: document.getElementById('dockLabelMediaAds'),
   dockLabelGiveaway: document.getElementById('dockLabelGiveaway'),
   dockLabelLeaderboard: document.getElementById('dockLabelLeaderboard'),
 
+  // Mix Mode & Header Controls
+  btnToggleMix: document.getElementById('btnToggleMix'),
+  mixStatusText: document.getElementById('mixStatusText'),
+  mixNextTag: document.getElementById('mixNextTag'),
+  mixMiniTimer: document.getElementById('mixMiniTimer'),
+
   // Views
   viewGames: document.getElementById('viewGames'),
+  viewWeatherNews: document.getElementById('viewWeatherNews'),
   viewRideInfo: document.getElementById('viewRideInfo'),
   viewMediaAds: document.getElementById('viewMediaAds'),
   viewGiveaway: document.getElementById('viewGiveaway'),
   viewLeaderboard: document.getElementById('viewLeaderboard'),
+
+  // Weather & News View Elements
+  weatherNewsBadge: document.getElementById('weatherNewsBadge'),
+  weatherNewsMainTitle: document.getElementById('weatherNewsMainTitle'),
+  weatherNewsSubtitle: document.getElementById('weatherNewsSubtitle'),
+  btnWnWeather: document.getElementById('btnWnWeather'),
+  btnWnNews: document.getElementById('btnWnNews'),
+  btnWnWeatherLabel: document.getElementById('btnWnWeatherLabel'),
+  btnWnNewsLabel: document.getElementById('btnWnNewsLabel'),
+  wnTabWeather: document.getElementById('wnTabWeather'),
+  wnTabNews: document.getElementById('wnTabNews'),
+
+  whCityName: document.getElementById('whCityName'),
+  whDestTag: document.getElementById('whDestTag'),
+  whBadgeStatus: document.getElementById('whBadgeStatus'),
+  whHugeIcon: document.getElementById('whHugeIcon'),
+  whCurrentTemp: document.getElementById('whCurrentTemp'),
+  whFeelsLikeText: document.getElementById('whFeelsLikeText'),
+  whHumidityLabel: document.getElementById('whHumidityLabel'),
+  whHumidityVal: document.getElementById('whHumidityVal'),
+  whWindLabel: document.getElementById('whWindLabel'),
+  whWindVal: document.getElementById('whWindVal'),
+  whUvLabel: document.getElementById('whUvLabel'),
+  whUvVal: document.getElementById('whUvVal'),
+  whAqiLabel: document.getElementById('whAqiLabel'),
+  whAqiVal: document.getElementById('whAqiVal'),
+  whRainLabel: document.getElementById('whRainLabel'),
+  whRainVal: document.getElementById('whRainVal'),
+  whSunsetLabel: document.getElementById('whSunsetLabel'),
+  whSunsetVal: document.getElementById('whSunsetVal'),
+  whTipBanner: document.getElementById('whTipBanner'),
+  whTipText: document.getElementById('whTipText'),
+  forecastHourlyTitle: document.getElementById('forecastHourlyTitle'),
+  hourlyForecastStrip: document.getElementById('hourlyForecastStrip'),
+  forecastDaysTitle: document.getElementById('forecastDaysTitle'),
+  daysForecastList: document.getElementById('daysForecastList'),
+
+  breakingLabel: document.getElementById('breakingLabel'),
+  breakingHeadlineText: document.getElementById('breakingHeadlineText'),
+  newsCardsGrid: document.getElementById('newsCardsGrid'),
+
+  // Video Promo Showcase
+  btnMediaVideoPromo: document.getElementById('btnMediaVideoPromo'),
+  tabVideoPromoText: document.getElementById('tabVideoPromoText'),
+  mediaTabVideoPromo: document.getElementById('mediaTabVideoPromo'),
+  promoVideoMainPlayer: document.getElementById('promoVideoMainPlayer'),
+  btnPvmSound: document.getElementById('btnPvmSound'),
+  pvmTimer: document.getElementById('pvmTimer'),
+  pvmProgressFill: document.getElementById('pvmProgressFill'),
+  pvmBadgeText: document.getElementById('pvmBadgeText'),
+  pvmBrand: document.getElementById('pvmBrand'),
+  pvmHeadline: document.getElementById('pvmHeadline'),
+  pvmSubtext: document.getElementById('pvmSubtext'),
+  pvmQrContainer: document.getElementById('pvmQrContainer'),
+  pvmQrInstruction: document.getElementById('pvmQrInstruction'),
+  pvmPromoLabel: document.getElementById('pvmPromoLabel'),
+  pvmPromoCode: document.getElementById('pvmPromoCode'),
+  btnClaimPromoVideo: document.getElementById('btnClaimPromoVideo'),
+  btnNextPromoVideo: document.getElementById('btnNextPromoVideo'),
 
   // Games Hub Screen & Autostart
   gamesHubScreen: document.getElementById('gamesHubScreen'),
@@ -436,6 +519,7 @@ function applyLanguage(lang, showToastNotification = true) {
   if (DOM.mediaTitleSpan) DOM.mediaTitleSpan.textContent = t.mediaTitleSpan;
   if (DOM.mediaSubtitleText) DOM.mediaSubtitleText.textContent = t.mediaSubtitle;
   if (DOM.tabDealsText) DOM.tabDealsText.textContent = t.tabDeals.replace('🎁 ', '');
+  if (DOM.tabVideoPromoText) DOM.tabVideoPromoText.textContent = lang === 'en' ? "Video Spotlight" : "Video Promo";
   if (DOM.tabBillboardText) DOM.tabBillboardText.textContent = t.tabBillboard.replace('📊 ', '');
   if (DOM.tabListenText) DOM.tabListenText.textContent = t.tabListen.replace('🎧 ', '');
   if (DOM.tabWatchText) DOM.tabWatchText.textContent = t.tabWatch.replace('🎬 ', '');
@@ -447,6 +531,21 @@ function applyLanguage(lang, showToastNotification = true) {
   if (DOM.qrInstructionText) DOM.qrInstructionText.innerHTML = t.qrScanInstruction;
   if (DOM.btnNextAd) DOM.btnNextAd.textContent = t.nextAd;
   if (DOM.btnClaimAd) DOM.btnClaimAd.textContent = t.claimAd;
+
+  // Weather & News Panel
+  if (DOM.weatherNewsBadge) DOM.weatherNewsBadge.textContent = lang === 'en' ? "🌤️ LIVE WEATHER & TODAY'S STORIES" : "🌤️ CLIMA EN VIVO & NOTICIAS DEL DÍA";
+  if (DOM.weatherNewsSubtitle) DOM.weatherNewsSubtitle.textContent = t.weatherSub;
+  if (DOM.btnWnWeatherLabel) DOM.btnWnWeatherLabel.textContent = t.tabWeather.replace('☀️ ', '');
+  if (DOM.btnWnNewsLabel) DOM.btnWnNewsLabel.textContent = t.tabNews.replace('📰 ', '');
+  renderWeatherExpanded();
+  renderNewsFeed();
+
+  // Video Promo Showcase
+  if (DOM.pvmBadgeText) DOM.pvmBadgeText.textContent = lang === 'en' ? "SPONSORED VIDEO SPOTLIGHT" : "SPOT DE VIDEO PATROCINADO";
+  if (DOM.pvmQrInstruction) DOM.pvmQrInstruction.textContent = lang === 'en' ? "📱 Scan with mobile phone" : "📱 Escanea con tu móvil";
+  if (DOM.pvmPromoLabel) DOM.pvmPromoLabel.textContent = lang === 'en' ? "PROMO CODE:" : "CÓDIGO:";
+  if (DOM.btnClaimPromoVideo) DOM.btnClaimPromoVideo.textContent = t.claimAd;
+  if (DOM.btnNextPromoVideo) DOM.btnNextPromoVideo.textContent = t.nextAd;
 
   // Giveaway & Leaderboard
   if (DOM.jackpotBadgeText) DOM.jackpotBadgeText.textContent = t.jackpotBadge;
@@ -467,10 +566,14 @@ function applyLanguage(lang, showToastNotification = true) {
 
   // Bottom Dock
   if (DOM.dockLabelGames) DOM.dockLabelGames.textContent = t.dockGames;
+  if (DOM.dockLabelWeatherNews) DOM.dockLabelWeatherNews.textContent = t.dockLabelWeatherNews;
   if (DOM.dockLabelRideInfo) DOM.dockLabelRideInfo.textContent = t.dockRideInfo;
   if (DOM.dockLabelMediaAds) DOM.dockLabelMediaAds.textContent = t.dockMediaAds;
   if (DOM.dockLabelGiveaway) DOM.dockLabelGiveaway.textContent = t.dockGiveaway;
   if (DOM.dockLabelLeaderboard) DOM.dockLabelLeaderboard.textContent = t.dockLeaderboard;
+
+  // Mix mode pill
+  updateMixPillUI();
 
   // Modals
   if (DOM.tipModalTitlePre) DOM.tipModalTitlePre.textContent = t.tipModalTitle;
@@ -539,21 +642,33 @@ function switchTab(targetTab) {
     requestFullscreenSafely();
   }
 
-  const dockPills = [DOM.tabGames, DOM.tabRideInfo, DOM.tabMediaAds, DOM.tabGiveaway, DOM.tabLeaderboard];
+  const dockPills = [DOM.tabGames, DOM.tabWeatherNews, DOM.tabRideInfo, DOM.tabMediaAds, DOM.tabGiveaway, DOM.tabLeaderboard];
   dockPills.forEach(pill => {
     if (pill) pill.classList.toggle('active', pill.dataset.target === targetTab);
   });
 
-  const viewPanels = [DOM.viewGames, DOM.viewRideInfo, DOM.viewMediaAds, DOM.viewGiveaway, DOM.viewLeaderboard];
+  const viewPanels = [DOM.viewGames, DOM.viewWeatherNews, DOM.viewRideInfo, DOM.viewMediaAds, DOM.viewGiveaway, DOM.viewLeaderboard];
   viewPanels.forEach(panel => {
     if (panel) panel.classList.remove('active');
   });
 
   if (targetTab === 'games' && DOM.viewGames) DOM.viewGames.classList.add('active');
+  if (targetTab === 'weatherNews' && DOM.viewWeatherNews) {
+    DOM.viewWeatherNews.classList.add('active');
+    renderWeatherExpanded();
+    renderNewsFeed();
+  }
   if (targetTab === 'rideInfo' && DOM.viewRideInfo) DOM.viewRideInfo.classList.add('active');
-  if (targetTab === 'mediaAds' && DOM.viewMediaAds) DOM.viewMediaAds.classList.add('active');
+  if (targetTab === 'mediaAds' && DOM.viewMediaAds) {
+    DOM.viewMediaAds.classList.add('active');
+  }
   if (targetTab === 'giveaway' && DOM.viewGiveaway) DOM.viewGiveaway.classList.add('active');
   if (targetTab === 'leaderboard' && DOM.viewLeaderboard) DOM.viewLeaderboard.classList.add('active');
+
+  // Pause promo video if leaving mediaAds
+  if (targetTab !== 'mediaAds' && DOM.promoVideoMainPlayer) {
+    DOM.promoVideoMainPlayer.pause();
+  }
 }
 
 /* ==========================================================================
@@ -861,6 +976,16 @@ function handleTriviaAnswer(isCorrect, selectedBtn, questionData, isPicTrivia) {
   DOM.triviaFeedback.classList.remove('hidden');
 
   setTimeout(() => {
+    // Check Mix Mode rotation
+    if (state.mixMode.enabled && !state.mixMode.isPaused) {
+      state.mixMode.triviaQuestionsPlayed++;
+      if (state.mixMode.triviaQuestionsPlayed >= state.mixMode.triviaMaxPerCycle) {
+        state.mixMode.triviaQuestionsPlayed = 0;
+        advanceMixSegment('weather');
+        return;
+      }
+    }
+
     state.questionsSinceLastAd++;
     if (state.questionsSinceLastAd >= state.driverConfig.adFrequency) {
       state.questionsSinceLastAd = 0;
@@ -899,6 +1024,16 @@ function handleTriviaTimeout(isPicTrivia) {
   DOM.triviaFeedback.classList.remove('hidden');
 
   setTimeout(() => {
+    // Check Mix Mode rotation
+    if (state.mixMode.enabled && !state.mixMode.isPaused) {
+      state.mixMode.triviaQuestionsPlayed++;
+      if (state.mixMode.triviaQuestionsPlayed >= state.mixMode.triviaMaxPerCycle) {
+        state.mixMode.triviaQuestionsPlayed = 0;
+        advanceMixSegment('weather');
+        return;
+      }
+    }
+
     if (isPicTrivia) {
       loadPictureQuestion(state.currentPicIndex + 1);
     } else {
@@ -975,12 +1110,18 @@ function switchMediaSubtab(target) {
   const subnavBtns = document.querySelectorAll('.media-subnav-btn');
   subnavBtns.forEach(b => b.classList.toggle('active', b.dataset.mediatab === target));
 
-  const contents = [DOM.mediaTabDeals, DOM.mediaTabBillboard, DOM.mediaTabListen, DOM.mediaTabWatch];
+  const contents = [DOM.mediaTabDeals, DOM.mediaTabVideoPromo, DOM.mediaTabBillboard, DOM.mediaTabListen, DOM.mediaTabWatch];
   contents.forEach(c => {
     if (c) c.classList.remove('active');
   });
 
   if (target === 'deals' && DOM.mediaTabDeals) DOM.mediaTabDeals.classList.add('active');
+  if (target === 'videoPromo' && DOM.mediaTabVideoPromo) {
+    DOM.mediaTabVideoPromo.classList.add('active');
+    startPromoVideoPlayback();
+  } else if (DOM.promoVideoMainPlayer) {
+    DOM.promoVideoMainPlayer.pause();
+  }
   if (target === 'billboard' && DOM.mediaTabBillboard) DOM.mediaTabBillboard.classList.add('active');
   if (target === 'listen' && DOM.mediaTabListen) DOM.mediaTabListen.classList.add('active');
   if (target === 'watch' && DOM.mediaTabWatch) DOM.mediaTabWatch.classList.add('active');
@@ -1092,6 +1233,345 @@ function nextAd() {
 function claimCurrentAd() {
   sound.playFanfare();
   showToast(getT().toastAdClaimed);
+}
+
+/* ==========================================================================
+   WEATHER & NEWS HUB CONTROLS & RENDERING
+   ========================================================================== */
+function setupWeatherNewsControls() {
+  if (DOM.btnWnWeather) {
+    DOM.btnWnWeather.addEventListener('click', () => {
+      sound.playTap();
+      notifyUserInteraction();
+      switchWeatherNewsSubtab('weather');
+    });
+  }
+  if (DOM.btnWnNews) {
+    DOM.btnWnNews.addEventListener('click', () => {
+      sound.playTap();
+      notifyUserInteraction();
+      switchWeatherNewsSubtab('news');
+    });
+  }
+}
+
+function switchWeatherNewsSubtab(target) {
+  if (DOM.btnWnWeather) DOM.btnWnWeather.classList.toggle('active', target === 'weather');
+  if (DOM.btnWnNews) DOM.btnWnNews.classList.toggle('active', target === 'news');
+  if (DOM.wnTabWeather) DOM.wnTabWeather.classList.toggle('active', target === 'weather');
+  if (DOM.wnTabNews) DOM.wnTabNews.classList.toggle('active', target === 'news');
+
+  if (target === 'weather') renderWeatherExpanded();
+  if (target === 'news') renderNewsFeed();
+}
+
+function renderWeatherExpanded() {
+  const lang = state.currentLang;
+  const w = WEATHER_INFO;
+  const cur = w.current;
+  const t = getT();
+
+  if (DOM.whCityName) DOM.whCityName.textContent = w.city;
+  if (DOM.whDestTag) DOM.whDestTag.textContent = lang === 'en' ? `Destination: ${w.destination}` : `Hacia: ${w.destination}`;
+  if (DOM.whBadgeStatus) DOM.whBadgeStatus.textContent = lang === 'en' ? cur.condition_en : cur.condition_es;
+  if (DOM.whHugeIcon) DOM.whHugeIcon.textContent = cur.icon;
+  if (DOM.whCurrentTemp) DOM.whCurrentTemp.textContent = cur.tempC;
+  if (DOM.whFeelsLikeText) {
+    DOM.whFeelsLikeText.textContent = lang === 'en' 
+      ? `Feels like: ${cur.feelsLikeC}°C (${cur.feelsLikeF}°F) · ${cur.condition_en}`
+      : `Sensación térmica: ${cur.feelsLikeC}°C · ${cur.condition_es}`;
+  }
+
+  if (DOM.whHumidityLabel) DOM.whHumidityLabel.textContent = t.humidityLabel;
+  if (DOM.whHumidityVal) DOM.whHumidityVal.textContent = cur.humidity;
+  if (DOM.whWindLabel) DOM.whWindLabel.textContent = t.windLabel;
+  if (DOM.whWindVal) DOM.whWindVal.textContent = cur.wind;
+  if (DOM.whUvLabel) DOM.whUvLabel.textContent = t.uvLabel;
+  if (DOM.whUvVal) DOM.whUvVal.textContent = cur.uvIndex;
+  if (DOM.whAqiLabel) DOM.whAqiLabel.textContent = t.airQualityLabel;
+  if (DOM.whAqiVal) DOM.whAqiVal.textContent = lang === 'en' ? cur.airQuality_en : cur.airQuality_es;
+  if (DOM.whRainLabel) DOM.whRainLabel.textContent = t.precipitationLabel;
+  if (DOM.whRainVal) DOM.whRainVal.textContent = cur.precipitation;
+  if (DOM.whSunsetLabel) DOM.whSunsetLabel.textContent = lang === 'en' ? "Sunset" : "Puesta Sol";
+  if (DOM.whSunsetVal) DOM.whSunsetVal.textContent = cur.sunset;
+
+  if (DOM.whTipText) DOM.whTipText.textContent = lang === 'en' ? w.tip_en : w.tip_es;
+  if (DOM.forecastHourlyTitle) DOM.forecastHourlyTitle.textContent = `⏱️ ${t.hourlyForecastTitle}`;
+  if (DOM.forecastDaysTitle) DOM.forecastDaysTitle.textContent = `📅 ${t.threeDayForecastTitle}`;
+
+  // Hourly strip
+  if (DOM.hourlyForecastStrip) {
+    DOM.hourlyForecastStrip.innerHTML = w.hourly.map(h => `
+      <div class="hourly-item">
+        <span class="hourly-time">${h.time}</span>
+        <span class="hourly-icon">${h.icon}</span>
+        <strong class="hourly-temp">${h.temp}</strong>
+        <span class="hourly-pop">💧${h.pop}</span>
+      </div>
+    `).join('');
+  }
+
+  // 3 Days list
+  if (DOM.daysForecastList) {
+    DOM.daysForecastList.innerHTML = w.forecastDays.map(d => `
+      <div class="day-forecast-row">
+        <div class="df-left">
+          <span>${d.icon}</span>
+          <span class="df-day">${lang === 'en' ? d.day_en : d.day_es}</span>
+          <span class="df-desc">${lang === 'en' ? d.desc_en : d.desc_es}</span>
+        </div>
+        <div class="df-temps">
+          <span class="df-max">${d.max}</span>
+          <span class="df-min">${d.min}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+function renderNewsFeed() {
+  const lang = state.currentLang;
+  const articles = NEWS_ARTICLES;
+  if (!articles || articles.length === 0) return;
+
+  const topStory = articles[0];
+  if (DOM.breakingHeadlineText) {
+    DOM.breakingHeadlineText.textContent = lang === 'en' ? topStory.title_en : topStory.title_es;
+  }
+
+  if (DOM.newsCardsGrid) {
+    DOM.newsCardsGrid.innerHTML = articles.slice(1).map(item => `
+      <div class="news-card-item" data-id="${item.id}">
+        <div class="news-item-top">
+          <span class="news-item-cat" style="background:${item.badge_color};">${item.icon} ${lang === 'en' ? item.category_en : item.category_es}</span>
+          <span class="news-item-time">⏱️ ${lang === 'en' ? item.time_ago_en : item.time_ago_es}</span>
+        </div>
+        <h3 class="news-item-title">${lang === 'en' ? item.title_en : item.title_es}</h3>
+        <p class="news-item-desc">${lang === 'en' ? item.summary_en : item.summary_es}</p>
+        <div class="news-item-footer">
+          <span class="news-source-tag">${item.source}</span>
+          <span>👁️ ${item.reads}</span>
+        </div>
+      </div>
+    `).join('');
+
+    DOM.newsCardsGrid.querySelectorAll('.news-card-item').forEach(card => {
+      card.addEventListener('click', () => {
+        sound.playSplashPop();
+        notifyUserInteraction();
+        showToast(`📰 ${card.querySelector('.news-item-title').textContent}`);
+      });
+    });
+  }
+}
+
+/* ==========================================================================
+   PROMOTIONAL VIDEO SHOWCASE
+   ========================================================================== */
+function setupVideoPromoShowcase() {
+  if (DOM.btnMediaVideoPromo) {
+    DOM.btnMediaVideoPromo.addEventListener('click', () => {
+      sound.playTap();
+      notifyUserInteraction();
+      switchMediaSubtab('videoPromo');
+    });
+  }
+
+  if (DOM.btnPvmSound) {
+    DOM.btnPvmSound.addEventListener('click', () => {
+      if (DOM.promoVideoMainPlayer) {
+        DOM.promoVideoMainPlayer.muted = !DOM.promoVideoMainPlayer.muted;
+        DOM.btnPvmSound.textContent = DOM.promoVideoMainPlayer.muted ? '🔇' : '🔊';
+        showToast(DOM.promoVideoMainPlayer.muted ? getT().toastSoundMuted : getT().toastSoundActive);
+      }
+    });
+  }
+
+  if (DOM.btnClaimPromoVideo) {
+    DOM.btnClaimPromoVideo.addEventListener('click', () => {
+      sound.playFanfare();
+      notifyUserInteraction();
+      showToast(getT().toastAdClaimed);
+    });
+  }
+
+  if (DOM.btnNextPromoVideo) {
+    DOM.btnNextPromoVideo.addEventListener('click', () => {
+      sound.playTap();
+      notifyUserInteraction();
+      advanceMixSegment('weather');
+    });
+  }
+
+  if (DOM.pvmQrContainer) {
+    generateQrCode(DOM.pvmQrContainer, "https://copilot.promo/anunciate-aqui");
+  }
+}
+
+function startPromoVideoPlayback() {
+  if (!DOM.promoVideoMainPlayer) return;
+  DOM.promoVideoMainPlayer.currentTime = 0;
+  const playPromise = DOM.promoVideoMainPlayer.play();
+  if (playPromise !== undefined) {
+    playPromise.catch(() => {
+      DOM.promoVideoMainPlayer.muted = true;
+      DOM.promoVideoMainPlayer.play().catch(() => {});
+    });
+  }
+}
+
+/* ==========================================================================
+   MIX ENGINE: SMART MULTI-CONTENT CONTINUOUS ROTATION SYSTEM
+   Cycles smoothly between:
+   1. Trivia & Games (Plays 2 questions)
+   2. Weather Forecast & Radar
+   3. Trending News Feed
+   4. Sponsored Video Spotlight
+   ========================================================================== */
+function initMixEngine() {
+  if (!state.mixMode.enabled) return;
+
+  setupUserActivityListener();
+
+  if (DOM.btnToggleMix) {
+    DOM.btnToggleMix.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMixMode();
+    });
+  }
+
+  updateMixPillUI();
+  startMixTicker();
+}
+
+function startMixTicker() {
+  clearInterval(state.mixMode.interval);
+  state.mixMode.interval = setInterval(() => {
+    if (state.mixMode.isPaused) {
+      updateMixPillUI();
+      return;
+    }
+
+    if (state.mixMode.currentStep === 'trivia') {
+      state.mixMode.secondsLeft--;
+      if (state.mixMode.secondsLeft <= 0) {
+        advanceMixSegment('weather');
+      }
+    } else if (state.mixMode.currentStep === 'weather') {
+      state.mixMode.secondsLeft--;
+      if (state.mixMode.secondsLeft <= 0) {
+        advanceMixSegment('news');
+      }
+    } else if (state.mixMode.currentStep === 'news') {
+      state.mixMode.secondsLeft--;
+      if (state.mixMode.secondsLeft <= 0) {
+        advanceMixSegment('promoVideo');
+      }
+    } else if (state.mixMode.currentStep === 'promoVideo') {
+      state.mixMode.secondsLeft--;
+      if (DOM.pvmTimer) {
+        DOM.pvmTimer.textContent = `0:${String(Math.max(0, state.mixMode.secondsLeft)).padStart(2, '0')}`;
+      }
+      if (DOM.pvmProgressFill) {
+        const pct = ((14 - state.mixMode.secondsLeft) / 14) * 100;
+        DOM.pvmProgressFill.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+      }
+      if (state.mixMode.secondsLeft <= 0) {
+        advanceMixSegment('trivia');
+      }
+    }
+
+    updateMixPillUI();
+  }, 1000);
+}
+
+function advanceMixSegment(forceNextStep = null) {
+  const steps = ['trivia', 'weather', 'news', 'promoVideo'];
+  let nextStep = forceNextStep;
+  if (!nextStep) {
+    const currentIndex = steps.indexOf(state.mixMode.currentStep);
+    nextStep = steps[(currentIndex + 1) % steps.length];
+  }
+
+  state.mixMode.currentStep = nextStep;
+  state.mixMode.secondsLeft = 14;
+
+  if (nextStep === 'trivia') {
+    state.mixMode.secondsLeft = 32;
+    state.mixMode.triviaQuestionsPlayed = 0;
+    switchTab('games');
+    if (state.activeGameMode !== 'classic') {
+      launchGame('classic');
+    }
+  } else if (nextStep === 'weather') {
+    switchTab('weatherNews');
+    switchWeatherNewsSubtab('weather');
+  } else if (nextStep === 'news') {
+    switchTab('weatherNews');
+    switchWeatherNewsSubtab('news');
+  } else if (nextStep === 'promoVideo') {
+    switchTab('mediaAds');
+    switchMediaSubtab('videoPromo');
+  }
+
+  updateMixPillUI();
+}
+
+function toggleMixMode() {
+  sound.playTap();
+  state.mixMode.isPaused = !state.mixMode.isPaused;
+  clearTimeout(state.mixMode.interactionCooldown);
+  updateMixPillUI();
+  const t = getT();
+  showToast(state.mixMode.isPaused ? t.mixPillPaused : t.mixPillActive);
+}
+
+function notifyUserInteraction() {
+  if (!state.mixMode.enabled) return;
+
+  state.mixMode.isPaused = true;
+  updateMixPillUI();
+
+  clearTimeout(state.mixMode.interactionCooldown);
+  state.mixMode.interactionCooldown = setTimeout(() => {
+    state.mixMode.isPaused = false;
+    updateMixPillUI();
+  }, 40000);
+}
+
+function setupUserActivityListener() {
+  const events = ['pointerdown', 'touchstart', 'keydown'];
+  events.forEach(evt => {
+    document.addEventListener(evt, (e) => {
+      if (e.target && e.target.closest('#btnToggleMix')) return;
+      notifyUserInteraction();
+    }, { passive: true });
+  });
+}
+
+function updateMixPillUI() {
+  if (!DOM.btnToggleMix) return;
+  const t = getT();
+  const isPaused = state.mixMode.isPaused;
+
+  DOM.btnToggleMix.classList.toggle('paused', isPaused);
+  if (DOM.mixStatusText) {
+    DOM.mixStatusText.textContent = isPaused ? t.mixPillPaused : t.mixPillActive;
+  }
+
+  if (DOM.mixNextTag) {
+    const nextMap = {
+      trivia: t.mixSegmentWeather,
+      weather: t.mixSegmentNews,
+      news: t.mixSegmentPromo,
+      promoVideo: t.mixSegmentTrivia
+    };
+    DOM.mixNextTag.textContent = `${t.mixNextIn} ${nextMap[state.mixMode.currentStep] || ''}`;
+  }
+
+  if (DOM.mixMiniTimer) {
+    DOM.mixMiniTimer.textContent = isPaused ? '⏸️' : `${state.mixMode.secondsLeft}s`;
+  }
 }
 
 /* ==========================================================================
@@ -1486,6 +1966,7 @@ function setupEventListeners() {
 
   // Bottom Dock Navigation
   if (DOM.tabGames) DOM.tabGames.addEventListener('click', () => switchTab('games'));
+  if (DOM.tabWeatherNews) DOM.tabWeatherNews.addEventListener('click', () => switchTab('weatherNews'));
   if (DOM.tabRideInfo) DOM.tabRideInfo.addEventListener('click', () => switchTab('rideInfo'));
   if (DOM.tabMediaAds) DOM.tabMediaAds.addEventListener('click', () => switchTab('mediaAds'));
   if (DOM.tabGiveaway) DOM.tabGiveaway.addEventListener('click', () => switchTab('giveaway'));
@@ -1513,8 +1994,12 @@ function setupEventListeners() {
     DOM.btnBackToGamesFromLb.addEventListener('click', () => switchTab('games'));
   }
 
-  // Media Hub
+  // Weather & News Controls
+  setupWeatherNewsControls();
+
+  // Media Hub & Video Promo Showcase
   setupMediaSubnav();
+  setupVideoPromoShowcase();
   if (DOM.btnNextAd) DOM.btnNextAd.addEventListener('click', nextAd);
   if (DOM.btnClaimAd) DOM.btnClaimAd.addEventListener('click', claimCurrentAd);
 
@@ -1558,6 +2043,9 @@ function setupEventListeners() {
   setupGiveaway();
   setupAdmin();
   setupKioskMode();
+
+  // Initialize Mix Engine (Trivia -> Weather -> News -> Video Promo)
+  initMixEngine();
 }
 
 // Bootstrap on DOM loaded
