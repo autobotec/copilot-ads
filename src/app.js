@@ -9,6 +9,7 @@ import { SpeedMatchGame } from './games/speedMatch.js';
 import { BILLBOARD_TOP_ALBUMS, SPORTS_UPDATES, CURATED_PLAYLISTS, SHORT_VIDEOS } from './mediaData.js';
 import { NEWS_ARTICLES } from './newsData.js';
 import { WEATHER_INFO } from './weatherData.js';
+import { geoService } from './geoService.js';
 
 /* ==========================================================================
    STATE MANAGEMENT
@@ -22,6 +23,11 @@ const state = {
   timerSeconds: 12,
   timerInterval: null,
   isAnswerLocked: false,
+
+  // Live Location & Weather state
+  liveWeather: null,
+  liveNews: [],
+  isGpsLoading: false,
 
   // Mix Mode continuous rotation loop (Trivia -> Weather -> News -> Promo Video)
   mixMode: {
@@ -157,6 +163,17 @@ const DOM = {
   whSunsetVal: document.getElementById('whSunsetVal'),
   whTipBanner: document.getElementById('whTipBanner'),
   whTipText: document.getElementById('whTipText'),
+  whTempUnit: document.getElementById('whTempUnit'),
+  btnRefreshGps: document.getElementById('btnRefreshGps'),
+  gpsDot: document.getElementById('gpsDot'),
+  gpsStatusText: document.getElementById('gpsStatusText'),
+  dockWeatherWidget: document.getElementById('dockWeatherWidget'),
+  dockWeatherIcon: document.getElementById('dockWeatherIcon'),
+  dockWeatherTemp: document.getElementById('dockWeatherTemp'),
+  rideWeatherIcon: document.getElementById('rideWeatherIcon'),
+  rideWeatherTemp: document.getElementById('rideWeatherTemp'),
+  rideWeatherHumidity: document.getElementById('rideWeatherHumidity'),
+  rideWeatherWind: document.getElementById('rideWeatherWind'),
   forecastHourlyTitle: document.getElementById('forecastHourlyTitle'),
   hourlyForecastStrip: document.getElementById('hourlyForecastStrip'),
   forecastDaysTitle: document.getElementById('forecastDaysTitle'),
@@ -518,11 +535,11 @@ function applyLanguage(lang, showToastNotification = true) {
   if (DOM.mediaTitleBefore) DOM.mediaTitleBefore.textContent = t.mediaTitleBefore;
   if (DOM.mediaTitleSpan) DOM.mediaTitleSpan.textContent = t.mediaTitleSpan;
   if (DOM.mediaSubtitleText) DOM.mediaSubtitleText.textContent = t.mediaSubtitle;
-  if (DOM.tabDealsText) DOM.tabDealsText.textContent = t.tabDeals.replace('🎁 ', '');
+  if (DOM.tabDealsText) DOM.tabDealsText.textContent = (t.tabDeals || 'Ofertas').replace('🎁 ', '');
   if (DOM.tabVideoPromoText) DOM.tabVideoPromoText.textContent = lang === 'en' ? "Video Spotlight" : "Video Promo";
-  if (DOM.tabBillboardText) DOM.tabBillboardText.textContent = t.tabBillboard.replace('📊 ', '');
-  if (DOM.tabListenText) DOM.tabListenText.textContent = t.tabListen.replace('🎧 ', '');
-  if (DOM.tabWatchText) DOM.tabWatchText.textContent = t.tabWatch.replace('🎬 ', '');
+  if (DOM.tabBillboardText) DOM.tabBillboardText.textContent = (t.tabBillboard || 'Top Música').replace('📊 ', '');
+  if (DOM.tabListenText) DOM.tabListenText.textContent = (t.tabListen || 'Música').replace('🎧 ', '');
+  if (DOM.tabWatchText) DOM.tabWatchText.textContent = (t.tabWatch || 'Videos').replace('🎬 ', '');
   if (DOM.billboardColumnTitle) DOM.billboardColumnTitle.textContent = t.billboardTitle;
   if (DOM.sportsColumnTitle) DOM.sportsColumnTitle.textContent = t.sportsTitle;
   if (DOM.adBadge) DOM.adBadge.textContent = t.adBadgeFeatured;
@@ -535,8 +552,8 @@ function applyLanguage(lang, showToastNotification = true) {
   // Weather & News Panel
   if (DOM.weatherNewsBadge) DOM.weatherNewsBadge.textContent = lang === 'en' ? "🌤️ LIVE WEATHER & TODAY'S STORIES" : "🌤️ CLIMA EN VIVO & NOTICIAS DEL DÍA";
   if (DOM.weatherNewsSubtitle) DOM.weatherNewsSubtitle.textContent = t.weatherSub;
-  if (DOM.btnWnWeatherLabel) DOM.btnWnWeatherLabel.textContent = t.tabWeather.replace('☀️ ', '');
-  if (DOM.btnWnNewsLabel) DOM.btnWnNewsLabel.textContent = t.tabNews.replace('📰 ', '');
+  if (DOM.btnWnWeatherLabel) DOM.btnWnWeatherLabel.textContent = (t.tabWeather || 'Clima').replace('☀️ ', '');
+  if (DOM.btnWnNewsLabel) DOM.btnWnNewsLabel.textContent = (t.tabNews || 'Noticias').replace('📰 ', '');
   renderWeatherExpanded();
   renderNewsFeed();
 
@@ -553,7 +570,7 @@ function applyLanguage(lang, showToastNotification = true) {
   if (DOM.giveawayTitleSpan) DOM.giveawayTitleSpan.textContent = t.giveawayTitleSpan;
   if (DOM.giveawayTitleAfter) DOM.giveawayTitleAfter.textContent = t.giveawayTitleAfter;
   if (DOM.giveawaySubtitle) DOM.giveawaySubtitle.textContent = t.giveawaySub;
-  if (DOM.btnClaimTicket) DOM.btnClaimTicket.innerHTML = `<span>🎟️</span> ${t.btnGenerateTicket.replace('🎟️ ', '')}`;
+  if (DOM.btnClaimTicket) DOM.btnClaimTicket.innerHTML = `<span>🎟️</span> ${(t.btnGenerateTicket || 'Generar Boleto').replace('🎟️ ', '')}`;
   if (DOM.yourTicketsLabel) DOM.yourTicketsLabel.textContent = t.yourTicketsToday;
   if (DOM.recentWinnersTitle) DOM.recentWinnersTitle.textContent = t.recentWinnersTitle;
   if (DOM.lbTitleText) DOM.lbTitleText.textContent = t.leaderboardTitle;
@@ -586,7 +603,7 @@ function applyLanguage(lang, showToastNotification = true) {
   if (DOM.riderContact) DOM.riderContact.placeholder = t.placeholderContact;
   if (DOM.labelNicknameText) DOM.labelNicknameText.textContent = t.labelNickname;
   if (DOM.riderNickname) DOM.riderNickname.placeholder = t.placeholderNickname;
-  if (DOM.btnSubmitGiveaway) DOM.btnSubmitGiveaway.innerHTML = `<span>🎟️</span> ${t.btnRegisterTicket.replace('🎟️ ', '')}`;
+  if (DOM.btnSubmitGiveaway) DOM.btnSubmitGiveaway.innerHTML = `<span>🎟️</span> ${(t.btnRegisterTicket || 'Registrar Boleto').replace('🎟️ ', '')}`;
   if (DOM.legalGiveawayText) DOM.legalGiveawayText.textContent = t.legalGiveaway;
 
   if (DOM.adminModalTitle) DOM.adminModalTitle.textContent = t.adminModalTitle;
@@ -1259,6 +1276,28 @@ function setupWeatherNewsControls() {
       switchWeatherNewsSubtab('news');
     });
   }
+
+  // GPS manual refresh button
+  if (DOM.btnRefreshGps) {
+    DOM.btnRefreshGps.addEventListener('click', async () => {
+      sound.playCoin();
+      notifyUserInteraction();
+      if (DOM.gpsStatusText) DOM.gpsStatusText.textContent = state.currentLang === 'en' ? 'Locating...' : 'Buscando GPS...';
+      if (DOM.gpsDot) DOM.gpsDot.classList.add('loading');
+      showToast(state.currentLang === 'en' ? '🔍 Detecting GPS & local weather...' : '🔍 Detectando GPS y clima local...');
+      try {
+        const res = await geoService.init();
+        const isUSA = res.location ? res.location.isUSA : true;
+        const unit = isUSA ? '°F' : '°C';
+        showToast(state.currentLang === 'en' 
+          ? `📍 Location: ${res.location.city} (${unit})`
+          : `📍 Ubicación: ${res.location.city} (${unit})`);
+      } catch (err) {
+        console.warn('GPS refresh error', err);
+        showToast('⚠️ No se pudo refrescar el GPS');
+      }
+    });
+  }
 }
 
 function switchWeatherNewsSubtab(target) {
@@ -1273,53 +1312,69 @@ function switchWeatherNewsSubtab(target) {
 
 function renderWeatherExpanded() {
   const lang = state.currentLang;
-  const w = WEATHER_INFO;
-  const cur = w.current;
+  const w = state.liveWeather || WEATHER_INFO;
+  const cur = w.current || w;
   const t = getT();
+  const isUSA = (w.isUSA !== undefined) ? w.isUSA : (w.unit === '°F');
 
   if (DOM.whCityName) DOM.whCityName.textContent = w.city;
   if (DOM.whDestTag) DOM.whDestTag.textContent = lang === 'en' ? `Destination: ${w.destination}` : `Hacia: ${w.destination}`;
-  if (DOM.whBadgeStatus) DOM.whBadgeStatus.textContent = lang === 'en' ? cur.condition_en : cur.condition_es;
-  if (DOM.whHugeIcon) DOM.whHugeIcon.textContent = cur.icon;
-  if (DOM.whCurrentTemp) DOM.whCurrentTemp.textContent = cur.tempC;
+  if (DOM.whBadgeStatus) DOM.whBadgeStatus.textContent = lang === 'en' ? (cur.condition_en || cur.condition) : (cur.condition_es || cur.condition);
+  if (DOM.whHugeIcon) DOM.whHugeIcon.textContent = cur.icon || '☀️';
+
+  // Dynamic Temperature Unit: USA -> °F, Outside USA -> °C
+  const tempVal = isUSA ? (cur.tempF ?? w.tempF ?? 81) : (cur.tempC ?? w.tempC ?? 27);
+  const tempUnit = isUSA ? '°F' : '°C';
+  if (DOM.whCurrentTemp) DOM.whCurrentTemp.textContent = tempVal;
+  if (DOM.whTempUnit) DOM.whTempUnit.textContent = tempUnit;
+
   if (DOM.whFeelsLikeText) {
+    const primaryFeels = isUSA ? `${cur.feelsLikeF ?? w.feelsLikeF ?? 85}°F` : `${cur.feelsLikeC ?? w.feelsLikeC ?? 29}°C`;
+    const secondaryFeels = isUSA ? `${cur.feelsLikeC ?? w.feelsLikeC ?? 29}°C` : `${cur.feelsLikeF ?? w.feelsLikeF ?? 85}°F`;
+    const condName = lang === 'en' ? (cur.condition_en || 'Fair') : (cur.condition_es || 'Despejado');
     DOM.whFeelsLikeText.textContent = lang === 'en' 
-      ? `Feels like: ${cur.feelsLikeC}°C (${cur.feelsLikeF}°F) · ${cur.condition_en}`
-      : `Sensación térmica: ${cur.feelsLikeC}°C · ${cur.condition_es}`;
+      ? `Feels like: ${primaryFeels} (${secondaryFeels}) · ${condName}`
+      : `Sensación térmica: ${primaryFeels} (${secondaryFeels}) · ${condName}`;
   }
 
   if (DOM.whHumidityLabel) DOM.whHumidityLabel.textContent = t.humidityLabel;
-  if (DOM.whHumidityVal) DOM.whHumidityVal.textContent = cur.humidity;
+  if (DOM.whHumidityVal) DOM.whHumidityVal.textContent = cur.humidity || '60%';
   if (DOM.whWindLabel) DOM.whWindLabel.textContent = t.windLabel;
-  if (DOM.whWindVal) DOM.whWindVal.textContent = cur.wind;
+  if (DOM.whWindVal) DOM.whWindVal.textContent = cur.wind || (isUSA ? '10 mph' : '16 km/h');
   if (DOM.whUvLabel) DOM.whUvLabel.textContent = t.uvLabel;
-  if (DOM.whUvVal) DOM.whUvVal.textContent = cur.uvIndex;
+  if (DOM.whUvVal) DOM.whUvVal.textContent = cur.uvIndex || '6 (Moderado)';
   if (DOM.whAqiLabel) DOM.whAqiLabel.textContent = t.airQualityLabel;
-  if (DOM.whAqiVal) DOM.whAqiVal.textContent = lang === 'en' ? cur.airQuality_en : cur.airQuality_es;
+  if (DOM.whAqiVal) DOM.whAqiVal.textContent = lang === 'en' ? (cur.airQuality_en || 'Good') : (cur.airQuality_es || 'Buena');
   if (DOM.whRainLabel) DOM.whRainLabel.textContent = t.precipitationLabel;
-  if (DOM.whRainVal) DOM.whRainVal.textContent = cur.precipitation;
+  if (DOM.whRainVal) DOM.whRainVal.textContent = cur.precipitation || '0 mm';
   if (DOM.whSunsetLabel) DOM.whSunsetLabel.textContent = lang === 'en' ? "Sunset" : "Puesta Sol";
-  if (DOM.whSunsetVal) DOM.whSunsetVal.textContent = cur.sunset;
+  if (DOM.whSunsetVal) DOM.whSunsetVal.textContent = cur.sunset || '7:40 PM';
 
-  if (DOM.whTipText) DOM.whTipText.textContent = lang === 'en' ? w.tip_en : w.tip_es;
+  if (DOM.whTipText) DOM.whTipText.textContent = lang === 'en' ? (w.tip_en || '') : (w.tip_es || '');
   if (DOM.forecastHourlyTitle) DOM.forecastHourlyTitle.textContent = `⏱️ ${t.hourlyForecastTitle}`;
   if (DOM.forecastDaysTitle) DOM.forecastDaysTitle.textContent = `📅 ${t.threeDayForecastTitle}`;
 
   // Hourly strip
-  if (DOM.hourlyForecastStrip) {
-    DOM.hourlyForecastStrip.innerHTML = w.hourly.map(h => `
+  if (DOM.hourlyForecastStrip && w.hourly) {
+    DOM.hourlyForecastStrip.innerHTML = w.hourly.map(h => {
+      const hTemp = isUSA ? (h.tempF || h.temp) : (h.tempC || h.temp);
+      return `
       <div class="hourly-item">
         <span class="hourly-time">${h.time}</span>
         <span class="hourly-icon">${h.icon}</span>
-        <strong class="hourly-temp">${h.temp}</strong>
-        <span class="hourly-pop">💧${h.pop}</span>
+        <strong class="hourly-temp">${hTemp}</strong>
+        <span class="hourly-pop">💧${h.pop || '10%'}</span>
       </div>
-    `).join('');
+    `;
+    }).join('');
   }
 
   // 3 Days list
-  if (DOM.daysForecastList) {
-    DOM.daysForecastList.innerHTML = w.forecastDays.map(d => `
+  if (DOM.daysForecastList && w.forecastDays) {
+    DOM.daysForecastList.innerHTML = w.forecastDays.map(d => {
+      const dMax = isUSA ? (d.maxF || d.max) : (d.maxC || d.max);
+      const dMin = isUSA ? (d.minF || d.min) : (d.minC || d.min);
+      return `
       <div class="day-forecast-row">
         <div class="df-left">
           <span>${d.icon}</span>
@@ -1327,17 +1382,51 @@ function renderWeatherExpanded() {
           <span class="df-desc">${lang === 'en' ? d.desc_en : d.desc_es}</span>
         </div>
         <div class="df-temps">
-          <span class="df-max">${d.max}</span>
-          <span class="df-min">${d.min}</span>
+          <span class="df-max">${dMax}</span>
+          <span class="df-min">${dMin}</span>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
+  }
+
+  // Synchronize bottom dock and ride info widgets
+  updateDockWeather(w);
+  updateRideWeather(w);
+}
+
+function updateDockWeather(w) {
+  if (!w) w = state.liveWeather || WEATHER_INFO;
+  const cur = w.current || w;
+  const isUSA = (w.isUSA !== undefined) ? w.isUSA : (w.unit === '°F');
+  const tempVal = isUSA ? (cur.tempF ?? w.tempF ?? 81) : (cur.tempC ?? w.tempC ?? 27);
+  const unit = isUSA ? '°F' : '°C';
+
+  if (DOM.dockWeatherIcon) DOM.dockWeatherIcon.textContent = cur.icon || '☀️';
+  if (DOM.dockWeatherTemp) DOM.dockWeatherTemp.textContent = `${tempVal}${unit}`;
+}
+
+function updateRideWeather(w) {
+  if (!w) w = state.liveWeather || WEATHER_INFO;
+  const cur = w.current || w;
+  const isUSA = (w.isUSA !== undefined) ? w.isUSA : (w.unit === '°F');
+  const tempVal = isUSA ? (cur.tempF ?? w.tempF ?? 81) : (cur.tempC ?? w.tempC ?? 27);
+  const unit = isUSA ? '°F' : '°C';
+  const condName = state.currentLang === 'en' ? (cur.condition_en || 'Fair') : (cur.condition_es || 'Despejado');
+
+  if (DOM.rideWeatherIcon) DOM.rideWeatherIcon.textContent = cur.icon || '☀️';
+  if (DOM.rideWeatherTemp) DOM.rideWeatherTemp.textContent = `${tempVal}${unit}`;
+  if (DOM.weatherCondText) DOM.weatherCondText.textContent = `${w.rawCity || w.city || 'Ubicación'} · ${condName}`;
+  if (DOM.rideWeatherHumidity) DOM.rideWeatherHumidity.textContent = cur.humidity || '60%';
+  if (DOM.rideWeatherWind) DOM.rideWeatherWind.textContent = cur.wind || (isUSA ? '10 mph' : '15 km/h');
+  if (DOM.sunsetPillText && cur.sunset) {
+    DOM.sunsetPillText.innerHTML = `<span>🌅</span> ${state.currentLang === 'en' ? 'Sunset' : 'Puesta'}: ${cur.sunset}`;
   }
 }
 
 function renderNewsFeed() {
   const lang = state.currentLang;
-  const articles = NEWS_ARTICLES;
+  const articles = (state.liveNews && state.liveNews.length > 0) ? state.liveNews : NEWS_ARTICLES;
   if (!articles || articles.length === 0) return;
 
   const topStory = articles[0];
@@ -2143,6 +2232,32 @@ function setupEventListeners() {
 
   // Initialize Mix Engine (Trivia -> Weather -> News -> Video Promo)
   initMixEngine();
+
+  // GeoLocation & Live Weather & Regional News Subscription
+  geoService.subscribe(({ location, weather, news }) => {
+    state.liveWeather = weather;
+    state.liveNews = news;
+    state.isGpsLoading = false;
+
+    if (DOM.gpsDot) {
+      DOM.gpsDot.classList.remove('loading');
+      DOM.gpsDot.classList.add('active');
+    }
+    if (DOM.gpsStatusText) {
+      const flag = location.isUSA ? '🇺🇸' : (location.countryCode === 'DO' ? '🇩🇴' : '📍');
+      DOM.gpsStatusText.textContent = `${flag} ${location.city || 'GPS Activo'}`;
+    }
+
+    renderWeatherExpanded();
+    renderNewsFeed();
+    updateDockWeather(weather);
+    updateRideWeather(weather);
+  });
+
+  // Trigger initial geolocation detection (high-accuracy GPS or fast IP fallback)
+  geoService.init().catch(err => {
+    console.warn('Initial geolocation detection notice:', err);
+  });
 }
 
 // Bootstrap safely on DOM loaded or immediate if already interactive

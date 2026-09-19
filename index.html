@@ -504,9 +504,9 @@
               <div class="weather-full-card">
                 <div class="weather-full-top">
                   <div class="weather-temp-wrap">
-                    <span class="weather-big-icon">☀️</span>
+                    <span class="weather-big-icon" id="rideWeatherIcon">☀️</span>
                     <div>
-                      <div class="temp-huge">27°C</div>
+                      <div class="temp-huge" id="rideWeatherTemp">27°C</div>
                       <div class="weather-condition" id="weatherCondText">Miami Metro · Despejado y Cálido</div>
                     </div>
                   </div>
@@ -517,11 +517,11 @@
                 <div class="weather-stats-grid">
                   <div class="w-stat-item">
                     <span id="humidityLabelText">💧 Humedad</span>
-                    <strong>62%</strong>
+                    <strong id="rideWeatherHumidity">62%</strong>
                   </div>
                   <div class="w-stat-item">
                     <span id="windLabelText">💨 Viento</span>
-                    <strong>14 km/h</strong>
+                    <strong id="rideWeatherWind">14 km/h</strong>
                   </div>
                   <div class="w-stat-item">
                     <span id="uvLabelText">☀️ Índice UV</span>
@@ -588,13 +588,19 @@
                       <span class="wh-dest-tag" id="whDestTag">Hacia: Miami Beach · Ocean Dr</span>
                     </div>
                   </div>
-                  <div class="wh-badge-status" id="whBadgeStatus">Despejado & Cálido</div>
+                  <div class="wh-top-badges">
+                    <button class="wh-gps-btn" id="btnRefreshGps" title="Actualizar Ubicación GPS y Clima Local">
+                      <span id="gpsDot" class="gps-dot active"></span>
+                      <span id="gpsStatusText">GPS Activo</span> 🔄
+                    </button>
+                    <div class="wh-badge-status" id="whBadgeStatus">Despejado & Cálido</div>
+                  </div>
                 </div>
 
                 <div class="wh-main-temp-row">
                   <span class="wh-huge-icon" id="whHugeIcon">☀️</span>
                   <div class="wh-temp-group">
-                    <div class="wh-temp-number"><span id="whCurrentTemp">28</span><span class="wh-unit">°C</span></div>
+                    <div class="wh-temp-number"><span id="whCurrentTemp">28</span><span class="wh-unit" id="whTempUnit">°C</span></div>
                     <div class="wh-feels-like" id="whFeelsLikeText">Sensación térmica: 31°C · Cálido</div>
                   </div>
                 </div>
@@ -1012,9 +1018,9 @@
       </nav>
 
       <div class="dock-right-status smb3-dock-right">
-        <div class="dock-weather smb3-weather-badge" onclick="window.switchTabGlobal ? window.switchTabGlobal('weatherNews') : null" style="cursor: pointer;" title="Ver pronóstico y noticias">
-          <span>☀️</span>
-          <strong>27°C</strong>
+        <div class="dock-weather smb3-weather-badge" id="dockWeatherWidget" onclick="window.switchTabGlobal ? window.switchTabGlobal('weatherNews') : null" style="cursor: pointer;" title="Ver pronóstico y noticias">
+          <span id="dockWeatherIcon">☀️</span>
+          <strong id="dockWeatherTemp">27°C</strong>
         </div>
         <div class="dock-clock smb3-clock-badge">
           <span class="clock-time" id="clockTime">12:00</span>

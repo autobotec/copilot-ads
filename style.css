@@ -3551,6 +3551,43 @@ html, body {
   color: var(--splash-cyan);
   font-weight: 600;
 }
+.wh-top-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wh-gps-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 245, 160, 0.12);
+  border: 1px solid rgba(0, 245, 160, 0.4);
+  color: #00f5a0;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+.wh-gps-btn:hover {
+  background: rgba(0, 245, 160, 0.25);
+  border-color: #00f5a0;
+  transform: translateY(-1px);
+}
+.gps-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00f5a0;
+  box-shadow: 0 0 8px #00f5a0;
+}
+.gps-dot.loading {
+  background: #ffd000;
+  box-shadow: 0 0 8px #ffd000;
+  animation: pulseDot 1s infinite alternate;
+}
 .wh-badge-status {
   padding: 4px 10px;
   border-radius: var(--radius-pill);
