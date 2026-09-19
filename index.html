@@ -13,8 +13,8 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700;800&family=Fredoka:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260919_v12" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700;800&family=Fredoka:wght@600;700&family=Pixelify+Sans:wght@400;600;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=20260919_smb3" />
   <style>
     /* CRITICAL INLINE STYLES FOR MIX MODE PILL & DOCK */
     button.mix-mode-pill {
@@ -96,29 +96,46 @@
     }
   </style>
 </head>
-<body class="theme-splash">
+<body class="theme-smb3">
 
-  <!-- BACKGROUND SPLASH CANVAS & AMBIENT GLOW -->
-  <div class="splash-background" id="splashBackground">
+  <!-- THEATRICAL MODULARISM: SUPER MARIO BROS. 3 THEATER STAGE BACKDROP & CURTAINS -->
+  <div class="splash-background smb3-stage-backdrop" id="splashBackground">
+    <!-- Top Scalloped Red Velvet Theater Stage Curtains with Golden Ropes -->
+    <svg class="smb3-stage-curtains" viewBox="0 0 1200 80" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="smb3CurtainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#8a0000"/>
+          <stop offset="40%" stop-color="#b81800"/>
+          <stop offset="85%" stop-color="#e52521"/>
+          <stop offset="100%" stop-color="#550000"/>
+        </linearGradient>
+        <linearGradient id="smb3GoldCord" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#fff099"/>
+          <stop offset="60%" stop-color="#f8b800"/>
+          <stop offset="100%" stop-color="#b87800"/>
+        </linearGradient>
+      </defs>
+      <!-- Top black proscenium drop shadow -->
+      <path d="M0,0 L1200,0 L1200,26 L0,26 Z" fill="#000000" opacity="0.65"/>
+      <!-- Theatrical scallops -->
+      <path d="M0,0 L1200,0 L1200,18 Q1140,36 1080,18 Q1020,36 960,18 Q900,36 840,18 Q780,36 720,18 Q660,36 600,18 Q540,36 480,18 Q420,36 360,18 Q300,36 240,18 Q180,36 120,18 Q60,36 0,18 Z" fill="url(#smb3CurtainGrad)"/>
+      <path d="M0,18 Q60,36 120,18 Q180,36 240,18 Q300,36 360,18 Q420,36 480,18 Q540,36 600,18 Q660,36 720,18 Q780,36 840,18 Q900,36 960,18 Q1020,36 1080,18 Q1140,36 1200,18" fill="none" stroke="url(#smb3GoldCord)" stroke-width="2.2"/>
+      <!-- Side curtain gathering folds -->
+      <path d="M0,0 L50,0 Q35,40 55,80 L0,80 Z" fill="url(#smb3CurtainGrad)" opacity="0.9"/>
+      <path d="M1200,0 L1150,0 Q1165,40 1145,80 L1200,80 Z" fill="url(#smb3CurtainGrad)" opacity="0.9"/>
+      <circle cx="50" cy="45" r="3.5" fill="url(#smb3GoldCord)"/>
+      <circle cx="1150" cy="45" r="3.5" fill="url(#smb3GoldCord)"/>
+    </svg>
+
+    <!-- Floating 8-Bit Clouds with Directional Stage Shadows -->
+    <div class="smb3-cloud cloud-1"></div>
+    <div class="smb3-cloud cloud-2"></div>
+    <div class="smb3-cloud cloud-3"></div>
+
+    <!-- Ambient Sky Glows -->
     <div class="splash-spot spot-cyan"></div>
     <div class="splash-spot spot-magenta"></div>
     <div class="splash-spot spot-yellow"></div>
-    <div class="splash-spot spot-orange"></div>
-    <div class="splash-spot spot-lime"></div>
-    <div class="splash-spot spot-purple"></div>
-    
-    <!-- Dynamic SVG Paint Splatters -->
-    <svg class="splash-svg-splatter splatter-top-left" viewBox="0 0 200 200">
-      <path fill="#00f0ff" opacity="0.35" d="M38.1,-58.5C49.9,-51.6,60.2,-41.8,68.2,-29.4C76.2,-17,81.8,-1.9,78.8,11.8C75.8,25.5,64.2,37.8,51.8,47.9C39.4,57.9,26.2,65.8,11.8,69.5C-2.6,73.1,-18.2,72.6,-32.1,66.2C-46.1,59.8,-58.4,47.6,-66.3,33C-74.1,18.5,-77.6,1.5,-73.4,-13.6C-69.3,-28.6,-57.5,-41.7,-44.4,-48.5C-31.3,-55.3,-16.9,-55.8,-1.7,-53.4C13.4,-51.1,26.4,-65.4,38.1,-58.5Z" transform="translate(100 100)" />
-      <circle cx="160" cy="40" r="8" fill="#ff007f" opacity="0.4" />
-      <circle cx="180" cy="75" r="5" fill="#ffd000" opacity="0.5" />
-      <circle cx="30" cy="150" r="7" fill="#00f5a0" opacity="0.4" />
-    </svg>
-    <svg class="splash-svg-splatter splatter-bottom-right" viewBox="0 0 200 200">
-      <path fill="#ff007f" opacity="0.3" d="M42.2,-64.8C54.7,-58.4,65,-46.8,70.9,-33.2C76.7,-19.6,78.2,-4,74.9,10.6C71.6,25.2,63.5,38.8,52.3,49.5C41.1,60.2,26.8,68.1,11.4,70.8C-4.1,73.4,-20.7,70.9,-35.4,63.6C-50.1,56.3,-62.9,44.2,-70.7,29.3C-78.6,14.4,-81.4,-3.3,-76.3,-18.6C-71.2,-33.8,-58.1,-46.5,-44,-53C-29.8,-59.5,-14.9,-59.8,0.7,-60.8C16.3,-61.8,29.7,-71.2,42.2,-64.8Z" transform="translate(100 100)" />
-      <circle cx="45" cy="40" r="10" fill="#ffd000" opacity="0.4" />
-      <circle cx="165" cy="160" r="6" fill="#00f0ff" opacity="0.45" />
-    </svg>
   </div>
 
   <div id="app" class="kiosk-container">
@@ -126,34 +143,35 @@
     <!-- INVISIBLE SECRET HOTSPOT (7 TAPS FOR ADMIN / DEVELOPER MODE) -->
     <div id="adminSecretHotspot" class="admin-secret-hotspot" title=""></div>
 
-    <!-- TOP BAR: BRANDING, STATUS & GLOBAL CONTROLS -->
-    <header class="top-header">
+    <!-- TOP BAR: THEATRICAL SMB3 MARQUEE & STATUS -->
+    <header class="top-header smb3-marquee-header">
       <div class="header-left">
-        <div class="brand-badge" id="btnBrandBadge" title="Copilot Rideshare Entertainment">
-          <div class="brand-splash-logo">
-            <span class="splash-drop drop-cyan"></span>
-            <span class="splash-drop drop-pink"></span>
-            <span class="splash-drop drop-yellow"></span>
-            <span class="logo-emoji">🎨</span>
+        <div class="brand-badge smb3-brand-badge" id="btnBrandBadge" title="Copilot Rideshare Entertainment">
+          <div class="brand-splash-logo smb3-block-logo">
+            <span class="smb3-q-icon">?</span>
+            <span class="smb3-rivet r-tl"></span>
+            <span class="smb3-rivet r-tr"></span>
+            <span class="smb3-rivet r-bl"></span>
+            <span class="smb3-rivet r-br"></span>
           </div>
           <div class="brand-text">
-            <div class="brand-title">COPILOT <span class="brand-gradient-text">SPLASH</span></div>
-            <div class="brand-subtitle" id="headerSubtitle"><span class="live-dot"></span> EN VIVO · PANTALLA PASAJERO</div>
+            <div class="brand-title">COPILOT <span class="smb3-world-pill">WORLD 1</span></div>
+            <div class="brand-subtitle" id="headerSubtitle"><span class="live-dot smb3-star-dot">⭐</span> STAGE 1-1 · ARCADE</div>
           </div>
         </div>
 
-        <div class="quick-pill-banner" id="quickPillBanner">
-          <span class="pill-fire">🔥</span>
-          <span class="pill-text" id="quickPillText">Juega & Gana hasta <strong>$50 en Efectivo</strong> Hoy</span>
+        <div class="quick-pill-banner smb3-bonus-banner" id="quickPillBanner">
+          <span class="pill-fire">🍄</span>
+          <span class="pill-text" id="quickPillText">BONUS TOAD HOUSE · Gana hasta <strong>$50 en Efectivo</strong></span>
         </div>
 
         <!-- MIX MODE AUTO-ROTATION TOGGLE & STATUS -->
-        <button class="mix-mode-pill active" id="btnToggleMix" onclick="window.toggleMixModeGlobal ? window.toggleMixModeGlobal() : null" title="Activar / Pausar Rotación Automática (Mix)" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(15, 23, 42, 0.9); border: 1.5px solid #00f5a0; padding: 4px 12px; border-radius: 999px; cursor: pointer; color: #ffffff; box-shadow: 0 0 14px rgba(0, 245, 160, 0.3); font-family: 'Outfit', sans-serif;">
-          <svg class="mix-svg-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <button class="mix-mode-pill smb3-star-pill active" id="btnToggleMix" onclick="window.toggleMixModeGlobal ? window.toggleMixModeGlobal() : null" title="Activar / Pausar Rotación Automática (Mix)" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(15, 23, 42, 0.92); border: 1.5px solid #f8b800; padding: 4px 12px; border-radius: 999px; cursor: pointer; color: #ffffff; box-shadow: 0 0 14px rgba(248, 184, 0, 0.4); font-family: 'Outfit', sans-serif;">
+          <svg class="mix-svg-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#f8b800" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3L21.5 8M22 12.5a10 10 0 0 1-18.8 4.2L2.5 16"/>
           </svg>
           <div class="mix-meta-box">
-            <span class="mix-status-text" id="mixStatusText">MIX ACTIVO</span>
+            <span class="mix-status-text" id="mixStatusText" style="color: #f8b800; font-family: 'Pixelify Sans', cursive, sans-serif; letter-spacing: 0.5px;">SUPER STAR MIX</span>
             <span class="mix-next-tag" id="mixNextTag">Próx: Clima</span>
           </div>
           <span class="mix-mini-timer" id="mixMiniTimer">14s</span>
@@ -162,32 +180,32 @@
 
       <div class="header-right">
         <!-- LANGUAGE SELECTOR PILL -->
-        <div class="lang-selector-pill" id="langSelector">
+        <div class="lang-selector-pill smb3-lang-pill" id="langSelector">
           <button class="lang-btn active" data-lang="es" id="btnLangEs">🇪🇸 ES</button>
           <button class="lang-btn" data-lang="en" id="btnLangEn">🇺🇸 EN</button>
         </div>
 
-        <!-- PASSENGER SCORE PILL -->
-        <div class="score-pill">
-          <span class="score-icon">⭐</span>
+        <!-- PASSENGER SCORE PILL (SMB3 COIN COUNTER) -->
+        <div class="score-pill smb3-coin-counter">
+          <span class="score-icon smb3-coin-icon">🪙</span>
           <div class="score-data">
-            <span class="score-label" id="scoreLabelText">TUS PUNTOS</span>
+            <span class="score-label" id="scoreLabelText">MONEDAS</span>
             <span class="score-val" id="userScore">0</span>
           </div>
         </div>
 
         <!-- AUDIO TOGGLE -->
-        <button class="control-btn" id="btnSound" title="Silenciar / Activar Sonido">
+        <button class="control-btn smb3-btn" id="btnSound" title="Silenciar / Activar Sonido">
           <span id="soundIcon">🔊</span>
         </button>
 
         <!-- FULLSCREEN KIOSK (ACCESIBLE SOLO POR ADMIN TRAS 7 TOQUES) -->
-        <button class="control-btn hidden" id="btnFullscreen" title="Pantalla Completa Kiosco">
+        <button class="control-btn smb3-btn hidden" id="btnFullscreen" title="Pantalla Completa Kiosco">
           <span>⛶</span>
         </button>
 
         <!-- DRIVER ADMIN QUICK BUTTON (ACCESIBLE SOLO POR ADMIN TRAS 7 TOQUES) -->
-        <button class="control-btn driver-btn hidden" id="btnAdminQuick" title="Ajustes Conductor (PIN 1234)">
+        <button class="control-btn driver-btn smb3-btn hidden" id="btnAdminQuick" title="Ajustes Conductor (PIN 1234)">
           <span>⚙️</span>
         </button>
       </div>
@@ -227,62 +245,70 @@
           <div class="games-grid">
 
             <!-- Card 1: Classic Trivia -->
-            <div class="game-launch-card card-cyan" id="cardLaunchClassic">
+            <div class="game-launch-card card-cyan smb3-block-card" id="cardLaunchClassic">
+              <span class="smb3-card-rivet c-tl"></span><span class="smb3-card-rivet c-tr"></span><span class="smb3-card-rivet c-bl"></span><span class="smb3-card-rivet c-br"></span>
               <div class="game-card-glow"></div>
               <div class="game-card-icon-wrap">
                 <span class="game-icon">❓</span>
                 <span class="game-badge" id="cardClassicBadge">TRIVIA CLÁSICA</span>
+                <span class="smb3-stage-tag">STAGE 1-1</span>
               </div>
               <h3 class="game-name">Classic Trivia</h3>
               <p class="game-desc" id="cardClassicDesc">Cine, música, cultura general y ciencia con 12s en el cronómetro.</p>
               <div class="game-card-footer">
                 <span class="game-players" id="cardClassicPlayers">👥 140K jugando</span>
-                <button class="btn-play-game btn-cyan" id="btnPlayClassic">JUGAR YA ▶</button>
+                <button class="btn-play-game btn-cyan smb3-play-btn" id="btnPlayClassic">JUGAR YA ▶</button>
               </div>
             </div>
 
             <!-- Card 2: Picture Trivia -->
-            <div class="game-launch-card card-magenta" id="cardLaunchPicture">
+            <div class="game-launch-card card-magenta smb3-block-card" id="cardLaunchPicture">
+              <span class="smb3-card-rivet c-tl"></span><span class="smb3-card-rivet c-tr"></span><span class="smb3-card-rivet c-bl"></span><span class="smb3-card-rivet c-br"></span>
               <div class="game-card-glow"></div>
               <div class="game-card-icon-wrap">
                 <span class="game-icon">📸</span>
                 <span class="game-badge" id="cardPicBadge">RETO VISUAL</span>
+                <span class="smb3-stage-tag">BONUS ♠</span>
               </div>
               <h3 class="game-name">Picture Trivia</h3>
               <p class="game-desc" id="cardPicDesc">Adivina películas, maravillas del mundo y estrellas por la imagen.</p>
               <div class="game-card-footer">
                 <span class="game-players" id="cardPicPlayers">🔥 Racha x2</span>
-                <button class="btn-play-game btn-magenta" id="btnPlayPic">JUGAR YA ▶</button>
+                <button class="btn-play-game btn-magenta smb3-play-btn" id="btnPlayPic">JUGAR YA ▶</button>
               </div>
             </div>
 
             <!-- Card 3: Splash Says (Copilot Says / Color Memory) -->
-            <div class="game-launch-card card-yellow" id="cardLaunchSimon">
+            <div class="game-launch-card card-yellow smb3-block-card" id="cardLaunchSimon">
+              <span class="smb3-card-rivet c-tl"></span><span class="smb3-card-rivet c-tr"></span><span class="smb3-card-rivet c-bl"></span><span class="smb3-card-rivet c-br"></span>
               <div class="game-card-glow"></div>
               <div class="game-card-icon-wrap">
-                <span class="game-icon">🎨</span>
+                <span class="game-icon">⭐</span>
                 <span class="game-badge" id="cardSimonBadge">MEMORIA COPILOT</span>
+                <span class="smb3-stage-tag">STAR 1-2</span>
               </div>
               <h3 class="game-name">Copilot Splash Says</h3>
               <p class="game-desc" id="cardSimonDesc">Repite la secuencia de colores y sonidos. ¿Hasta qué nivel llegarás?</p>
               <div class="game-card-footer">
                 <span class="game-players" id="cardSimonPlayers">🧠 Agilidad mental</span>
-                <button class="btn-play-game btn-yellow" id="btnPlaySimon">JUGAR YA ▶</button>
+                <button class="btn-play-game btn-yellow smb3-play-btn" id="btnPlaySimon">JUGAR YA ▶</button>
               </div>
             </div>
 
             <!-- Card 4: Speed Match (Parejas) -->
-            <div class="game-launch-card card-lime" id="cardLaunchMatch">
+            <div class="game-launch-card card-lime smb3-block-card" id="cardLaunchMatch">
+              <span class="smb3-card-rivet c-tl"></span><span class="smb3-card-rivet c-tr"></span><span class="smb3-card-rivet c-bl"></span><span class="smb3-card-rivet c-br"></span>
               <div class="game-card-glow"></div>
               <div class="game-card-icon-wrap">
                 <span class="game-icon">⚡</span>
                 <span class="game-badge" id="cardMatchBadge">CONTRARRELOJ</span>
+                <span class="smb3-stage-tag">FIRE 1-3</span>
               </div>
               <h3 class="game-name">Speed Match</h3>
               <p class="game-desc" id="cardMatchDesc">Encuentra todas las parejas de cartas antes de que el reloj marque cero.</p>
               <div class="game-card-footer">
                 <span class="game-players" id="cardMatchPlayers">⏱️ 40 Segundos</span>
-                <button class="btn-play-game btn-lime" id="btnPlayMatch">JUGAR YA ▶</button>
+                <button class="btn-play-game btn-lime smb3-play-btn" id="btnPlayMatch">JUGAR YA ▶</button>
               </div>
             </div>
 
@@ -933,50 +959,64 @@
     <!-- ====================================================================
          BOTTOM DOCK / NAVIGATION BAR (COPILOT TABLET STYLE)
          ==================================================================== -->
-    <footer class="bottom-dock">
-      <div class="dock-left-brand" id="dockBrandLogo">
-        <span class="dock-logo-icon">🤖</span>
+    <footer class="bottom-dock smb3-dock-stage">
+      <div class="dock-left-brand smb3-dock-brand" id="dockBrandLogo">
+        <span class="dock-logo-icon">⭐</span>
         <span class="dock-logo-name">COPILOT</span>
       </div>
 
-      <nav class="dock-nav-pills">
+      <!-- SMB3 POWER METER (P-METER) -->
+      <div class="smb3-dock-pmeter" title="Power Meter">
+        <span class="pmeter-txt">POWER</span>
+        <div class="pmeter-arrows">
+          <span class="pmeter-arrow active">▶</span>
+          <span class="pmeter-arrow active">▶</span>
+          <span class="pmeter-arrow active">▶</span>
+          <span class="pmeter-arrow active">▶</span>
+          <span class="pmeter-arrow active">▶</span>
+          <span class="pmeter-arrow">▶</span>
+        </div>
+        <span class="pmeter-p-badge">P</span>
+      </div>
+
+      <nav class="dock-nav-pills smb3-nav-pills">
         <button class="dock-pill active" id="tabGames" data-target="games" onclick="window.switchTabGlobal ? window.switchTabGlobal('games') : null">
           <span class="dock-icon">🎮</span>
-          <span class="dock-label" id="dockLabelGames">Juegos en Vivo</span>
+          <span class="dock-label" id="dockLabelGames">Mundo 1: Juegos</span>
         </button>
 
         <button class="dock-pill" id="tabWeatherNews" data-target="weatherNews" onclick="window.switchTabGlobal ? window.switchTabGlobal('weatherNews') : null">
           <span class="dock-icon">🌤️</span>
-          <span class="dock-label" id="dockLabelWeatherNews">Clima & Noticias</span>
+          <span class="dock-label" id="dockLabelWeatherNews">Nave Clima & Noticias</span>
         </button>
 
         <button class="dock-pill" id="tabRideInfo" data-target="rideInfo" onclick="window.switchTabGlobal ? window.switchTabGlobal('rideInfo') : null">
           <span class="dock-icon">🗺️</span>
-          <span class="dock-label" id="dockLabelRideInfo">Info de Viaje</span>
+          <span class="dock-label" id="dockLabelRideInfo">Mapa de Ruta</span>
         </button>
 
         <button class="dock-pill" id="tabMediaAds" data-target="mediaAds" onclick="window.switchTabGlobal ? window.switchTabGlobal('mediaAds') : null">
           <span class="dock-icon">📺</span>
-          <span class="dock-label" id="dockLabelMediaAds">Media & Anuncios</span>
+          <span class="dock-label" id="dockLabelMediaAds">Koopa Cinema & Ads</span>
         </button>
 
         <button class="dock-pill" id="tabGiveaway" data-target="giveaway" onclick="window.switchTabGlobal ? window.switchTabGlobal('giveaway') : null">
-          <span class="dock-icon">🎁</span>
-          <span class="dock-label" id="dockLabelGiveaway">Sorteo $50</span>
+          <span class="dock-icon">🍄</span>
+          <span class="dock-label" id="dockLabelGiveaway">Casa de Toad $50</span>
         </button>
 
         <button class="dock-pill" id="tabLeaderboard" data-target="leaderboard" onclick="window.switchTabGlobal ? window.switchTabGlobal('leaderboard') : null">
-          <span class="dock-icon">🏆</span>
-          <span class="dock-label" id="dockLabelLeaderboard">Récords</span>
+          <span class="dock-icon">🏰</span>
+          <span class="dock-label" id="dockLabelLeaderboard">Castillo Récords</span>
         </button>
       </nav>
 
-      <div class="dock-right-status">
-        <div class="dock-weather" onclick="window.switchTabGlobal ? window.switchTabGlobal('weatherNews') : null" style="cursor: pointer;" title="Ver pronóstico y noticias">
+      <div class="dock-right-status smb3-dock-right">
+        <div class="dock-weather smb3-weather-badge" onclick="window.switchTabGlobal ? window.switchTabGlobal('weatherNews') : null" style="cursor: pointer;" title="Ver pronóstico y noticias">
           <span>☀️</span>
           <strong>27°C</strong>
         </div>
-        <div class="dock-clock">
+        <div class="dock-clock smb3-clock-badge">
           <span class="clock-time" id="clockTime">12:00</span>
           <span class="clock-period" id="clockPeriod">PM</span>
         </div>
@@ -1194,7 +1234,7 @@
       }
     };
   </script>
-  <script src="src/campaignManager.js?v=20260919_v12"></script>
-  <script type="module" src="src/app.js?v=20260919_v12"></script>
+  <script src="src/campaignManager.js?v=20260919_smb3"></script>
+  <script type="module" src="src/app.js?v=20260919_smb3"></script>
 </body>
 </html>

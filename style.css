@@ -4087,4 +4087,392 @@ html, body {
   background: rgba(255, 255, 255, 0.16);
 }
 
+/* ==========================================================================
+   THEATRICAL MODULARISM: SUPER MARIO BROS. 3 SYSTEM
+   Inspired by Shigeru Miyamoto's Theatrical Stagecraft Architecture (1988)
+   ========================================================================== */
+
+:root {
+  --font-pixel: 'Pixelify Sans', 'Silkscreen', cursive, sans-serif;
+  --smb3-sky-top: #1b2654;
+  --smb3-sky-bottom: #090d22;
+  --smb3-curtain-red: #b81800;
+  --smb3-curtain-bright: #e52521;
+  --smb3-curtain-shadow: #550000;
+  --smb3-gold: #f8b800;
+  --smb3-gold-dark: #c07800;
+  --smb3-wood-edge: #d87800;
+  --smb3-wood-shadow: #883800;
+  --smb3-green-pipe: #00a800;
+  --smb3-star-cyan: #00f0ff;
+  --smb3-shadow-stage: 0 4px 0 rgba(0, 0, 0, 0.7);
+}
+
+body.theme-smb3 {
+  background: radial-gradient(circle at 50% 20%, #202d60 0%, #0c1024 75%, #050711 100%) !important;
+}
+
+/* Stage Curtains Top Valance */
+.smb3-stage-curtains {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 48px;
+  pointer-events: none;
+  z-index: 999;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.65));
+}
+
+/* Floating 8-Bit Clouds */
+.smb3-cloud {
+  position: absolute;
+  background: #ffffff;
+  border-radius: 50px;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.35);
+  opacity: 0.18;
+  pointer-events: none;
+}
+.smb3-cloud::before,
+.smb3-cloud::after {
+  content: '';
+  position: absolute;
+  background: #ffffff;
+  border-radius: 50%;
+}
+.cloud-1 {
+  width: 140px;
+  height: 38px;
+  top: 60px;
+  left: 12%;
+  animation: floatCloud 45s linear infinite;
+}
+.cloud-1::before {
+  width: 48px;
+  height: 48px;
+  top: -24px;
+  left: 24px;
+}
+.cloud-1::after {
+  width: 64px;
+  height: 64px;
+  top: -34px;
+  left: 56px;
+}
+
+.cloud-2 {
+  width: 180px;
+  height: 44px;
+  top: 140px;
+  right: 15%;
+  animation: floatCloud 60s linear infinite reverse;
+}
+.cloud-2::before {
+  width: 58px;
+  height: 58px;
+  top: -28px;
+  left: 30px;
+}
+.cloud-2::after {
+  width: 78px;
+  height: 78px;
+  top: -42px;
+  left: 72px;
+}
+
+.cloud-3 {
+  width: 110px;
+  height: 32px;
+  bottom: 80px;
+  left: 35%;
+  opacity: 0.12;
+  animation: floatCloud 50s linear infinite;
+}
+.cloud-3::before {
+  width: 38px;
+  height: 38px;
+  top: -18px;
+  left: 18px;
+}
+.cloud-3::after {
+  width: 48px;
+  height: 48px;
+  top: -24px;
+  left: 44px;
+}
+
+@keyframes floatCloud {
+  0% { transform: translateX(-50px); }
+  50% { transform: translateX(50px); }
+  100% { transform: translateX(-50px); }
+}
+
+/* TOP HEADER SMB3 THEATRICAL MARQUEE */
+.smb3-marquee-header {
+  background: rgba(12, 17, 38, 0.94) !important;
+  border: 2px solid var(--smb3-gold) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 4px 0 var(--smb3-wood-shadow), 0 10px 25px rgba(0, 0, 0, 0.6) !important;
+}
+
+.smb3-block-logo {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 8px !important;
+  background: linear-gradient(135deg, #fcb800 0%, #d87800 100%) !important;
+  border: 2px solid #fff !important;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8), inset 0 2px 0 rgba(255, 255, 255, 0.6) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+}
+
+.smb3-q-icon {
+  font-family: var(--font-pixel, monospace);
+  font-size: 20px;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 2px 2px 0 #000;
+  line-height: 1;
+  animation: qBob 2s ease-in-out infinite alternate;
+}
+
+@keyframes qBob {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-2px); }
+}
+
+.smb3-rivet {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #542200;
+  box-shadow: inset 1px 1px 0 rgba(0,0,0,0.8), 1px 1px 0 rgba(255,255,255,0.3);
+}
+.r-tl { top: 2px; left: 2px; }
+.r-tr { top: 2px; right: 2px; }
+.r-bl { bottom: 2px; left: 2px; }
+.r-br { bottom: 2px; right: 2px; }
+
+.smb3-world-pill {
+  font-family: var(--font-pixel, 'Pixelify Sans', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  background: var(--smb3-curtain-bright);
+  color: #fff;
+  padding: 1px 7px;
+  border-radius: 6px;
+  border: 1px solid #ff7777;
+  box-shadow: 1px 1px 0 #000;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.smb3-star-dot {
+  font-size: 11px;
+  animation: starPulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes starPulse {
+  from { transform: scale(0.9); filter: drop-shadow(0 0 2px #f8b800); }
+  to { transform: scale(1.15); filter: drop-shadow(0 0 8px #f8b800); }
+}
+
+.smb3-bonus-banner {
+  background: linear-gradient(135deg, rgba(248, 184, 0, 0.18), rgba(216, 120, 0, 0.22)) !important;
+  border: 1.5px solid var(--smb3-gold) !important;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.smb3-star-pill {
+  background: rgba(16, 24, 52, 0.95) !important;
+  border: 2px solid var(--smb3-gold) !important;
+  box-shadow: 0 0 15px rgba(248, 184, 0, 0.4), 2px 2px 0 rgba(0, 0, 0, 0.7) !important;
+}
+
+.smb3-coin-counter {
+  background: rgba(248, 184, 0, 0.12) !important;
+  border: 1.5px solid var(--smb3-gold) !important;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6) !important;
+}
+
+.smb3-coin-counter .score-label {
+  font-family: var(--font-pixel, monospace);
+  color: #ffdd66 !important;
+  letter-spacing: 0.8px;
+}
+
+.smb3-coin-counter .score-val {
+  font-family: var(--font-pixel, monospace) !important;
+  font-size: 16px !important;
+  color: var(--smb3-gold) !important;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.smb3-coin-icon {
+  display: inline-block;
+  animation: coinBob 1.5s ease-in-out infinite;
+}
+
+@keyframes coinBob {
+  0%, 100% { transform: scaleX(1); }
+  50% { transform: scaleX(0.2); }
+}
+
+/* GAME LAUNCH CARDS AS SMB3 STAGE BLOCKS */
+.smb3-block-card {
+  position: relative !important;
+  background: rgba(14, 20, 44, 0.88) !important;
+  border: 2px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.smb3-block-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 4px 9px 0px rgba(0, 0, 0, 0.7), 0 0 20px rgba(248, 184, 0, 0.3) !important;
+  border-color: var(--smb3-gold) !important;
+}
+
+.smb3-card-rivet {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: inset 1px 1px 0 #000, 1px 1px 0 rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+}
+.c-tl { top: 8px; left: 8px; }
+.c-tr { top: 8px; right: 8px; }
+.c-bl { bottom: 8px; left: 8px; }
+.c-br { bottom: 8px; right: 8px; }
+
+.smb3-stage-tag {
+  font-family: var(--font-pixel, monospace);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: #000;
+  color: var(--smb3-gold);
+  border: 1px solid var(--smb3-gold);
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: auto;
+}
+
+.smb3-play-btn {
+  font-family: var(--font-pixel, monospace) !important;
+  letter-spacing: 0.5px !important;
+  font-size: 11px !important;
+  border-radius: 8px !important;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6) !important;
+}
+
+/* BOTTOM DOCK AS SMB3 WORLD MAP STAGE */
+.smb3-dock-stage {
+  background: rgba(11, 15, 33, 0.96) !important;
+  border: 2px solid var(--smb3-wood-edge) !important;
+  box-shadow: 0 -3px 0 var(--smb3-wood-shadow), 0 10px 30px rgba(0, 0, 0, 0.8) !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+.smb3-dock-brand {
+  font-family: var(--font-pixel, monospace);
+  letter-spacing: 1px;
+  color: var(--smb3-gold) !important;
+}
+
+/* SMB3 POWER METER (P-METER) */
+.smb3-dock-pmeter {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  background: #000000;
+  border: 1.5px solid #444444;
+  border-radius: 6px;
+  box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.8), 1px 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.pmeter-txt {
+  font-family: var(--font-pixel, monospace);
+  font-size: 9px;
+  font-weight: 800;
+  color: #888888;
+  letter-spacing: 0.8px;
+}
+
+.pmeter-arrows {
+  display: flex;
+  gap: 2px;
+}
+
+.pmeter-arrow {
+  font-size: 9px;
+  color: #333333;
+  line-height: 1;
+}
+
+.pmeter-arrow.active {
+  color: #e52521;
+  text-shadow: 0 0 5px #e52521;
+}
+
+.pmeter-p-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  background: #e52521;
+  color: #ffffff;
+  font-family: var(--font-pixel, monospace);
+  font-size: 10px;
+  font-weight: 900;
+  border-radius: 3px;
+  box-shadow: 0 0 6px #e52521;
+  animation: pFlash 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes pFlash {
+  0% { transform: scale(1); filter: brightness(1); }
+  100% { transform: scale(1.1); filter: brightness(1.3); }
+}
+
+.smb3-nav-pills .dock-pill {
+  border-radius: 8px !important;
+  border: 1.5px solid transparent !important;
+}
+
+.smb3-nav-pills .dock-pill:hover {
+  border-color: rgba(248, 184, 0, 0.4) !important;
+  background: rgba(248, 184, 0, 0.1) !important;
+}
+
+.smb3-nav-pills .dock-pill.active {
+  background: linear-gradient(135deg, #f8b800 0%, #d87800 100%) !important;
+  color: #000000 !important;
+  font-weight: 800 !important;
+  border-color: #fff !important;
+  box-shadow: 0 0 16px rgba(248, 184, 0, 0.5), 2px 2px 0 rgba(0, 0, 0, 0.6) !important;
+}
+
+.smb3-weather-badge,
+.smb3-clock-badge {
+  background: #000000 !important;
+  border: 1px solid #444444 !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  box-shadow: inset 1px 1px 0 rgba(0,0,0,0.8) !important;
+}
+
+.smb3-clock-badge .clock-time {
+  font-family: var(--font-pixel, monospace) !important;
+  color: var(--smb3-gold) !important;
+}
+
 

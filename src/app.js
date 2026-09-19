@@ -793,6 +793,7 @@ function returnToGamesHub() {
 
 function addPoints(pts) {
   state.score += pts;
+  sound.playCoin();
   if (DOM.userScore) DOM.userScore.textContent = state.score.toLocaleString();
   if (DOM.arenaScoreVal) DOM.arenaScoreVal.textContent = state.score.toLocaleString();
 }
@@ -1624,18 +1625,19 @@ function updateMixPillUI() {
   btn.classList.toggle('paused', isPaused);
   const statusEl = DOM.mixStatusText || document.getElementById('mixStatusText');
   if (statusEl) {
-    statusEl.textContent = isPaused ? t.mixPillPaused : t.mixPillActive;
+    statusEl.textContent = isPaused ? (t.mixPillPaused || 'MIX PAUSADO') : (t.mixPillActive || 'SUPER STAR MIX');
   }
 
   const nextTagEl = DOM.mixNextTag || document.getElementById('mixNextTag');
   if (nextTagEl) {
     const nextMap = {
-      trivia: t.mixSegmentWeather,
-      weather: t.mixSegmentNews,
-      news: t.mixSegmentPromo,
-      promoVideo: t.mixSegmentTrivia
+      trivia: t.mixSegmentWeather || 'Clima',
+      weather: t.mixSegmentNews || 'Noticias',
+      news: t.mixSegmentPromo || 'Video',
+      promoVideo: t.mixSegmentTrivia || 'Trivia'
     };
-    nextTagEl.textContent = `${t.mixNextIn} ${nextMap[state.mixMode.currentStep] || ''}`;
+    const prefix = t.mixNextIn || 'Próx:';
+    nextTagEl.textContent = `${prefix} ${nextMap[state.mixMode.currentStep] || ''}`;
   }
 
   const timerEl = DOM.mixMiniTimer || document.getElementById('mixMiniTimer');

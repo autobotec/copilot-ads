@@ -108,6 +108,61 @@ class SoundEngine {
     }
   }
 
+  // Classic SMB3 Coin Chime (B5 to E6)
+  playCoin() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(987.77, now); // B5
+      osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+
+      gain.gain.setValueAtTime(this.volume * 0.38, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.4);
+    } catch (e) {
+      console.warn('Audio coin error', e);
+    }
+  }
+
+  // Classic SMB3 1-Up / Power-Up Arpeggio
+  playPowerUp() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const notes = [330, 392, 659, 523, 587, 784];
+      const now = this.ctx.currentTime;
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + (idx * 0.06));
+
+        const start = now + (idx * 0.06);
+        gain.gain.setValueAtTime(this.volume * 0.3, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.15);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.18);
+      });
+    } catch (e) {
+      console.warn('Audio power-up error', e);
+    }
+  }
+
   playSplashPop() {
     if (this.muted) return;
     this.init();

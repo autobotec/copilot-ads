@@ -203,6 +203,15 @@ export const TRANSLATIONS = {
     btnResetStats: "Reiniciar Estadísticas",
     btnSaveSettings: "Guardar Cambios",
 
+    // Mix Mode
+    mixPillActive: "SUPER STAR MIX",
+    mixPillPaused: "MIX PAUSADO",
+    mixNextIn: "Próx:",
+    mixSegmentWeather: "Clima",
+    mixSegmentNews: "Noticias",
+    mixSegmentPromo: "Video",
+    mixSegmentTrivia: "Trivia",
+
     // Toasts
     toastLangChanged: "🇪🇸 Idioma cambiado a Español",
     toastSoundMuted: "🔇 Sonido desactivado",
@@ -420,6 +429,15 @@ export const TRANSLATIONS = {
     labelBio: "Driver Greeting Note:",
     btnResetStats: "Reset Stats",
     btnSaveSettings: "Save Changes",
+
+    // Mix Mode
+    mixPillActive: "SUPER STAR MIX",
+    mixPillPaused: "MIX PAUSED",
+    mixNextIn: "Next:",
+    mixSegmentWeather: "Weather",
+    mixSegmentNews: "News",
+    mixSegmentPromo: "Video",
+    mixSegmentTrivia: "Trivia",
 
     // Toasts
     toastLangChanged: "🇺🇸 Language switched to English",
