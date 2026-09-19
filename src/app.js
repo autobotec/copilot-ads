@@ -182,6 +182,14 @@ const DOM = {
   breakingLabel: document.getElementById('breakingLabel'),
   breakingHeadlineText: document.getElementById('breakingHeadlineText'),
   newsCardsGrid: document.getElementById('newsCardsGrid'),
+  newsCityTitle: document.getElementById('newsCityTitle'),
+  newsLocationBadge: document.getElementById('newsLocationBadge'),
+  newsCuratedSubtitle: document.getElementById('newsCuratedSubtitle'),
+  newsRatingBadge: document.getElementById('newsRatingBadge'),
+  newsCountBadge: document.getElementById('newsCountBadge'),
+  newsDetailModal: document.getElementById('newsDetailModal'),
+  newsModalContentWrap: document.getElementById('newsModalContentWrap'),
+  btnCloseNewsModal: document.getElementById('btnCloseNewsModal'),
 
   // Video Promo Showcase
   btnMediaVideoPromo: document.getElementById('btnMediaVideoPromo'),
@@ -1298,6 +1306,22 @@ function setupWeatherNewsControls() {
       }
     });
   }
+
+  // News Detail Modal close handlers
+  if (DOM.btnCloseNewsModal) {
+    DOM.btnCloseNewsModal.addEventListener('click', () => {
+      sound.playTap();
+      if (DOM.newsDetailModal) DOM.newsDetailModal.classList.remove('active');
+    });
+  }
+  if (DOM.newsDetailModal) {
+    DOM.newsDetailModal.addEventListener('click', (e) => {
+      if (e.target === DOM.newsDetailModal) {
+        sound.playTap();
+        DOM.newsDetailModal.classList.remove('active');
+      }
+    });
+  }
 }
 
 function switchWeatherNewsSubtab(target) {
@@ -1426,36 +1450,162 @@ function updateRideWeather(w) {
 
 function renderNewsFeed() {
   const lang = state.currentLang;
-  const articles = (state.liveNews && state.liveNews.length > 0) ? state.liveNews : NEWS_ARTICLES;
+  const loc = (state.liveWeather && state.liveWeather.city) 
+    ? state.liveWeather 
+    : geoService.currentLocation;
+
+  // Ensure we have local news matching the detected location
+  let articles = state.liveNews;
+  if (!articles || articles.length === 0) {
+    articles = geoService.getLocalizedNews(loc.countryCode, loc.city, loc.state, loc);
+    state.liveNews = articles;
+  }
   if (!articles || articles.length === 0) return;
 
+  const cityName = loc.rawCity || loc.city || (loc.isUSA ? "New York City" : "Santo Domingo");
+  const flag = loc.isUSA ? '🇺🇸' : (loc.countryCode === 'DO' ? '🇩🇴' : '📍');
+
+  // Update Location Header Banner
+  if (DOM.newsCityTitle) {
+    DOM.newsCityTitle.textContent = lang === 'en' 
+      ? `${flag} Local News: ${cityName}` 
+      : `${flag} Noticias Locales de ${cityName}`;
+  }
+  if (DOM.newsLocationBadge) {
+    DOM.newsLocationBadge.textContent = lang === 'en' ? 'LIVE · GPS ACTIVE' : '🔴 EN VIVO · GPS ACTIVO';
+  }
+  if (DOM.newsCuratedSubtitle) {
+    DOM.newsCuratedSubtitle.textContent = lang === 'en'
+      ? `Daily News Report v3.0 · Curated Transit, Events & Life in ${cityName}`
+      : `Reporte Diario Curado v3.0 · Cobertura de Tránsito, Eventos y Vida en ${cityName}`;
+  }
+  if (DOM.newsRatingBadge) {
+    DOM.newsRatingBadge.textContent = lang === 'en' ? '⭐ Quality 5.0 / 5.0' : '⭐ Calidad 5.0 / 5.0';
+  }
+  if (DOM.newsCountBadge) {
+    DOM.newsCountBadge.textContent = `${articles.length} ${lang === 'en' ? 'REPORTS TODAY' : 'REPORTES HOY'}`;
+  }
+
+  // Top Breaking Headline
   const topStory = articles[0];
-  if (DOM.breakingHeadlineText) {
+  if (DOM.breakingHeadlineText && topStory) {
     DOM.breakingHeadlineText.textContent = lang === 'en' ? topStory.title_en : topStory.title_es;
   }
 
+  // Multi-Column Responsive News Grid
   if (DOM.newsCardsGrid) {
-    DOM.newsCardsGrid.innerHTML = articles.slice(1).map(item => `
-      <div class="news-card-item" data-id="${item.id}">
-        <div class="news-item-top">
-          <span class="news-item-cat" style="background:${item.badge_color};">${item.icon} ${lang === 'en' ? item.category_en : item.category_es}</span>
-          <span class="news-item-time">⏱️ ${lang === 'en' ? item.time_ago_en : item.time_ago_es}</span>
+    DOM.newsCardsGrid.innerHTML = articles.map((item, idx) => {
+      const title = lang === 'en' ? item.title_en : item.title_es;
+      const summary = lang === 'en' ? item.summary_en : item.summary_es;
+      const category = lang === 'en' ? (item.category_en || 'LOCAL') : (item.category_es || 'LOCAL');
+      const timeAgo = lang === 'en' ? (item.time_ago_en || 'Recent') : (item.time_ago_es || 'Reciente');
+      const keyPoints = lang === 'en' ? (item.key_points_en || item.key_points_es || []) : (item.key_points_es || []);
+      const keywords = item.keywords || [];
+      const stars = item.quality_stars || '⭐⭐⭐⭐⭐ 5.0';
+      const heroGradient = item.hero_gradient || 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)';
+      const heroTag = item.hero_tag || `${item.icon || '📰'} ${category}`;
+      const locationTag = item.location_tag || `${cityName}`;
+
+      return `
+        <div class="news-card-item smb3-card" data-idx="${idx}">
+          <div class="news-item-top">
+            <div class="news-top-badges">
+              <span class="news-item-cat" style="background:${item.badge_color || '#e52521'};">${item.icon || '📰'} ${category}</span>
+              <span class="news-score-badge">${stars}</span>
+            </div>
+            <span class="news-item-time">⏱️ ${timeAgo}</span>
+          </div>
+
+          <div class="news-hero-accent" style="background:${heroGradient};">
+            <span class="news-hero-tag">${heroTag}</span>
+            <span class="news-location-subtag">📍 ${locationTag}</span>
+          </div>
+
+          <h3 class="news-item-title">${title}</h3>
+          <p class="news-item-desc">${summary}</p>
+
+          ${keyPoints && keyPoints.length > 0 ? `
+            <div class="news-keypoints-box">
+              <div class="keypoints-title">📌 ${lang === 'en' ? 'KEY TAKEAWAYS' : 'PUNTOS CLAVE'}:</div>
+              <ul class="keypoints-list">
+                ${keyPoints.map(pt => `<li>${pt}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+
+          ${keywords && keywords.length > 0 ? `
+            <div class="news-keywords-row">
+              ${keywords.map(kw => `<span class="news-kw-tag">${kw}</span>`).join('')}
+            </div>
+          ` : ''}
+
+          <div class="news-item-footer">
+            <span class="news-source-tag">✓ ${item.source || 'Copilot News'}</span>
+            <span>👁️ ${item.reads || '25K lecturas'}</span>
+            <button class="news-read-btn">${lang === 'en' ? 'Read Full 📄' : 'Leer Más 📄'}</button>
+          </div>
         </div>
-        <h3 class="news-item-title">${lang === 'en' ? item.title_en : item.title_es}</h3>
-        <p class="news-item-desc">${lang === 'en' ? item.summary_en : item.summary_es}</p>
-        <div class="news-item-footer">
-          <span class="news-source-tag">${item.source}</span>
-          <span>👁️ ${item.reads}</span>
-        </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     DOM.newsCardsGrid.querySelectorAll('.news-card-item').forEach(card => {
       card.addEventListener('click', () => {
-        sound.playSplashPop();
+        sound.playCoin();
         notifyUserInteraction();
-        showToast(`📰 ${card.querySelector('.news-item-title').textContent}`);
+        const idx = parseInt(card.getAttribute('data-idx') || '0', 10);
+        const selectedItem = articles[idx] || articles[0];
+        openNewsDetailModal(selectedItem);
       });
+    });
+  }
+}
+
+function openNewsDetailModal(item) {
+  if (!DOM.newsDetailModal || !DOM.newsModalContentWrap) return;
+  const lang = state.currentLang;
+  const title = lang === 'en' ? item.title_en : item.title_es;
+  const summary = lang === 'en' ? item.summary_en : item.summary_es;
+  const category = lang === 'en' ? item.category_en : item.category_es;
+  const keyPoints = lang === 'en' ? (item.key_points_en || item.key_points_es || []) : (item.key_points_es || []);
+  const keywords = item.keywords || [];
+
+  DOM.newsModalContentWrap.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid var(--smb3-gold);">
+      <span style="background:${item.badge_color || '#e52521'};color:#fff;font-family:var(--font-pixel,monospace);font-size:10px;padding:4px 10px;border-radius:6px;font-weight:900;">${item.icon || '📰'} ${category}</span>
+      <span style="color:var(--smb3-gold);font-family:var(--font-pixel,monospace);font-size:11px;">${item.quality_stars || '⭐⭐⭐⭐⭐ 5.0'}</span>
+    </div>
+    <div style="font-size:11px;color:#94a3b8;margin-bottom:8px;">📍 ${item.location_tag || 'Ubicación Local'} · ⏱️ ${lang === 'en' ? item.time_ago_en : item.time_ago_es} · Fuente: <strong style="color:#fff;">${item.source}</strong></div>
+    <h2 style="font-family:var(--font-display);font-size:18px;font-weight:900;color:#fff;line-height:1.3;margin-bottom:12px;">${title}</h2>
+    <p style="font-size:13px;color:#cbd5e1;line-height:1.5;margin-bottom:16px;">${summary}</p>
+    
+    ${keyPoints && keyPoints.length > 0 ? `
+      <div style="background:rgba(0,0,0,0.6);border:1.5px solid var(--smb3-gold);border-radius:8px;padding:12px 14px;margin-bottom:16px;">
+        <h4 style="font-family:var(--font-pixel,monospace);font-size:11px;color:var(--smb3-gold);margin:0 0 8px 0;letter-spacing:0.5px;">📌 ${lang === 'en' ? 'VERIFIED KEY TAKEAWAYS (DAILY NEWS REPORT)' : 'PUNTOS CLAVE VERIFICADOS (DAILY NEWS REPORT)'}</h4>
+        <ul style="margin:0;padding-left:18px;color:#f1f5f9;font-size:12px;line-height:1.6;">
+          ${keyPoints.map(pt => `<li>${pt}</li>`).join('')}
+        </ul>
+      </div>
+    ` : ''}
+
+    ${keywords && keywords.length > 0 ? `
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
+        ${keywords.map(kw => `<span style="font-size:10px;color:#38bdf8;background:rgba(56,189,248,0.15);padding:3px 8px;border-radius:4px;">${kw}</span>`).join('')}
+      </div>
+    ` : ''}
+
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);font-size:11px;color:#94a3b8;">
+      <span>👁️ ${item.reads || '30K lecturas'} · Estándar Daily News Report v3.0</span>
+      <button id="btnCloseNewsModalInner" style="background:linear-gradient(135deg,#f8b800,#d87800);color:#000;font-weight:900;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">${lang === 'en' ? 'Close Window ✕' : 'Cerrar Ventana ✕'}</button>
+    </div>
+  `;
+
+  DOM.newsDetailModal.classList.add('active');
+
+  const btnInner = document.getElementById('btnCloseNewsModalInner');
+  if (btnInner) {
+    btnInner.addEventListener('click', () => {
+      sound.playTap();
+      DOM.newsDetailModal.classList.remove('active');
     });
   }
 }

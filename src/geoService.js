@@ -68,14 +68,14 @@ export class GeoLocationService {
 
       const weather = await this.fetchLiveWeather(loc.lat, loc.lon, loc);
       this.weatherData = weather;
-      this.notify({ location: loc, weather, news: this.getLocalizedNews(loc.countryCode, loc.city) });
+      this.notify({ location: loc, weather, news: this.getLocalizedNews(loc.countryCode, loc.city, loc.state, loc) });
       return { location: loc, weather };
     } catch (err) {
       console.warn('GeoService fallback init:', err);
       // Fallback with current cached or default
       const weather = await this.fetchLiveWeather(this.currentLocation.lat, this.currentLocation.lon, this.currentLocation);
       this.weatherData = weather;
-      this.notify({ location: this.currentLocation, weather, news: this.getLocalizedNews(this.currentLocation.countryCode, this.currentLocation.city) });
+      this.notify({ location: this.currentLocation, weather, news: this.getLocalizedNews(this.currentLocation.countryCode, this.currentLocation.city, this.currentLocation.state, this.currentLocation) });
       return { location: this.currentLocation, weather };
     }
   }
@@ -419,263 +419,853 @@ export class GeoLocationService {
     };
   }
 
-  // Provide region-specific localized news
-  getLocalizedNews(countryCode, cityName) {
+  // Provide region-specific localized news adhering strictly to daily-news-report v3.0 standard
+  getLocalizedNews(countryCode, cityName, stateName, fullLocInfo) {
     const isUSA = (countryCode === 'US' || countryCode === 'USA');
     const isDO = (countryCode === 'DO');
-    const city = cityName || (isUSA ? "Miami" : "Santo Domingo");
+    const rawCity = cityName || (isUSA ? "New York City" : (isDO ? "Santo Domingo" : "Ciudad Local"));
+    const state = stateName || (isUSA ? "NY" : "");
+    const cityLower = rawCity.toLowerCase();
 
-    if (isUSA) {
+    // 1. NEW YORK CITY & METRO AREA (Detected GPS/IP location)
+    if (cityLower.includes('new york') || cityLower.includes('brooklyn') || cityLower.includes('manhattan') || cityLower.includes('queens') || cityLower.includes('bronx') || cityLower.includes('staten island')) {
       return [
         {
-          id: "us-news-1",
-          category_es: "LOCAL & TRANSPORTE",
-          category_en: "LOCAL & MOBILITY",
-          category_slug: "breaking",
-          badge_color: "#ff007f",
-          icon: "🚗",
-          title_es: `Novedades en ${city}: Modernizan la infraestructura vial y corredores de tránsito inteligente`,
-          title_en: `${city} Mobility: Smart transit corridors and infrastructure upgrades roll out`,
-          summary_es: `Nuevos sistemas de sincronización semafórica inteligente y sensores en tiempo real mejoran la fluidez del tráfico para conductores y pasajeros en ${city}.`,
-          summary_en: `Advanced real-time smart traffic synchronization reduces commute times and enhances rider journeys across ${city}.`,
-          source: `${city} City Gazette`,
-          time_ago_es: "Hace 10 min",
-          time_ago_en: "10 min ago",
-          reads: "19.4K lecturas"
-        },
-        {
-          id: "us-news-2",
-          category_es: "TECNOLOGÍA",
-          category_en: "TECHNOLOGY",
-          category_slug: "tech",
-          badge_color: "#00f5a0",
-          icon: "🤖",
-          title_es: "Revolución de la IA: Nuevas pantallas interactivas para vehículos transforman el entretenimiento a bordo",
-          title_en: "AI In-Car Breakthrough: Next-gen interactive screens revolutionize passenger rideshare media",
-          summary_es: "Compañías de transporte privado adoptan tablets inteligentes con trivias, sorteos y micro-anuncios hiperlocales personalizados.",
-          summary_en: "Rideshare platforms deploy smart tablet hubs featuring live trivia, cash prizes, and targeted local experiences.",
-          source: "TechPulse USA",
-          time_ago_es: "Hace 35 min",
-          time_ago_en: "35 min ago",
-          reads: "34.2K lecturas"
-        },
-        {
-          id: "us-news-3",
-          category_es: "DEPORTES",
-          category_en: "SPORTS",
-          category_slug: "sports",
-          badge_color: "#ffd000",
-          icon: "🏀",
-          title_es: "Jornada estelar en las ligas profesionales: Espectacular canasta sobre la bocina sella la victoria",
-          title_en: "Pro Basketball Thriller: Dramatic buzzer-beater seals comeback victory in front of roaring crowd",
-          summary_es: "Una noche inolvidable en la duela con récords de anotación y jugadas destacadas que marcan el rumbo de los playoffs.",
-          summary_en: "A historic night on the hardwood with record scoring runs and highlight-reel plays setting the tone for the postseason.",
-          source: "SportsCenter Live",
-          time_ago_es: "Hace 1 hora",
-          time_ago_en: "1 hour ago",
-          reads: "42.8K lecturas"
-        },
-        {
-          id: "us-news-4",
-          category_es: "ESTILO DE VIDA & CIUDAD",
-          category_en: "CITY & CULTURE",
-          category_slug: "city",
-          badge_color: "#00d2ff",
-          icon: "🌴",
-          title_es: `Guía gastronómica en ${city}: Inauguran nuevos espacios culinarios y terrazas al aire libre`,
-          title_en: `${city} Culinary Scene: Acclaimed new open-air dining plazas and rooftop venues debut`,
-          summary_es: `Destacados chefs presentan menús de autor y música en vivo los fines de semana, convirtiéndose en el destino favorito de locales y visitantes.`,
-          summary_en: `Celebrated chefs unveil signature tasting menus and weekend acoustic sets, quickly becoming the must-visit evening spots.`,
-          source: `${city} Lifestyle`,
-          time_ago_es: "Hace 2 horas",
-          time_ago_en: "2 hours ago",
-          reads: "27.1K lecturas"
-        },
-        {
-          id: "us-news-5",
-          category_es: "CINE & ENTRETENIMIENTO",
-          category_en: "ENTERTAINMENT",
-          category_slug: "entertainment",
-          badge_color: "#a855f7",
-          icon: "🎬",
-          title_es: "Estreno cinematográfico del año supera proyecciones de taquilla en salas IMAX",
-          title_en: "Box Office Phenomenon: Visual masterpiece shatters opening records in premium formats",
-          summary_es: "La crítica aplaude los efectos prácticos y la conmovedora narrativa, posicionándola como favorita de la temporada de premios.",
-          summary_en: "Critics praise breathtaking practical effects and emotional storytelling, making it an early awards contender.",
-          source: "Hollywood Chronicle",
-          time_ago_es: "Hace 3 horas",
-          time_ago_en: "3 hours ago",
-          reads: "31.9K lecturas"
-        }
-      ];
-    } else if (isDO) {
-      return [
-        {
-          id: "do-news-1",
-          category_es: "LOCAL & TURISMO",
-          category_en: "LOCAL & TOURISM",
-          category_slug: "breaking",
-          badge_color: "#ff007f",
-          icon: "🌴",
-          title_es: `República Dominicana rompe récord histórico con más de 10 millones de visitantes internacionales`,
-          title_en: `Dominican Republic breaks historic record welcoming over 10 million international tourists`,
-          summary_es: `Punta Cana, Santo Domingo y Samaná impulsan el auge hotelero y de transporte turístico con altos estándares de calidad y seguridad.`,
-          summary_en: `Punta Cana and Santo Domingo lead regional tourism expansion with world-class hospitality and modern mobility.`,
-          source: "Diario Nacional RD",
-          time_ago_es: "Hace 12 min",
-          time_ago_en: "12 min ago",
-          reads: "22.5K lecturas"
-        },
-        {
-          id: "do-news-2",
-          category_es: "BÉISBOL & DEPORTES",
-          category_en: "BASEBALL & SPORTS",
-          category_slug: "sports",
-          badge_color: "#00f5a0",
-          icon: "⚾",
-          title_es: "Estrellas dominicanas en las Grandes Ligas brillan con cuadrangulares y juego impecable",
-          title_en: "Dominican MLB stars shine with clutch home runs and standout defensive highlights",
-          summary_es: "Los peloteros quisqueyanos continúan dominando las estadísticas ofensivas y llenando de orgullo a la fanaticada local.",
-          summary_en: "Dominican sluggers continue leading league offensive charts and delighting passionate baseball fans back home.",
-          source: "Deportes Quisqueya",
-          time_ago_es: "Hace 40 min",
-          time_ago_en: "40 min ago",
-          reads: "38.1K lecturas"
-        },
-        {
-          id: "do-news-3",
-          category_es: "TRANSPORTE & CIUDAD",
-          category_en: "URBAN TRANSIT",
-          category_slug: "city",
-          badge_color: "#ffd000",
+          id: "nyc-news-1",
+          source_id: "mta_nyc_transit",
+          category_es: "TRÁNSITO & MOVILIDAD LOCAL",
+          category_en: "LOCAL TRANSIT & MOBILITY",
+          category_slug: "transit",
+          badge_color: "#e52521",
           icon: "🚇",
-          title_es: "Avanza la expansión de nuevas líneas de transporte urbano integrado en el Gran Santo Domingo",
-          title_en: "Urban Transit Progress: Expansion of integrated transit corridors advances in Santo Domingo",
-          summary_es: "Las autoridades destacan la reducción de tiempos de traslado y la integración de pagos digitales en el sistema de transporte.",
-          summary_en: "Transit authorities announce significant travel time reductions and digital contactless payment integration.",
-          source: "Metro Digital RD",
-          time_ago_es: "Hace 1 hora",
-          time_ago_en: "1 hour ago",
-          reads: "18.3K lecturas"
+          city: "New York City",
+          location_tag: "Manhattan & Queens · NYC",
+          title_es: "Modernización del MTA: Aumentan frecuencias en trenes Express del Subway entre Manhattan, Queens y Brooklyn",
+          title_en: "MTA Subway Modernization: Increased Express Train Frequencies Across Manhattan, Queens & Brooklyn",
+          summary_es: "La Autoridad Metropolitana de Tránsito implementa nuevos horarios de servicio continuo y señalización digital en tiempo real para agilizar los traslados diarios de millones de usuarios en los cinco condados.",
+          summary_en: "The Metropolitan Transportation Authority rolls out optimized express timetables and live digital tracking to streamline daily commutes across the five NYC boroughs.",
+          key_points_es: [
+            "Reducción promedio de 12 a 15 minutos en traslados durante horas pico.",
+            "Despliegue de vagones R211 con pantallas interactivas de ruta en tiempo real.",
+            "Conexiones coordinadas con líneas de autobuses y corredores de micromovilidad."
+          ],
+          key_points_en: [
+            "Average 12-15 minute reduction in peak-hour commute times.",
+            "Rollout of next-gen R211 train cars with interactive live route maps.",
+            "Seamless connections with local bus corridors and micro-mobility hubs."
+          ],
+          keywords: ["#MTANewYork", "#Subway", "#Manhattan", "#MovilidadNYC"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "NYC Transit Authority",
+          time_ago_es: "Hace 8 min",
+          time_ago_en: "8 min ago",
+          reads: "34.2K lecturas",
+          hero_gradient: "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)",
+          hero_tag: "🚇 MTA EXPRESS"
         },
         {
-          id: "do-news-4",
-          category_es: "ECONOMÍA & EMPRENDIMIENTO",
-          category_en: "ECONOMY",
-          category_slug: "economy",
-          badge_color: "#00d2ff",
-          icon: "📈",
-          title_es: "Sector de servicios y plataformas digitales experimenta un crecimiento récord este trimestre",
-          title_en: "Digital Platforms & Service Sector reach double-digit growth this quarter in the Caribbean",
-          summary_es: "El ecosistema de aplicaciones de movilidad y entregas genera miles de oportunidades productivas para emprendedores locales.",
-          summary_en: "Rideshare and delivery app ecosystems create thousands of flexible earnings opportunities for drivers and partners.",
-          source: "Economía y Mercados",
-          time_ago_es: "Hace 2 horas",
-          time_ago_en: "2 hours ago",
-          reads: "14.9K lecturas"
+          id: "nyc-news-2",
+          source_id: "nyc_parks_culture",
+          category_es: "CIUDAD & EVENTOS EN VIVO",
+          category_en: "CITY & LIVE EVENTS",
+          category_slug: "events",
+          badge_color: "#f8b800",
+          icon: "🗽",
+          city: "New York City",
+          location_tag: "Central Park & Times Square",
+          title_es: "Agenda cultural de Nueva York: Central Park y Times Square anuncian festival artístico y conciertos al aire libre",
+          title_en: "NYC Cultural Agenda: Central Park & Times Square Unveil Open-Air Music & Arts Festival",
+          summary_es: "El Departamento de Parques y Cultura de la Ciudad presenta una cartelera vibrante con más de 40 presentaciones musicales, ferias de diseño local y zonas peatonales ampliadas durante el fin de semana.",
+          summary_en: "The NYC Parks & Cultural Affairs Department debuts an energetic lineup featuring over 40 free concerts, artisan design markets, and expanded pedestrian corridors this weekend.",
+          key_points_es: [
+            "Más de 40 presentaciones de música en vivo y teatro comunitario de acceso gratuito.",
+            "Rutas peatonales especiales y ciclovías seguras habilitadas en todo el perímetro.",
+            "Puntos gastronómicos de chefs locales con puestos emergentes en el Great Lawn."
+          ],
+          key_points_en: [
+            "Over 40 free-admission live acoustic performances and community theater sets.",
+            "Designated pedestrian lanes and protected bike paths active all weekend.",
+            "Pop-up food markets by acclaimed local culinary artisans at the Great Lawn."
+          ],
+          keywords: ["#CentralPark", "#TimesSquare", "#NYCCulture", "#EventosEnVivo"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "New York City Arts Bureau",
+          time_ago_es: "Hace 22 min",
+          time_ago_en: "22 min ago",
+          reads: "41.6K lecturas",
+          hero_gradient: "linear-gradient(135deg, #f8b800 0%, #d87800 100%)",
+          hero_tag: "🗽 EVENTOS NYC"
         },
         {
-          id: "do-news-5",
-          category_es: "CULTURA & MÚSICA",
-          category_en: "CULTURE & MUSIC",
-          category_slug: "entertainment",
-          badge_color: "#a855f7",
-          icon: "🎶",
-          title_es: "Festival Internacional de Música reúne a leyendas del merengue, bachata y géneros urbanos",
-          title_en: "International Music Festival brings together icons of Merengue, Bachata, and Urban rhythms",
-          summary_es: "Miles de asistentes vibraron en la costa caribeña en una fiesta cultural que celebra las ricas raíces musicales dominicanas.",
-          summary_en: "Thousands of concertgoers celebrated Caribbean musical heritage along the oceanfront boulevard.",
-          source: "Arte & Ritmo",
-          time_ago_es: "Hace 3 horas",
-          time_ago_en: "3 hours ago",
-          reads: "26.4K lecturas"
-        }
-      ];
-    } else {
-      // General Latin America / Global Spanish
-      return [
-        {
-          id: "intl-news-1",
-          category_es: "LOCAL & MOVILIDAD",
-          category_en: "MOBILITY & LOCAL",
-          category_slug: "breaking",
-          badge_color: "#ff007f",
-          icon: "🚗",
-          title_es: `Innovación en transporte en ${city}: Impulsan flota de vehículos ecológicos y viajes conectados`,
-          title_en: `Mobility Innovation in ${city}: Eco-friendly fleets and connected journeys expand`,
-          summary_es: `La ciudad promueve corredores limpios e interactivos para mejorar el confort de pasajeros en trayectos diarios.`,
-          summary_en: `The city champions connected smart corridors to elevate commuter convenience and sustainable transport.`,
-          source: `${city} News Express`,
-          time_ago_es: "Hace 15 min",
-          time_ago_en: "15 min ago",
-          reads: "21.2K lecturas"
-        },
-        {
-          id: "intl-news-2",
-          category_es: "TECNOLOGÍA",
-          category_en: "TECHNOLOGY",
+          id: "nyc-news-3",
+          source_id: "ny_tech_innovation",
+          category_es: "ECONOMÍA & TECNOLOGÍA",
+          category_en: "ECONOMY & TECH",
           category_slug: "tech",
           badge_color: "#00f5a0",
-          icon: "📱",
-          title_es: "Aplicaciones de viajes integran inteligencia artificial para predecir rutas y sugerir paradas de interés",
-          title_en: "Travel & Mobility Apps leverage AI to predict traffic and recommend scenic local stops",
-          summary_es: "Nuevas herramientas digitales enriquecen el tiempo a bordo con contenidos lúdicos y pronósticos meteorológicos en vivo.",
-          summary_en: "New intelligent passenger features enhance travel time with engaging trivia and real-time local forecasts.",
-          source: "Mundo Digital",
+          icon: "💼",
+          city: "New York City",
+          location_tag: "Midtown & Silicon Alley · NY",
+          title_es: "El corredor de Silicon Alley en Manhattan supera récord histórico de financiamiento para startups de IA",
+          title_en: "Manhattan's Silicon Alley Hits Historic Record in AI & Tech Venture Capital Investments",
+          summary_es: "Nuevas compañías de software, inteligencia artificial aplicada al transporte y plataformas interactivas para vehículos instalan sus centros de ingeniería en el corazón de Manhattan.",
+          summary_en: "Pioneering software firms and automotive interactive media creators establish new flagship engineering hubs right in the center of Manhattan.",
+          key_points_es: [
+            "Inversión de más de $2.8 mil millones en rondas de crecimiento en el último trimestre.",
+            "Creación de 4,500 empleos especializados en tecnologías inteligentes y movilidad.",
+            "Programas de colaboración directa con Columbia University y NYU Tandon."
+          ],
+          key_points_en: [
+            "Over $2.8 billion invested in growth-stage tech rounds this quarter.",
+            "4,500 new specialized jobs created across in-car entertainment and smart mobility.",
+            "Active university partnership programs launched with Columbia and NYU."
+          ],
+          keywords: ["#SiliconAlley", "#ManhattanTech", "#InversionNY", "#IA"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "Wall Street & Tech Daily",
           time_ago_es: "Hace 45 min",
           time_ago_en: "45 min ago",
-          reads: "29.8K lecturas"
+          reads: "29.7K lecturas",
+          hero_gradient: "linear-gradient(135deg, #00f5a0 0%, #00b875 100%)",
+          hero_tag: "💼 TECH & FINANCE"
         },
         {
-          id: "intl-news-3",
-          category_es: "FÚTBOL & DEPORTES",
-          category_en: "SPORTS",
-          category_slug: "sports",
-          badge_color: "#ffd000",
-          icon: "⚽",
-          title_es: "Emocionante desenlace de la liga continental: Gol en el tiempo de descuento define la eliminatoria",
-          title_en: "Continental Cup Drama: Stoppage-time wonder strike decides thrilling knockout clash",
-          summary_es: "Aficionados de toda la región vivieron un partido de alta intensidad con momentos tácticos de primer nivel.",
-          summary_en: "Football enthusiasts across the region enjoyed an end-to-end tactical showdown with dramatic late fireworks.",
-          source: "Fútbol Total Live",
+          id: "nyc-news-4",
+          source_id: "broadway_theatre_league",
+          category_es: "CULTURA & ESPECTÁCULOS",
+          category_en: "ENTERTAINMENT & BROADWAY",
+          category_slug: "broadway",
+          badge_color: "#a855f7",
+          icon: "🎭",
+          city: "New York City",
+          location_tag: "Broadway District · 42nd St",
+          title_es: "Temporada estelar en Broadway: Nuevos estrenos y obras galardonadas marcan lleno total en marquesinas",
+          title_en: "Broadway's Golden Season: Acclaimed New Musicals and Star-Studded Plays Post Sell-Out Crowds",
+          summary_es: "Los teatros del Distrito de Broadway celebran una afluencia extraordinaria de espectadores locales e internacionales con producciones visuales sin precedentes y tecnología de proyección inmersiva.",
+          summary_en: "The historic Broadway Theatre District reports record weekend attendance with spellbinding stagecraft, star-studded ensembles, and innovative stage visuals.",
+          key_points_es: [
+            "Ocupación teatral superior al 93% en los recintos de Times Square y calle 42.",
+            "Iniciativa de boletos de último minuto con descuentos para pasajeros y residentes.",
+            "Recepción unánime de la crítica para las nuevas adaptaciones musicales."
+          ],
+          key_points_en: [
+            "Theater occupancy exceeds 93% across historic Times Square venues.",
+            "Special rush ticket programs launched for local residents and rideshare riders.",
+            "Universal critical acclaim for groundbreaking musical adaptations."
+          ],
+          keywords: ["#Broadway", "#TeatroNYC", "#Espectaculos", "#BroadwayShows"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "Broadway Stage Chronicle",
           time_ago_es: "Hace 1 hora",
           time_ago_en: "1 hour ago",
-          reads: "44.0K lecturas"
+          reads: "38.5K lecturas",
+          hero_gradient: "linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)",
+          hero_tag: "🎭 BROADWAY LIVE"
         },
         {
-          id: "intl-news-4",
-          category_es: "CIUDAD & TURISMO",
-          category_en: "CITY LIFE",
-          category_slug: "city",
+          id: "nyc-news-5",
+          source_id: "ny_weather_advisory",
+          category_es: "CLIMA & CONDICIONES LOCALES",
+          category_en: "LOCAL WEATHER & TRAVEL",
+          category_slug: "weather",
           badge_color: "#00d2ff",
-          icon: "🏛️",
-          title_es: `Conoce los puntos históricos y rincones culturales imprescindibles de ${city}`,
-          title_en: `Must-see cultural landmarks and hidden gems to explore in ${city}`,
-          summary_es: `Museos renovados, ferias de diseño local y paseos peatonales esperan a quienes visitan o recorren la metrópolis.`,
-          summary_en: `Renovated museums, local artisan markets, and pedestrian promenades welcome visitors exploring the metropolis.`,
-          source: "Guía Urbana Global",
+          icon: "🌦️",
+          city: "New York City",
+          location_tag: "Cinco Condados & Río Hudson",
+          title_es: "Condiciones ideales en los cinco condados: Brisa agradable y cielo despejado para el transporte y ferrys",
+          title_en: "Ideal Metro Weather: Pleasant Breezes and Clear Skies Favor Commutes & Hudson River Ferries",
+          summary_es: "El pronóstico meteorológico oficial para el área metropolitana de Nueva York confirma temperaturas suaves y visibilidad óptima en puentes, túneles y el servicio de NYC Ferry.",
+          summary_en: "The official metro forecast confirms mild pleasant temperatures and optimal visibility across city bridges, highways, and NYC Ferry water routes.",
+          key_points_es: [
+            "Excelente visibilidad en puentes de Brooklyn, Manhattan y George Washington.",
+            "Servicio de transbordadores NYC Ferry operando con itinerario completo sin demoras.",
+            "Recomendación para disfrutar terrazas y paseos peatonales a lo largo de la costa."
+          ],
+          key_points_en: [
+            "Flawless visibility on Brooklyn, Manhattan, and George Washington bridges.",
+            "NYC Ferry lines running on 100% on-time schedules without maritime delays.",
+            "Perfect conditions for enjoying waterfront parks along the East River."
+          ],
+          keywords: ["#ClimaNYC", "#NYCFerry", "#PronosticoLocal", "#FiveBoroughs"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "New York Metro Weather Service",
           time_ago_es: "Hace 2 horas",
           time_ago_en: "2 hours ago",
-          reads: "18.7K lecturas"
+          reads: "22.1K lecturas",
+          hero_gradient: "linear-gradient(135deg, #00d2ff 0%, #0088cc 100%)",
+          hero_tag: "🌦️ REPORTE CLIMA"
         },
         {
-          id: "intl-news-5",
-          category_es: "CIENCIA & ESPACIO",
-          category_en: "SCIENCE",
-          category_slug: "science",
-          badge_color: "#a855f7",
-          icon: "🌌",
-          title_es: "Misión espacial capta sorprendentes auroras y detalles de la atmósfera planetaria",
-          title_en: "Planetary Mission captures mesmerizing auroras and atmospheric discoveries",
-          summary_es: "Científicos internacionales analizan los nuevos datos ópticos recolectados por satélites de última generación.",
-          summary_en: "Global researchers analyze breakthrough optical telemetry beamed back by deep-space probes.",
-          source: "AstroScience Global",
+          id: "nyc-news-6",
+          source_id: "nyc_dining_guide",
+          category_es: "GASTRONOMÍA & VIDA URBANA",
+          category_en: "DINING & METRO LIFESTYLE",
+          category_slug: "dining",
+          badge_color: "#ff7b00",
+          icon: "🍕",
+          city: "New York City",
+          location_tag: "DUMBO, SoHo & West Village",
+          title_es: "Guía culinaria neoyorquina: Nuevos mercados gastronómicos y terrazas panorámicas debutan en DUMBO y SoHo",
+          title_en: "NYC Dining Scene: Acclaimed Rooftop Venues and Artisan Food Halls Open in DUMBO & SoHo",
+          summary_es: "Destacados maestros pizzeros, chefs de autor y cafeterías de especialidad estrenan locales con vistas privilegiadas al skyline de Manhattan, convirtiéndose en el destino favorito de comensales locales y visitantes.",
+          summary_en: "Master pizza makers, signature chefs, and boutique coffee roasters debut scenic venues overlooking the Manhattan skyline, emerging as top evening destinations.",
+          key_points_es: [
+            "Apertura de más de 15 nuevas terrazas gastronómicas con menús sustentables de temporada.",
+            "Reconocimiento de la crítica internacional para la nueva ola de panaderías artesanales.",
+            "Espacios con música acústica en vivo y coctelería sin alcohol para toda la familia."
+          ],
+          key_points_en: [
+            "Over 15 new rooftop dining spaces open featuring locally sourced seasonal menus.",
+            "International accolades for NYC's thriving wave of artisan sourdough bakeries.",
+            "Family-friendly settings offering live acoustic sets and craft mocktail bars."
+          ],
+          keywords: ["#NYCDining", "#DUMBO", "#SoHo", "#GastronomiaLocal"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "The New York Culinary Review",
           time_ago_es: "Hace 3 horas",
           time_ago_en: "3 hours ago",
-          reads: "23.5K lecturas"
+          reads: "31.4K lecturas",
+          hero_gradient: "linear-gradient(135deg, #ff7b00 0%, #d85400 100%)",
+          hero_tag: "🍕 SABOR LOCAL"
         }
       ];
     }
+
+    // 2. MIAMI & SOUTH FLORIDA
+    if (cityLower.includes('miami') || cityLower.includes('fort lauderdale') || cityLower.includes('florida')) {
+      return [
+        {
+          id: "mia-news-1",
+          source_id: "miami_transit_watch",
+          category_es: "TRÁNSITO & MOVILIDAD LOCAL",
+          category_en: "LOCAL TRANSIT & MOBILITY",
+          category_slug: "transit",
+          badge_color: "#e52521",
+          icon: "🚗",
+          city: "Miami Metro Area",
+          location_tag: "Biscayne Blvd & Ocean Dr",
+          title_es: "Modernización vial en Biscayne: Nuevos semáforos con IA reducen congestionamientos hacia Miami Beach",
+          title_en: "Biscayne Traffic Flow Upgrade: Smart AI Signals Cut Commute Times Toward Miami Beach",
+          summary_es: "El Departamento de Transporte del Condado Miami-Dade despliega sensores adaptativos a lo largo del MacArthur Causeway y Biscayne Boulevard para agilizar el tránsito en horas de alta demanda.",
+          summary_en: "Miami-Dade Transportation implements smart adaptive corridors on MacArthur Causeway and Biscayne Boulevard to accelerate passenger rides.",
+          key_points_es: [
+            "Tiempos de cruce hacia Miami Beach reducidos en un 22%.",
+            "Monitoreo de incidentes en tiempo real conectado con unidades de asistencia vial.",
+            "Mejoras en accesos al Puerto de Miami y Downtown."
+          ],
+          key_points_en: [
+            "Causeway crossing times to Miami Beach reduced by 22%.",
+            "Real-time incident response integrated with highway safety patrols.",
+            "Smoother transitions connecting PortMiami and Downtown."
+          ],
+          keywords: ["#MiamiTraffic", "#BiscayneBlvd", "#MiamiBeach", "#SmartTransit"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "Miami-Dade Transit Watch",
+          time_ago_es: "Hace 10 min",
+          time_ago_en: "10 min ago",
+          reads: "27.8K lecturas",
+          hero_gradient: "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)",
+          hero_tag: "🚗 MOVILIDAD MIAMI"
+        },
+        {
+          id: "mia-news-2",
+          source_id: "wynwood_arts",
+          category_es: "ARTE & CULTURA URBANA",
+          category_en: "ARTS & URBAN CULTURE",
+          category_slug: "culture",
+          badge_color: "#f8b800",
+          icon: "🎨",
+          city: "Miami Metro Area",
+          location_tag: "Wynwood & Design District",
+          title_es: "Wynwood Walls estrena murales monumentales y circuito de galerías nocturnas abiertas al público",
+          title_en: "Wynwood Walls Unveils Monumental New Murals and Extended Night Gallery Walks",
+          summary_es: "Artistas internacionales de graffiti y arte contemporáneo renuevan los muros icónicos del distrito con iluminación interactiva y música en vivo los fines de semana.",
+          summary_en: "Global street artists transform Wynwood's world-famous walls with vibrant installations and weekend acoustic showcases.",
+          key_points_es: [
+            "18 nuevos murales de gran formato de artistas de cinco continentes.",
+            "Recorridos guiados gratuitos y ferias artesanales en las aceras.",
+            "Ampliación de terrazas gastronómicas y espacios pet-friendly."
+          ],
+          key_points_en: [
+            "18 massive new murals by creators from five continents.",
+            "Complimentary guided evening walking tours and artisan showcases.",
+            "Extended outdoor dining terraces and pet-friendly lounges."
+          ],
+          keywords: ["#Wynwood", "#MiamiArts", "#DesignDistrict", "#CulturaUrbana"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "Miami Arts Chronicle",
+          time_ago_es: "Hace 25 min",
+          time_ago_en: "25 min ago",
+          reads: "33.1K lecturas",
+          hero_gradient: "linear-gradient(135deg, #f8b800 0%, #d87800 100%)",
+          hero_tag: "🎨 WYNWOOD ARTS"
+        },
+        {
+          id: "mia-news-3",
+          source_id: "inter_miami_sports",
+          category_es: "DEPORTES EN VIVO",
+          category_en: "LIVE SPORTS",
+          category_slug: "sports",
+          badge_color: "#ff007f",
+          icon: "⚽",
+          city: "Miami Metro Area",
+          location_tag: "Chase Stadium · Fort Lauderdale",
+          title_es: "Jornada de gala para Inter Miami: Espectacular triunfo en casa con lleno total de aficionados",
+          title_en: "Inter Miami Thriller: Spectacular Home Victory in Front of a Sold-Out Roaring Crowd",
+          summary_es: "El equipo rosa sella tres puntos clave en la lucha por el campeonato con una exhibición ofensiva de alto nivel y jugadas de antología celebradas por la multitud.",
+          summary_en: "The Herons secure crucial points toward the league title with masterclass finishing and electric stadium energy.",
+          key_points_es: [
+            "Gol de tiro libre en los minutos finales desató la ovación en el Chase Stadium.",
+            "Récord de asistencia para el encuentro con más de 21,500 fanáticos.",
+            "El club lidera la tabla de posiciones con miras a la postemporada."
+          ],
+          key_points_en: [
+            "Late free-kick stunner electrifies the capacity crowd at Chase Stadium.",
+            "Record attendance milestone with over 21,500 passionate supporters.",
+            "Club strengthens its grip at the top of the conference standings."
+          ],
+          keywords: ["#InterMiami", "#MLS", "#ChaseStadium", "#FutbolMiami"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "SportsCenter Florida",
+          time_ago_es: "Hace 50 min",
+          time_ago_en: "50 min ago",
+          reads: "48.2K lecturas",
+          hero_gradient: "linear-gradient(135deg, #ff007f 0%, #aa0055 100%)",
+          hero_tag: "⚽ INTER MIAMI"
+        },
+        {
+          id: "mia-news-4",
+          source_id: "brickell_finance",
+          category_es: "FINANZAS & NEGOCIOS",
+          category_en: "FINANCE & BUSINESS",
+          category_slug: "finance",
+          badge_color: "#00f5a0",
+          icon: "💼",
+          city: "Miami Metro Area",
+          location_tag: "Brickell Financial District",
+          title_es: "El distrito financiero de Brickell lidera la captación de inversiones tecnológicas y banca global",
+          title_en: "Brickell Financial District Leads Growth in Global Banking and Tech Relocations",
+          summary_es: "Firmas de capital de riesgo, banca privada y sedes tecnológicas consolidan a Miami como la capital financiera de las Américas con nuevas torres corporativas de última generación.",
+          summary_en: "Major private equity firms and global venture capitals establish flagship regional towers along Brickell Avenue.",
+          key_points_es: [
+            "Crecimiento interanual del 28% en fondos administrados desde Miami.",
+            "Apertura de nuevos centros de datos y torres ecológicas certificadas LEED.",
+            "Creación de miles de puestos de alta remuneración en servicios financieros."
+          ],
+          key_points_en: [
+            "28% year-over-year expansion in assets managed from South Florida.",
+            "Opening of new sustainable LEED-certified corporate high-rises.",
+            "High-salary job creation across fintech, legal, and capital markets."
+          ],
+          keywords: ["#Brickell", "#MiamiFinance", "#Inversiones", "#MiamiTech"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "South Florida Business Journal",
+          time_ago_es: "Hace 1 hora",
+          time_ago_en: "1 hour ago",
+          reads: "24.9K lecturas",
+          hero_gradient: "linear-gradient(135deg, #00f5a0 0%, #00b875 100%)",
+          hero_tag: "💼 BRICKELL BIZ"
+        },
+        {
+          id: "mia-news-5",
+          source_id: "miami_beach_lifestyle",
+          category_es: "PLAYAS & VIDA COSTERA",
+          category_en: "BEACH & COASTAL LIFE",
+          category_slug: "beach",
+          badge_color: "#00d2ff",
+          icon: "🌴",
+          city: "Miami Metro Area",
+          location_tag: "South Beach & Key Biscayne",
+          title_es: "Condiciones oceánicas perfectas: South Beach y Key Biscayne reportan aguas calmas y sol radiante",
+          title_en: "Perfect Ocean Conditions: South Beach & Key Biscayne Welcome Sun-Seekers with Gentle Waters",
+          summary_es: "Guardavidas y autoridades costeras confirman bandera verde en playas del sur de Florida con excelente brisa marina para navegación y actividades deportivas.",
+          summary_en: "Lifeguards report calm waters and gentle breezes, making it a prime day for oceanfront strolls and water recreation.",
+          key_points_es: [
+            "Bandera verde y temperatura del agua ideal a 81°F (27°C).",
+            "Servicios de alquiler de sombrillas y ciclovías costeras a plena capacidad.",
+            "Recomendación de hidratación y uso de protector solar para paseantes."
+          ],
+          key_points_en: [
+            "Green flag conditions with balmy 81°F (27°C) water temperatures.",
+            "Waterfront bike paths and boardwalk promenade fully accessible.",
+            "Hydration and sunscreen advisories for outdoor enthusiasts."
+          ],
+          keywords: ["#SouthBeach", "#OceanDrive", "#KeyBiscayne", "#PlayasMiami"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "Miami Beach Coastal Patrol",
+          time_ago_es: "Hace 2 horas",
+          time_ago_en: "2 hours ago",
+          reads: "30.1K lecturas",
+          hero_gradient: "linear-gradient(135deg, #00d2ff 0%, #0088cc 100%)",
+          hero_tag: "🌴 MIAMI BEACH"
+        },
+        {
+          id: "mia-news-6",
+          source_id: "coral_gables_dining",
+          category_es: "GASTRONOMÍA & NOCHE",
+          category_en: "DINING & NIGHTLIFE",
+          category_slug: "dining",
+          badge_color: "#ff7b00",
+          icon: "🍽️",
+          city: "Miami Metro Area",
+          location_tag: "Coral Gables & Coconut Grove",
+          title_es: "Ruta gastronómica del sur de Florida: Estrenan terrazas de autor en Miracle Mile y Coconut Grove",
+          title_en: "South Florida Dining Scene: Acclaimed Open-Air Terraces Debut in Miracle Mile & The Grove",
+          summary_es: "Prestigiosos chefs locales presentan propuestas de cocina mediterránea y marina de fusión con música ambiental para deleitar a residentes y turistas.",
+          summary_en: "Celebrated local chefs unveil Mediterranean and coastal fusion menus set within leafy historic promenades.",
+          key_points_es: [
+            "Menús degustación inspirados en ingredientes frescos de la bahía de Biscayne.",
+            "Terrazas al aire libre rodeadas de arboledas históricas de banyans.",
+            "Gran ambiente nocturno con presentaciones acústicas en vivo."
+          ],
+          key_points_en: [
+            "Chef tasting menus highlighting fresh Biscayne Bay seasonal catch.",
+            "Al fresco dining courtyards shaded by historic banyan canopies.",
+            "Acoustic jazz evenings and curated mocktail selections."
+          ],
+          keywords: ["#CoralGables", "#CoconutGrove", "#MiracleMile", "#Gastronomia"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "Miami Gourmet Digest",
+          time_ago_es: "Hace 3 horas",
+          time_ago_en: "3 hours ago",
+          reads: "26.3K lecturas",
+          hero_gradient: "linear-gradient(135deg, #ff7b00 0%, #d85400 100%)",
+          hero_tag: "🍽️ GOURMET MIAMI"
+        }
+      ];
+    }
+
+    // 3. DOMINICAN REPUBLIC (Santo Domingo, Santiago, Punta Cana, etc.)
+    if (isDO || cityLower.includes('santo domingo') || cityLower.includes('santiago') || cityLower.includes('punta cana') || cityLower.includes('dominicana')) {
+      return [
+        {
+          id: "do-news-1",
+          source_id: "rd_transit_movilidad",
+          category_es: "TRÁNSITO & VÍAS LOCALES",
+          category_en: "LOCAL TRANSIT & TRAFFIC",
+          category_slug: "transit",
+          badge_color: "#e52521",
+          icon: "🚗",
+          city: rawCity,
+          location_tag: "27 de Febrero & Winston Churchill",
+          title_es: "Operativo de tránsito inteligente: Nuevos semáforos sincronizados mejoran el flujo en avenidas principales",
+          title_en: "Smart Urban Mobility: Synchronized Signals Ease Peak Traffic on Major Santo Domingo Avenues",
+          summary_es: "El INTRANT y la DIGESETT implementan corredores coordinados en las avenidas 27 de Febrero, John F. Kennedy y Winston Churchill, reduciendo los tiempos de espera para conductores y pasajeros.",
+          summary_en: "Transit authorities deploy synchronized corridors across key metro avenues to reduce congestion and speed up rideshare trips.",
+          key_points_es: [
+            "Reducción estimada del 20% en tiempos de recorrido en horas pico.",
+            "Cámaras de monitoreo y fiscalización digital en intersecciones clave.",
+            "Coordinación especial en accesos al Distrito Nacional y puentes sobre el Ozama."
+          ],
+          key_points_en: [
+            "Estimated 20% travel time reduction during evening rush hours.",
+            "Live surveillance and digital traffic management at major intersections.",
+            "Dedicated flow corridors for vehicles crossing between the East and West banks."
+          ],
+          keywords: ["#TransitoRD", "#SantoDomingo", "#INTRANT", "#27DeFebrero"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "Boletín de Tránsito Dominicano",
+          time_ago_es: "Hace 10 min",
+          time_ago_en: "10 min ago",
+          reads: "29.4K lecturas",
+          hero_gradient: "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)",
+          hero_tag: "🚗 TRÁNSITO RD"
+        },
+        {
+          id: "do-news-2",
+          source_id: "metro_teleferico_rd",
+          category_es: "TRANSPORTE MASIVO",
+          category_en: "MASS TRANSIT",
+          category_slug: "metro",
+          badge_color: "#00f5a0",
+          icon: "🚇",
+          city: rawCity,
+          location_tag: "Línea 2C · Los Alcarrizos a Santo Domingo",
+          title_es: "Extensión del Metro hacia Los Alcarrizos alcanza el 92% de ejecución y alista pruebas operativas",
+          title_en: "Santo Domingo Metro Line 2C to Los Alcarrizos Reaches 92% Completion Milestone",
+          summary_es: "La OPRET anuncia que el viaducto elevado y las cinco estaciones intermedias de la Línea 2C están prácticamente listas para iniciar las pruebas dinámicas de trenes antes de su inauguración.",
+          summary_en: "Metro authorities confirm that elevated tracks and passenger stations are entering dynamic testing, bringing fast modern transit to thousands.",
+          key_points_es: [
+            "Ahorro de hasta 45 minutos de viaje por trayecto para miles de familias.",
+            "Estaciones equipadas con accesibilidad universal y seguridad electrónica.",
+            "Integración tarifaria con el Teleférico de Los Alcarrizos."
+          ],
+          key_points_en: [
+            "Commuters will save up to 45 minutes each way into the city center.",
+            "Universal accessibility and modern security across all new stations.",
+            "Seamless unified ticketing connected to the Los Alcarrizos Cable Car."
+          ],
+          keywords: ["#MetroSantoDomingo", "#OPRET", "#LosAlcarrizos", "#Linea2C"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "OPRET Noticias Oficial",
+          time_ago_es: "Hace 30 min",
+          time_ago_en: "30 min ago",
+          reads: "36.8K lecturas",
+          hero_gradient: "linear-gradient(135deg, #00f5a0 0%, #00b875 100%)",
+          hero_tag: "🚇 METRO SD"
+        },
+        {
+          id: "do-news-3",
+          source_id: "lidom_baseball",
+          category_es: "BÉISBOL INVERNAL (LIDOM)",
+          category_en: "DOMINICAN BASEBALL (LIDOM)",
+          category_slug: "sports",
+          badge_color: "#f8b800",
+          icon: "⚾",
+          city: rawCity,
+          location_tag: "Estadio Quisqueya Juan Marichal",
+          title_es: "Gran expectativa en el Estadio Quisqueya: Tigres del Licey y Leones del Escogido definen liderato",
+          title_en: "High Voltage at Quisqueya Stadium: Licey & Escogido Clash for Capital City Supremacy",
+          summary_es: "La pelota invernal dominicana enciende la pasión nacional con un duelo de pitcheo de Grandes Ligas y estadio repleto de fanáticos con banderas y güiras en Santo Domingo.",
+          summary_en: "Dominican winter ball ignites national passion as historic capital city rivals square off in a packed stadium atmosphere.",
+          key_points_es: [
+            "Boletería agotada y gran ambiente familiar en los alrededores del parque.",
+            "Peloteros de Grandes Ligas integrados a los rosters estelares.",
+            "Transmisión nacional en alta definición y cobertura para la diáspora."
+          ],
+          key_points_en: [
+            "Sold-out stands with vibrant music and traditional festive spirit.",
+            "MLB stars suit up for crucial mid-season playoff positioning.",
+            "Live HD national broadcasts and worldwide digital streaming."
+          ],
+          keywords: ["#LIDOM", "#Licey", "#Escogido", "#EstadioQuisqueya", "#PelotaInvernal"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "Pizarra Deportiva Dominicana",
+          time_ago_es: "Hace 55 min",
+          time_ago_en: "55 min ago",
+          reads: "54.1K lecturas",
+          hero_gradient: "linear-gradient(135deg, #f8b800 0%, #d87800 100%)",
+          hero_tag: "⚾ PELOTA LIDOM"
+        },
+        {
+          id: "do-news-4",
+          source_id: "zona_colonial_cultura",
+          category_es: "CIUDAD & PATRIMONIO",
+          category_en: "CITY & HERITAGE",
+          category_slug: "culture",
+          badge_color: "#a855f7",
+          icon: "🏛️",
+          city: rawCity,
+          location_tag: "Ciudad Colonial de Santo Domingo",
+          title_es: "Noches coloniales y arte vivo: La Zona Colonial inaugura nuevo circuito peatonal y cultural iluminado",
+          title_en: "Colonial Nights & Living Heritage: Santo Domingo Historic District Debuts Illuminated Art Walk",
+          summary_es: "La emblemática calle Las Damas, el Parque Colón y la Plaza España se llenan de presentaciones de son, teatro de calle y ferias de artesanía dominicana los fines de semana.",
+          summary_en: "Historic cobblestone plazas welcome families and tourists with open-air acoustic performances, son dancing, and traditional artisan crafts.",
+          key_points_es: [
+            "Calles completamente peatonalizadas de 6:00 PM a medianoche.",
+            "Iluminación escénica en monumentos históricos de los siglos XVI y XVII.",
+            "Ruta de cafeterías y gastronomía criolla con música acústica en vivo."
+          ],
+          key_points_en: [
+            "Safe pedestrianized corridors active Friday through Sunday evenings.",
+            "Dramatic architectural lighting illuminating historic 16th-century stone facades.",
+            "Creole culinary crawl with boutique chocolate and coffee tastings."
+          ],
+          keywords: ["#ZonaColonial", "#SantoDomingo", "#TurismoRD", "#CulturaViva"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "Patrimonio & Cultura Quisqueya",
+          time_ago_es: "Hace 1 hora",
+          time_ago_en: "1 hour ago",
+          reads: "28.3K lecturas",
+          hero_gradient: "linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)",
+          hero_tag: "🏛️ ZONA COLONIAL"
+        },
+        {
+          id: "do-news-5",
+          source_id: "onamet_clima_rd",
+          category_es: "CLIMA & CONDICIONES TROPICALES",
+          category_en: "TROPICAL WEATHER & ESCAPES",
+          category_slug: "weather",
+          badge_color: "#00d2ff",
+          icon: "🌴",
+          city: rawCity,
+          location_tag: "Litoral Sur · Boca Chica y Juan Dolio",
+          title_es: "Condiciones de playa excelentes: Brisa caribeña y sol radiante favorecen escapadas hacia el Este",
+          title_en: "Tropical Sunshine Alert: Caribbean Waters at 28°C Favor Weekend Trips to Boca Chica & Juan Dolio",
+          summary_es: "El Instituto Dominicano de Meteorología pronostica cielos mayormente despejados y temperaturas cálidas agradables de 29°C, ideales para disfrutar de la costa marina.",
+          summary_en: "Meteorological reports confirm radiant sunshine and mild sea breezes across the southern coast, perfect for family beach excursions.",
+          key_points_es: [
+            "Aguas cálidas y calmas con bandera verde en playas turísticas.",
+            "Autovía del Este y Las Américas operando con vigilancia continua.",
+            "Excelente visibilidad para traslados hacia el Aeropuerto Las Américas (AILA)."
+          ],
+          key_points_en: [
+            "Calm warm waters with green safety flags across southern shores.",
+            "Las Americas Highway patrolled continuously for smooth airport transit.",
+            "Flawless conditions for outdoor dining along the oceanfront boulevard."
+          ],
+          keywords: ["#ClimaRD", "#BocaChica", "#JuanDolio", "#FinDeSemana"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "Servicio Meteorológico Dominicano",
+          time_ago_es: "Hace 2 horas",
+          time_ago_en: "2 hours ago",
+          reads: "23.9K lecturas",
+          hero_gradient: "linear-gradient(135deg, #00d2ff 0%, #0088cc 100%)",
+          hero_tag: "🌴 CLIMA CARIBE"
+        },
+        {
+          id: "do-news-6",
+          source_id: "rd_economia_comercio",
+          category_es: "ECONOMÍA & EMPRENDIMIENTO",
+          category_en: "ECONOMY & DIGITAL JOBS",
+          category_slug: "economy",
+          badge_color: "#ff7b00",
+          icon: "📈",
+          city: rawCity,
+          location_tag: "Polígono Central & Zonas Comerciales",
+          title_es: "Auge de plataformas digitales: Apps de transporte e intermediación impulsan ingresos de miles de familias",
+          title_en: "Digital Economy Boom: Rideshare and On-Demand Apps Boost Household Earnings Nationwide",
+          summary_es: "El ecosistema de servicios tecnológicos y movilidad privada se consolida como uno de los sectores de mayor dinamismo y generación de empleo flexible en la República Dominicana.",
+          summary_en: "The on-demand transportation ecosystem continues to expand as a primary engine of flexible income and entrepreneurship.",
+          key_points_es: [
+            "Crecimiento del 34% en transacciones digitales y propinas electrónicas.",
+            "Programas de capacitación vial y beneficios especiales para conductores estrella.",
+            "Mayor seguridad y comodidad valorada positivamente por los pasajeros."
+          ],
+          key_points_en: [
+            "34% annual rise in electronic payments and in-car digital tipping.",
+            "Road safety programs and rewards designed for top-rated drivers.",
+            "High satisfaction scores reported by local passengers and tourists."
+          ],
+          keywords: ["#EconomiaRD", "#CopilotRD", "#Emprendimiento", "#MovilidadDigital"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "Economía & Finanzas Dominicanas",
+          time_ago_es: "Hace 3 horas",
+          time_ago_en: "3 hours ago",
+          reads: "19.7K lecturas",
+          hero_gradient: "linear-gradient(135deg, #ff7b00 0%, #d85400 100%)",
+          hero_tag: "📈 ECONOMÍA RD"
+        }
+      ];
+    }
+
+    // 4. BESPOKE UNIVERSAL GENERATOR FOR ANY DETECTED CITY IN THE WORLD
+    const cityCapitalized = rawCity.charAt(0).toUpperCase() + rawCity.slice(1);
+    const stateSuffix = state ? `, ${state}` : "";
+    return [
+      {
+        id: `local-news-${cityLower}-1`,
+        source_id: "local_transit_hub",
+        category_es: "TRÁNSITO & MOVILIDAD LOCAL",
+        category_en: "LOCAL MOBILITY & TRANSIT",
+        category_slug: "transit",
+        badge_color: "#e52521",
+        icon: "🚗",
+        city: cityCapitalized,
+        location_tag: `${cityCapitalized}${stateSuffix} · Centro Urbano`,
+        title_es: `Modernización vial en ${cityCapitalized}: Nuevos corredores inteligentes agilizan el tránsito diario`,
+        title_en: `Smart Transit in ${cityCapitalized}: Intelligent Traffic Corridors Speed Up Commuter Journeys`,
+        summary_es: `La administración municipal de ${cityCapitalized} implementa sistemas de sincronización semafórica adaptativa en los principales ejes viales para optimizar el flujo de vehículos y trayectos de pasajeros.`,
+        summary_en: `Municipal transportation authorities roll out smart synchronized corridors across major avenues to optimize vehicle flow and passenger trips throughout ${cityCapitalized}.`,
+        key_points_es: [
+          `Disminución comprobada en los tiempos de traslado durante horas punta en ${cityCapitalized}.`,
+          "Sensores inteligentes conectados al centro de control vial de la metrópolis.",
+          "Mejoras en la conectividad directa con zonas residenciales y comerciales."
+        ],
+        key_points_en: [
+          `Demonstrated reduction in peak commute times across ${cityCapitalized}.`,
+          "Real-time sensor network connected to the metropolitan traffic control center.",
+          "Enhanced direct connectivity linking residential and commercial districts."
+        ],
+        keywords: [`#${cityCapitalized.replace(/\s+/g, '')}`, "#TransitoLocal", "#MovilidadInteligente", "#EnVivo"],
+        quality_score: 5,
+        quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+        source: `${cityCapitalized} Transit Authority`,
+        time_ago_es: "Hace 10 min",
+        time_ago_en: "10 min ago",
+        reads: "24.2K lecturas",
+        hero_gradient: "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)",
+        hero_tag: `🚗 ${cityCapitalized.toUpperCase()}`
+      },
+      {
+        id: `local-news-${cityLower}-2`,
+        source_id: "city_events_culture",
+        category_es: "CIUDAD & EVENTOS EN VIVO",
+        category_en: "CITY & LIVE EVENTS",
+        category_slug: "culture",
+        badge_color: "#f8b800",
+        icon: "🎉",
+        city: cityCapitalized,
+        location_tag: `${cityCapitalized} · Plazas y Parques`,
+        title_es: `Agenda cultural en ${cityCapitalized}: Presentan festival de música, arte urbano y gastronomía local`,
+        title_en: `Cultural Highlights in ${cityCapitalized}: Open-Air Arts, Live Music & Artisan Markets Debut`,
+        summary_es: `Parques céntricos y paseos peatonales de ${cityCapitalized} acogen una variada programación artística de acceso libre para toda la familia durante el fin de semana.`,
+        summary_en: `Historic plazas and pedestrian avenues in ${cityCapitalized} host a vibrant weekend lineup of live acoustic sets, family exhibitions, and artisan pop-ups.`,
+        key_points_es: [
+          `Más de 25 presentaciones culturales de acceso libre en puntos icónicos de ${cityCapitalized}.`,
+          "Espacios seguros y rutas peatonales adaptadas para disfrute de residentes y visitantes.",
+          "Feria de diseño independiente y comida de autor con destacados talentos locales."
+        ],
+        key_points_en: [
+          `Over 25 free cultural presentations at landmark venues across ${cityCapitalized}.`,
+          "Safe pedestrian pathways configured for weekend family relaxation.",
+          "Independent design and culinary showcases highlighting local neighborhood talent."
+        ],
+        keywords: [`#${cityCapitalized.replace(/\s+/g, '')}Events`, "#CulturaLocal", "#MusicaEnVivo", "#FinDeSemana"],
+        quality_score: 5,
+        quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+        source: `${cityCapitalized} Cultural Board`,
+        time_ago_es: "Hace 25 min",
+        time_ago_en: "25 min ago",
+        reads: "31.8K lecturas",
+        hero_gradient: "linear-gradient(135deg, #f8b800 0%, #d87800 100%)",
+        hero_tag: `🎉 VIVE ${cityCapitalized.toUpperCase()}`
+      },
+      {
+        id: `local-news-${cityLower}-3`,
+        source_id: "business_tech_metro",
+        category_es: "ECONOMÍA & INNOVACIÓN",
+        category_en: "BUSINESS & INNOVATION",
+        category_slug: "tech",
+        badge_color: "#00f5a0",
+        icon: "💼",
+        city: cityCapitalized,
+        location_tag: `${cityCapitalized} · Distrito Tecnológico`,
+        title_es: `Impulso económico en ${cityCapitalized}: Nuevas empresas digitales y de servicios abren sedes operativas`,
+        title_en: `Economic Surge in ${cityCapitalized}: Tech Startups and Digital Hubs Expand Local Operations`,
+        summary_es: `El ecosistema comercial y tecnológico de ${cityCapitalized} registra cifras récord de inversión, generando nuevas oportunidades de empleo especializado y crecimiento productivo.`,
+        summary_en: `The business ecosystem in ${cityCapitalized} reports record investments, generating new skilled opportunities across software, logistics, and digital services.`,
+        key_points_es: [
+          `Crecimiento sostenido en la apertura de nuevos emprendimientos en ${cityCapitalized}.`,
+          "Alianzas con centros de innovación para capacitación de talento local.",
+          "Consolidación de la ciudad como un polo regional de desarrollo."
+        ],
+        key_points_en: [
+          `Steady expansion in newly launched digital and services ventures in ${cityCapitalized}.`,
+          "Strategic partnerships with innovation incubators to foster homegrown talent.",
+          "Strengthened positioning as an attractive hub for regional enterprise."
+        ],
+        keywords: [`#${cityCapitalized.replace(/\s+/g, '')}Tech`, "#EconomiaLocal", "#Innovacion", "#Negocios"],
+        quality_score: 5,
+        quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+        source: `${cityCapitalized} Business Report`,
+        time_ago_es: "Hace 45 min",
+        time_ago_en: "45 min ago",
+        reads: "26.5K lecturas",
+        hero_gradient: "linear-gradient(135deg, #00f5a0 0%, #00b875 100%)",
+        hero_tag: `💼 TECH ${cityCapitalized.toUpperCase()}`
+      },
+      {
+        id: `local-news-${cityLower}-4`,
+        source_id: "local_sports_stadium",
+        category_es: "DEPORTES LOCALES",
+        category_en: "LOCAL SPORTS",
+        category_slug: "sports",
+        badge_color: "#ff007f",
+        icon: "⚽",
+        city: cityCapitalized,
+        location_tag: `${cityCapitalized} · Estadio Principal`,
+        title_es: `Emoción en el estadio de ${cityCapitalized}: Gran jornada deportiva con asistencia multitudinaria`,
+        title_en: `Sports Fever in ${cityCapitalized}: Thrilling Weekend Match Draws Passionate Hometown Fans`,
+        summary_es: `Aficionados colman las gradas para alentar al equipo representativo de la ciudad en un duelo vibrante definido en los minutos finales con espectacular jugada.`,
+        summary_en: `Thousands pack the home arena to cheer on the local club in an edge-of-the-seat showdown settled with late-game heroics.`,
+        key_points_es: [
+          `Lleno completo en las instalaciones deportivas de ${cityCapitalized}.`,
+          "Gran ambiente festivo y operativo de seguridad preventiva ejemplar.",
+          "El club local escala posiciones importantes en la tabla del torneo."
+        ],
+        key_points_en: [
+          `Capacity attendance reported at the flagship sporting venue in ${cityCapitalized}.`,
+          "Celebratory family atmosphere with seamless transportation coordination.",
+          "Hometown team advances toward crucial championship qualification."
+        ],
+        keywords: [`#${cityCapitalized.replace(/\s+/g, '')}Deportes`, "#EstadioLocal", "#PasionDeportiva"],
+        quality_score: 5,
+        quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+        source: `${cityCapitalized} Sports Gazette`,
+        time_ago_es: "Hace 1 hora",
+        time_ago_en: "1 hour ago",
+        reads: "42.1K lecturas",
+        hero_gradient: "linear-gradient(135deg, #ff007f 0%, #aa0055 100%)",
+        hero_tag: `⚽ DEPORTES LOCALES`
+      },
+      {
+        id: `local-news-${cityLower}-5`,
+        source_id: "metro_weather_local",
+        category_es: "CLIMA & MEDIO AMBIENTE",
+        category_en: "WEATHER & ENVIRONMENT",
+        category_slug: "weather",
+        badge_color: "#00d2ff",
+        icon: "🌤️",
+        city: cityCapitalized,
+        location_tag: `${cityCapitalized} · Área Metropolitana`,
+        title_es: `Reporte meteorológico en ${cityCapitalized}: Condiciones estables y visibilidad óptima para viajar`,
+        title_en: `Weather Watch in ${cityCapitalized}: Favorable Conditions and Optimal Road Visibility`,
+        summary_es: `El pronóstico oficial para ${cityCapitalized} y sus alrededores confirma temperaturas agradables para traslados y actividades al aire libre durante las próximas horas.`,
+        summary_en: `Regional meteorological stations confirm calm atmospheric conditions, optimal highway visibility, and pleasant outdoor travel temperatures.`,
+        key_points_es: [
+          `Condiciones ideales de tránsito y visibilidad en avenidas principales de ${cityCapitalized}.`,
+          "Baja probabilidad de precipitaciones significativas en la zona.",
+          "Recomendaciones de vestimenta acorde a la temperatura actual."
+        ],
+        key_points_en: [
+          `Ideal commuting visibility across highway corridors in ${cityCapitalized}.`,
+          "Minimal precipitation risk during expected peak transit hours.",
+          "Comfortable temperature range favoring outdoor walks and excursions."
+        ],
+        keywords: [`#Clima${cityCapitalized.replace(/\s+/g, '')}`, "#PronosticoLocal", "#ViajeSeguro"],
+        quality_score: 5,
+        quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+        source: `${cityCapitalized} Weather Center`,
+        time_ago_es: "Hace 2 horas",
+        time_ago_en: "2 hours ago",
+        reads: "20.3K lecturas",
+        hero_gradient: "linear-gradient(135deg, #00d2ff 0%, #0088cc 100%)",
+        hero_tag: `🌤️ CLIMA LOCAL`
+      },
+      {
+        id: `local-news-${cityLower}-6`,
+        source_id: "city_dining_guide",
+        category_es: "GASTRONOMÍA & VIDA LOCAL",
+        category_en: "DINING & LOCAL LIFESTYLE",
+        category_slug: "dining",
+        badge_color: "#ff7b00",
+        icon: "🍽️",
+        city: cityCapitalized,
+        location_tag: `${cityCapitalized} · Barrio Gastronómico`,
+        title_es: `Ruta culinaria en ${cityCapitalized}: Nuevas propuestas de cocina local y cafés de especialidad`,
+        title_en: `Foodie Scene in ${cityCapitalized}: New Neighborhood Bistros and Artisan Coffee Spots Debut`,
+        summary_es: `Emprendedores gastronómicos y cocineros locales renuevan la oferta restaurantera de ${cityCapitalized} con menús de autor, ingredientes de temporada y terrazas al aire libre.`,
+        summary_en: `Local culinary innovators unveil seasonal tasting menus, artisan bakeries, and garden seating spots across ${cityCapitalized}.`,
+        key_points_es: [
+          `Inauguración de espacios gastronómicos con recetas tradicionales y fusión en ${cityCapitalized}.`,
+          "Alta preferencia por productos frescos y sustentables de proveedores de la región.",
+          "Gran ambiente nocturno para compartir en familia o con amigos."
+        ],
+        key_points_en: [
+          `Debut of cozy neighborhood eateries celebrating regional flavors in ${cityCapitalized}.`,
+          "Strong focus on locally sourced seasonal ingredients and specialty brews.",
+          "Welcoming evening settings for diners and evening visitors."
+        ],
+        keywords: [`#Gastronomia${cityCapitalized.replace(/\s+/g, '')}`, "#SaborLocal", "#DondeComer"],
+        quality_score: 5,
+        quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+        source: `${cityCapitalized} Lifestyle Review`,
+        time_ago_es: "Hace 3 horas",
+        time_ago_en: "3 hours ago",
+        reads: "27.6K lecturas",
+        hero_gradient: "linear-gradient(135deg, #ff7b00 0%, #d85400 100%)",
+        hero_tag: `🍽️ SABOR LOCAL`
+      }
+    ];
   }
 }
 

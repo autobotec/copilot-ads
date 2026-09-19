@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700;800&family=Fredoka:wght@600;700&family=Pixelify+Sans:wght@400;600;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260919_smb3" />
+  <link rel="stylesheet" href="style.css?v=20260919_news_v3" />
   <style>
     /* CRITICAL INLINE STYLES FOR MIX MODE PILL & DOCK */
     button.mix-mode-pill {
@@ -674,9 +674,30 @@
             </div>
           </div>
 
-          <!-- SUBTAB 2: NEWS FEED CARDS -->
+          <!-- SUBTAB 2: NEWS FEED CARDS (DAILY NEWS REPORT V3.0) -->
           <div class="wn-tab-content" id="wnTabNews">
             <div class="news-feed-layout">
+              <!-- Local Location & Daily Report Header Banner -->
+              <div class="news-location-header smb3-wood-card">
+                <div class="nlh-left">
+                  <span class="nlh-pin">📍</span>
+                  <div>
+                    <div class="nlh-title-row">
+                      <h2 class="nlh-city" id="newsCityTitle">Noticias Locales</h2>
+                      <span class="nlh-badge" id="newsLocationBadge">🔴 EN VIVO · GPS ACTIVO</span>
+                    </div>
+                    <p class="nlh-subtitle" id="newsCuratedSubtitle">Reporte Diario Curado v3.0 · Cobertura Local de Tránsito, Eventos y Actualidad</p>
+                  </div>
+                </div>
+                <div class="nlh-right">
+                  <div class="nlh-stat-pill">
+                    <span class="nlh-star-icon">⭐</span>
+                    <span id="newsRatingBadge">Estándar Daily Report</span>
+                  </div>
+                  <span class="nlh-count-badge" id="newsCountBadge">6 REPORTES HOY</span>
+                </div>
+              </div>
+
               <!-- Top Breaking Ticker -->
               <div class="news-breaking-bar" id="newsBreakingBar">
                 <div class="breaking-pulse-badge">
@@ -684,13 +705,23 @@
                   <span id="breakingLabel">ÚLTIMA HORA</span>
                 </div>
                 <div class="breaking-marquee" id="breakingMarquee">
-                  <span id="breakingHeadlineText">Revolución de la IA: Presentan la nueva generación de autos inteligentes con copilotos virtuales</span>
+                  <span id="breakingHeadlineText">Cargando noticias locales de la ciudad...</span>
                 </div>
               </div>
 
-              <!-- News Cards Grid -->
+              <!-- News Cards Grid (Multi-Column Responsive) -->
               <div class="news-cards-grid" id="newsCardsGrid">
                 <!-- Populated dynamically by JS -->
+              </div>
+            </div>
+
+            <!-- NEWS DETAIL MODAL (Daily News Report Format) -->
+            <div class="news-modal-overlay" id="newsDetailModal">
+              <div class="news-modal-box smb3-wood-card">
+                <button class="news-modal-close" id="btnCloseNewsModal" aria-label="Cerrar">✖</button>
+                <div class="news-modal-content-wrap" id="newsModalContentWrap">
+                  <!-- Populated dynamically on card click -->
+                </div>
               </div>
             </div>
           </div>
@@ -1240,7 +1271,7 @@
       }
     };
   </script>
-  <script src="src/campaignManager.js?v=20260919_smb3"></script>
-  <script type="module" src="src/app.js?v=20260919_smb3"></script>
+  <script src="src/campaignManager.js?v=20260919_news_v3"></script>
+  <script type="module" src="src/app.js?v=20260919_news_v3"></script>
 </body>
 </html>
