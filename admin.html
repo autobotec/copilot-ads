@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copilot Ads | Panel de Administración y Control Comercial</title>
+  <link rel="icon" href="assets/images/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- ==================== PANTALLA DE BLOQUEO / LOGIN ==================== -->
+  <div id="authOverlay" class="auth-overlay">
+    <div class="auth-card">
+      <div class="auth-badge-icon">🔐</div>
+      <h2 class="auth-title">Copilot Ads Control</h2>
+      <p class="auth-subtitle">Ingresa tu PIN o Contraseña Maestra de Administrador</p>
+      
+      <div class="auth-input-group">
+        <input type="password" id="authInput" class="auth-input" placeholder="••••" maxlength="20" autofocus autocomplete="current-password">
+        <div id="authError" class="auth-error"></div>
+      </div>
+      
+      <button id="btnAuthSubmit" class="btn-primary">Acceder al Panel</button>
+      <div style="margin-top: 14px; font-size: 0.8rem; color: #64748b;">
+        PIN por defecto: <strong>2026</strong> o contraseña <strong>admin2026</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== HEADER NAVBAR ==================== -->
+  <header class="admin-navbar">
+    <div class="brand-wrapper">
+      <div class="brand-logo-icon">🚀</div>
+      <div>
+        <span class="brand-title">Copilot Driver Ads</span>
+        <span class="brand-badge">Ad Manager v2.0</span>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <a href="index.html" class="btn-outline" target="_blank" title="Abrir la pantalla de pasajeros en otra pestaña">
+        <span>📱 Ver Tablet Pasajeros</span>
+      </a>
+      <button id="btnQuickNewCamp" class="btn-outline" style="border-color: rgba(99,102,241,0.4); background: rgba(99,102,241,0.15);">
+        <span>➕ Nueva Campaña</span>
+      </button>
+      <button id="btnLogout" class="btn-outline" title="Bloquear panel">
+        <span>🔒 Salir</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== CONTENEDOR PRINCIPAL ==================== -->
+  <div class="admin-container">
+    
+    <!-- BARRA LATERAL DE NAVEGACIÓN -->
+    <aside class="admin-sidebar">
+      <button class="nav-item active" data-tab="tabDashboard">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard General</span>
+      </button>
+      <button class="nav-item" data-tab="tabCampaigns">
+        <span class="nav-icon">📢</span>
+        <span>Campañas & Anuncios</span>
+      </button>
+      <button class="nav-item" data-tab="tabNewCampaign">
+        <span class="nav-icon">➕</span>
+        <span>Crear / Editar Pauta</span>
+      </button>
+      <button class="nav-item" data-tab="tabFleet">
+        <span class="nav-icon">🚕</span>
+        <span>Flota de Tablets</span>
+      </button>
+      <button class="nav-item" data-tab="tabReports">
+        <span class="nav-icon">📈</span>
+        <span>Reportes para Clientes</span>
+      </button>
+      <button class="nav-item" data-tab="tabSettings">
+        <span class="nav-icon">⚙️</span>
+        <span>Config & Respaldos</span>
+      </button>
+    </aside>
+
+    <!-- CONTENIDO DE PESTAÑAS -->
+    <main class="admin-content">
+
+      <!-- ==================== TAB 1: DASHBOARD ==================== -->
+      <section id="tabDashboard" class="tab-pane active">
+        <!-- Tarjetas KPI -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div>
+              <div class="kpi-title">Campañas Activas</div>
+              <div class="kpi-value" id="kpiActiveCount">0</div>
+              <div class="kpi-sub" id="kpiActiveSub">En rotación continua</div>
+            </div>
+            <div class="kpi-icon-pill kpi-indigo">📢</div>
+          </div>
+
+          <div class="kpi-card">
+            <div>
+              <div class="kpi-title">Impresiones Totales</div>
+              <div class="kpi-value" id="kpiImpressions">0</div>
+              <div class="kpi-sub">Visualizaciones en tablet</div>
+            </div>
+            <div class="kpi-icon-pill kpi-green">👁️</div>
+          </div>
+
+          <div class="kpi-card">
+            <div>
+              <div class="kpi-title">Videos Completados</div>
+              <div class="kpi-value" id="kpiVideos">0</div>
+              <div class="kpi-sub">Spotlights reproducidos 100%</div>
+            </div>
+            <div class="kpi-icon-pill kpi-cyan">🎬</div>
+          </div>
+
+          <div class="kpi-card">
+            <div>
+              <div class="kpi-title">Escaneos de QR</div>
+              <div class="kpi-value" id="kpiQrScans">0</div>
+              <div class="kpi-sub">Conversiones a móviles</div>
+            </div>
+            <div class="kpi-icon-pill kpi-amber">📲</div>
+          </div>
+        </div>
+
+        <!-- Resumen de Campañas Recientes -->
+        <div class="card-section">
+          <div class="section-header-row">
+            <div>
+              <h3 class="section-heading">Campañas en Rotación Activa</h3>
+              <p class="section-desc">Clientes cuyos anuncios se están emitiendo en vivo en las tablets.</p>
+            </div>
+            <button class="btn-outline" id="btnGoToCampaigns">Ver todas las campañas ➔</button>
+          </div>
+          <div class="table-responsive">
+            <table class="custom-table" id="dashboardQuickTable">
+              <thead>
+                <tr>
+                  <th>Anunciante / Cliente</th>
+                  <th>Formato</th>
+                  <th>Cupón / Oferta</th>
+                  <th>Impresiones</th>
+                  <th>Escaneos QR</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardQuickTbody">
+                <!-- Se llena dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Flota Rápida -->
+        <div class="card-section">
+          <div class="section-header-row">
+            <div>
+              <h3 class="section-heading">Monitoreo de Flota Activa</h3>
+              <p class="section-desc">Dispositivos en vehículos transmitiendo pauta publicitaria.</p>
+            </div>
+          </div>
+          <div id="fleetQuickSummary" style="display: flex; gap: 16px; flex-wrap: wrap;">
+            <!-- Pills de tablets -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 2: CAMPAÑAS ==================== -->
+      <section id="tabCampaigns" class="tab-pane">
+        <div class="card-section">
+          <div class="section-header-row">
+            <div>
+              <h3 class="section-heading">Catálogo de Campañas Publicitarias</h3>
+              <p class="section-desc">Gestiona, activa, pausa o previsualiza los anuncios de tus clientes.</p>
+            </div>
+            <button class="btn-primary" id="btnCreateNewCampFromList" style="width: auto; padding: 10px 20px;">
+              ➕ Nueva Campaña
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Cliente & Título</th>
+                  <th>Formato</th>
+                  <th>Vigencia</th>
+                  <th>Horario</th>
+                  <th>Métricas</th>
+                  <th>Activo</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="campaignsFullTbody">
+                <!-- Filas generadas dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 3: NUEVA / EDITAR CAMPAÑA ==================== -->
+      <section id="tabNewCampaign" class="tab-pane">
+        <div class="card-section">
+          <div class="section-header-row">
+            <div>
+              <h3 class="section-heading" id="formTitleHeading">Nueva Campaña Publicitaria</h3>
+              <p class="section-desc">Registra los datos comerciales del cliente anunciante y sus creativos.</p>
+            </div>
+            <button class="btn-outline" id="btnResetForm">Limpiar Formulario</button>
+          </div>
+
+          <form id="campaignForm">
+            <input type="hidden" id="editCampId" value="">
+            
+            <div class="form-grid">
+              <!-- Nombre del Cliente -->
+              <div class="form-group">
+                <label class="form-label" for="campClientName">Nombre del Cliente / Marca *</label>
+                <input type="text" id="campClientName" class="form-control" placeholder="Ej: Ocean Drive Bistro" required>
+              </div>
+
+              <!-- Formato Publicitario -->
+              <div class="form-group">
+                <label class="form-label" for="campFormat">Formato Publicitario *</label>
+                <select id="campFormat" class="form-control" required>
+                  <option value="video_spotlight">🎬 Video Spotlight (Pantalla Completa Modo Mix)</option>
+                  <option value="deal">🏷️ Tarjeta de Descuento / Cupón (Deals)</option>
+                  <option value="banner">🖼️ Banner Lateral / Footer en Juegos</option>
+                  <option value="sponsor">⭐ Patrocinador de Contenido (Clima/Trivia)</option>
+                </select>
+              </div>
+
+              <!-- Título del Anuncio -->
+              <div class="form-group">
+                <label class="form-label" for="campTitle">Título Principal de la Campaña *</label>
+                <input type="text" id="campTitle" class="form-control" placeholder="Ej: 2x1 en Mariscos & Cocteles" required>
+              </div>
+
+              <!-- Subtítulo / Descripción -->
+              <div class="form-group">
+                <label class="form-label" for="campSubtitle">Subtítulo o Gancho Comercial</label>
+                <input type="text" id="campSubtitle" class="form-control" placeholder="Ej: Disfruta el mejor ambiente en South Beach">
+              </div>
+
+              <!-- URL o Archivo del Creativo -->
+              <div class="form-group full-width">
+                <label class="form-label" for="campMediaUrl">URL o Ruta del Creativo (Video MP4 o Imagen) *</label>
+                <div style="display: flex; gap: 10px;">
+                  <input type="text" id="campMediaUrl" class="form-control" placeholder="Ej: assets/videos/demo_promo.mp4 o https://..." required style="flex: 1;">
+                  <button type="button" class="btn-outline" id="btnTestMediaPreview" style="flex-shrink: 0;">👁️ Probar Creativo</button>
+                </div>
+                <small style="color: #64748b; margin-top: 4px;">Para videos se recomienda formato MP4 horizontal 1080p. Para banners imagen JPG/PNG/WebP.</small>
+              </div>
+
+              <!-- Código de Cupón -->
+              <div class="form-group">
+                <label class="form-label" for="campCoupon">Código de Cupón Promocional</label>
+                <input type="text" id="campCoupon" class="form-control" placeholder="Ej: BISTRO20" style="text-transform: uppercase;">
+              </div>
+
+              <!-- Oferta Comercial -->
+              <div class="form-group">
+                <label class="form-label" for="campDiscount">Oferta / Descuento Destacado</label>
+                <input type="text" id="campDiscount" class="form-control" placeholder="Ej: 20% OFF en tu consumo">
+              </div>
+
+              <!-- Enlace de Destino (Para el QR) -->
+              <div class="form-group full-width">
+                <label class="form-label" for="campTargetUrl">Enlace de Destino para Código QR</label>
+                <input type="url" id="campTargetUrl" class="form-control" placeholder="Ej: https://autobotectesting.site/r/bistro?coupon=BISTRO20">
+              </div>
+
+              <!-- Fecha Inicio -->
+              <div class="form-group">
+                <label class="form-label" for="campStartDate">Fecha de Inicio de Emisión</label>
+                <input type="date" id="campStartDate" class="form-control" required>
+              </div>
+
+              <!-- Fecha Fin -->
+              <div class="form-group">
+                <label class="form-label" for="campEndDate">Fecha de Fin / Vencimiento</label>
+                <input type="date" id="campEndDate" class="form-control" required>
+              </div>
+
+              <!-- Teléfono / WhatsApp -->
+              <div class="form-group">
+                <label class="form-label" for="campPhone">Teléfono / WhatsApp de Contacto</label>
+                <input type="text" id="campPhone" class="form-control" placeholder="+1 (305) 555-0123">
+              </div>
+
+              <!-- Dirección / Ciudad -->
+              <div class="form-group">
+                <label class="form-label" for="campAddress">Dirección o Ubicación del Negocio</label>
+                <input type="text" id="campAddress" class="form-control" placeholder="Ej: 1020 Ocean Dr, Miami Beach, FL">
+              </div>
+
+              <!-- Prioridad -->
+              <div class="form-group">
+                <label class="form-label" for="campPriority">Prioridad de Emisión</label>
+                <select id="campPriority" class="form-control">
+                  <option value="normal">Normal (Rotación equitativa)</option>
+                  <option value="high">Alta (Mayor frecuencia en Modo Mix)</option>
+                  <option value="vip">VIP / Exclusiva (Prioridad máxima)</option>
+                </select>
+              </div>
+
+              <!-- Horario -->
+              <div class="form-group">
+                <label class="form-label" for="campScheduleAllDay">Horario de Emisión</label>
+                <select id="campScheduleAllDay" class="form-control">
+                  <option value="true">Todo el día (24/7)</option>
+                  <option value="false">Franja Horaria Específica</option>
+                </select>
+              </div>
+
+              <!-- Rango de Horas (Ocultable) -->
+              <div class="form-group" id="groupScheduleHours" style="display: none;">
+                <label class="form-label">Horas de Inicio y Fin</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="time" id="campScheduleStart" class="form-control" value="08:00">
+                  <span>a</span>
+                  <input type="time" id="campScheduleEnd" class="form-control" value="22:00">
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 28px; display: flex; gap: 14px;">
+              <button type="submit" class="btn-primary" style="width: auto; padding: 14px 28px;">
+                💾 Guardar y Publicar Campaña
+              </button>
+              <button type="button" class="btn-outline" id="btnCancelEdit" style="display: none;">
+                Cancelar Edición
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 4: FLOTA ==================== -->
+      <section id="tabFleet" class="tab-pane">
+        <div class="card-section">
+          <div class="section-header-row">
+            <div>
+              <h3 class="section-heading">Monitoreo de la Flota de Tablets</h3>
+              <p class="section-desc">Estado en tiempo real de los dispositivos instalados en los vehículos.</p>
+            </div>
+            <button class="btn-outline" id="btnSimulatePing">⚡ Simular Ping de Flota</button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>ID Tablet</th>
+                  <th>Vehículo / Servicio</th>
+                  <th>Conductor</th>
+                  <th>Ciudad</th>
+                  <th>Batería</th>
+                  <th>Última Conexión</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="fleetTableTbody">
+                <!-- Dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 5: REPORTES ==================== -->
+      <section id="tabReports" class="tab-pane">
+        <div class="card-section">
+          <div class="section-header-row">
+            <div>
+              <h3 class="section-heading">Generador de Reportes de Retorno (ROI)</h3>
+              <p class="section-desc">Selecciona el cliente para generar un reporte profesional de impresiones y conversiones para cobro o renovación.</p>
+            </div>
+            <button class="btn-primary" onclick="window.print()" style="width: auto; padding: 10px 20px;">
+              🖨️ Imprimir / Guardar PDF
+            </button>
+          </div>
+
+          <div style="margin-bottom: 20px; max-width: 380px;">
+            <label class="form-label" for="reportClientSelect">Seleccionar Cliente Anunciante:</label>
+            <select id="reportClientSelect" class="form-control" style="margin-top: 6px;">
+              <!-- Opciones dinámicas -->
+            </select>
+          </div>
+
+          <!-- Hoja de Reporte Formateada -->
+          <div id="reportSheet" class="client-report-sheet" style="background: rgba(15,23,42,0.6); border: 1px solid var(--border-accent); border-radius: var(--radius-md); padding: 32px; margin-top: 20px;">
+            <!-- Contenido generado -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 6: CONFIGURACIÓN ==================== -->
+      <section id="tabSettings" class="tab-pane">
+        <div class="card-section">
+          <div class="section-header-row">
+            <div>
+              <h3 class="section-heading">Respaldos y Sincronización</h3>
+              <p class="section-desc">Exporta o importa las campañas en formato JSON para replicarlas en cualquier servidor o tablet.</p>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 24px;">
+            <button class="btn-primary" id="btnExportJSON" style="width: auto; padding: 12px 20px;">
+              📥 Exportar Campañas (JSON)
+            </button>
+            <label class="btn-outline" style="cursor: pointer;">
+              📤 Importar Campañas (JSON)
+              <input type="file" id="importFileInput" accept=".json" style="display: none;">
+            </label>
+            <button class="btn-outline" id="btnResetDefaultCampaigns" style="color: var(--danger); border-color: rgba(239,68,68,0.3);">
+              🔄 Restaurar Semillas por Defecto
+            </button>
+          </div>
+
+          <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 24px 0;">
+
+          <h4 style="font-size: 1.1rem; margin-bottom: 12px;">Seguridad de Acceso</h4>
+          <p class="section-desc" style="margin-bottom: 16px;">Cambia el PIN numérico o la contraseña de acceso al panel administrativo.</p>
+          
+          <div style="display: flex; gap: 12px; max-width: 480px;">
+            <input type="text" id="newPinInput" class="form-control" placeholder="Nuevo PIN (ej: 2026)" maxlength="6">
+            <input type="text" id="newPassInput" class="form-control" placeholder="Nueva Contraseña (ej: admin2026)">
+            <button class="btn-primary" id="btnSaveSecurity" style="width: auto; white-space: nowrap;">Guardar</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==================== MODAL DE PREVIEW DEL ANUNCIO ==================== -->
+  <div id="previewModal" class="preview-modal-overlay">
+    <div class="preview-modal-body">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h4 id="previewModalTitle" style="font-size: 1.15rem; font-weight: 700;">Simulación de Pantalla en Tablet</h4>
+        <button id="btnClosePreview" class="btn-outline" style="padding: 4px 10px; border-radius: 50%;">✕</button>
+      </div>
+
+      <div class="preview-screen" id="previewContainer">
+        <!-- Video o Imagen inyectados -->
+      </div>
+
+      <div id="previewDetails" style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.5;">
+        <!-- Detalles comerciales -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCRIPTS ==================== -->
+  <script src="src/campaignManager.js"></script>
+  <script>
+    (function() {
+      'use strict';
+
+      const authOverlay = document.getElementById('authOverlay');
+      const authInput = document.getElementById('authInput');
+      const btnAuthSubmit = document.getElementById('btnAuthSubmit');
+      const authError = document.getElementById('authError');
+      const btnLogout = document.getElementById('btnLogout');
+
+      // ─── GESTIÓN DE SESIÓN ─────────────────────────────────────────────
+      function checkAuthSession() {
+        const isAuthed = sessionStorage.getItem('copilot_admin_logged');
+        if (isAuthed === 'true') {
+          authOverlay.style.display = 'none';
+          loadAllData();
+        } else {
+          authOverlay.style.display = 'flex';
+          authInput.focus();
+        }
+      }
+
+      function doLogin() {
+        const val = authInput.value.trim();
+        if (window.CampaignManager.verifyAuth(val)) {
+          sessionStorage.setItem('copilot_admin_logged', 'true');
+          authOverlay.style.display = 'none';
+          authError.textContent = '';
+          loadAllData();
+        } else {
+          authError.textContent = 'PIN o contraseña incorrecta';
+          authInput.value = '';
+          authInput.focus();
+        }
+      }
+
+      btnAuthSubmit.addEventListener('click', doLogin);
+      authInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
+
+      btnLogout.addEventListener('click', () => {
+        sessionStorage.removeItem('copilot_admin_logged');
+        authOverlay.style.display = 'flex';
+        authInput.value = '';
+        authInput.focus();
+      });
+
+      // ─── NAVEGACIÓN POR PESTAÑAS ───────────────────────────────────────
+      const navButtons = document.querySelectorAll('.admin-sidebar .nav-item');
+      const tabPanes = document.querySelectorAll('.tab-pane');
+
+      function switchTab(tabId) {
+        navButtons.forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-tab') === tabId);
+        });
+        tabPanes.forEach(pane => {
+          pane.classList.toggle('active', pane.id === tabId);
+        });
+        if (tabId === 'tabReports') loadReportTab();
+      }
+
+      navButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          switchTab(btn.getAttribute('data-tab'));
+        });
+      });
+
+      document.getElementById('btnQuickNewCamp').addEventListener('click', () => {
+        resetForm();
+        switchTab('tabNewCampaign');
+      });
+
+      document.getElementById('btnCreateNewCampFromList').addEventListener('click', () => {
+        resetForm();
+        switchTab('tabNewCampaign');
+      });
+
+      document.getElementById('btnGoToCampaigns').addEventListener('click', () => {
+        switchTab('tabCampaigns');
+      });
+
+      // ─── CARGAR DATOS GENERALES ───────────────────────────────────────
+      function loadAllData() {
+        renderKPIs();
+        renderDashboardQuickTable();
+        renderCampaignsTable();
+        renderFleet();
+      }
+
+      function renderKPIs() {
+        const kpis = window.CampaignManager.getGlobalKPIs();
+        document.getElementById('kpiActiveCount').textContent = kpis.activeCampaigns;
+        document.getElementById('kpiActiveSub').textContent = `De un total de ${kpis.totalCampaigns} registradas`;
+        document.getElementById('kpiImpressions').textContent = kpis.totalImpressions.toLocaleString();
+        document.getElementById('kpiVideos').textContent = kpis.totalVideos.toLocaleString();
+        document.getElementById('kpiQrScans').textContent = kpis.totalQr.toLocaleString();
+      }
+
+      function formatBadge(format) {
+        if (format === 'video_spotlight') return '<span class="badge-format badge-video">🎬 Video Spotlight</span>';
+        if (format === 'deal') return '<span class="badge-format badge-deal">🏷️ Descuento / Deal</span>';
+        return '<span class="badge-format badge-banner">🖼️ Banner Lateral</span>';
+      }
+
+      function renderDashboardQuickTable() {
+        const tbody = document.getElementById('dashboardQuickTbody');
+        const active = window.CampaignManager.getActiveCampaigns().slice(0, 5);
+        
+        if (active.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b; padding:20px;">No hay campañas activas actualmente</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = active.map(c => `
+          <tr>
+            <td>
+              <div class="client-cell">
+                <div class="client-avatar">${c.format === 'video_spotlight' ? '🎬' : '🏷️'}</div>
+                <div>
+                  <strong style="color:#fff;">${escapeHtml(c.clientName)}</strong>
+                  <div style="font-size:0.8rem; color:#94a3b8;">${escapeHtml(c.title)}</div>
+                </div>
+              </div>
+            </td>
+            <td>${formatBadge(c.format)}</td>
+            <td><span style="font-weight:600; color:#38bdf8;">${c.couponCode ? escapeHtml(c.couponCode) : '—'}</span></td>
+            <td><strong>${(c.impressionsTotal || 0).toLocaleString()}</strong></td>
+            <td><strong style="color:#34d399;">${(c.qrScans || 0).toLocaleString()}</strong></td>
+            <td><span class="badge-status status-active">Activo</span></td>
+          </tr>
+        `).join('');
+      }
+
+      function renderCampaignsTable() {
+        const tbody = document.getElementById('campaignsFullTbody');
+        const campaigns = window.CampaignManager.getCampaigns();
+
+        if (campaigns.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#64748b; padding:30px;">No hay campañas registradas aún</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = campaigns.map(c => {
+          const isActive = c.status === 'active';
+          return `
+            <tr>
+              <td>
+                <div class="client-cell">
+                  <div class="client-avatar">${c.format === 'video_spotlight' ? '🎬' : '📢'}</div>
+                  <div>
+                    <strong style="color:#fff;">${escapeHtml(c.clientName)}</strong>
+                    <div style="font-size:0.82rem; color:#94a3b8;">${escapeHtml(c.title)}</div>
+                  </div>
+                </div>
+              </td>
+              <td>${formatBadge(c.format)}</td>
+              <td style="font-size:0.85rem; color:#cbd5e1;">${c.startDate} al ${c.endDate}</td>
+              <td style="font-size:0.85rem; color:#94a3b8;">${c.scheduleAllDay ? '24/7' : `${c.scheduleStart} - ${c.scheduleEnd}`}</td>
+              <td style="font-size:0.85rem;">
+                👁️ ${(c.impressionsTotal || 0).toLocaleString()} <br>
+                📲 ${(c.qrScans || 0).toLocaleString()} QR
+              </td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox" ${isActive ? 'checked' : ''} onchange="window.toggleCampStatus('${c.id}')">
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td>
+                <div style="display:flex; gap:6px;">
+                  <button class="btn-outline" style="padding:6px 10px;" onclick="window.previewCamp('${c.id}')" title="Previsualizar">👁️</button>
+                  <button class="btn-outline" style="padding:6px 10px;" onclick="window.editCamp('${c.id}')" title="Editar">✏️</button>
+                  <button class="btn-outline" style="padding:6px 10px; color:#ef4444;" onclick="window.deleteCamp('${c.id}')" title="Eliminar">🗑️</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function renderFleet() {
+        const fleet = window.CampaignManager.getFleet();
+        const tbody = document.getElementById('fleetTableTbody');
+        const quickSummary = document.getElementById('fleetQuickSummary');
+
+        if (fleet.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#64748b;">No hay tablets registradas</td></tr>';
+          quickSummary.innerHTML = '<span style="color:#64748b;">Sin dispositivos</span>';
+          return;
+        }
+
+        tbody.innerHTML = fleet.map(t => `
+          <tr>
+            <td><strong>${t.id}</strong></td>
+            <td>${escapeHtml(t.vehicle)}</td>
+            <td>${escapeHtml(t.driver)}</td>
+            <td>${escapeHtml(t.city)}</td>
+            <td>🔋 ${t.battery}%</td>
+            <td style="font-size:0.82rem; color:#94a3b8;">${new Date(t.lastPing).toLocaleTimeString()}</td>
+            <td>
+              <span class="badge-status ${t.status === 'online' ? 'status-active' : 'status-paused'}">
+                ${t.status === 'online' ? '● Online' : '○ Standby'}
+              </span>
+            </td>
+          </tr>
+        `).join('');
+
+        quickSummary.innerHTML = fleet.map(t => `
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:12px; padding:12px 18px; display:flex; align-items:center; gap:12px;">
+            <span style="font-size:1.4rem;">🚕</span>
+            <div>
+              <div style="font-weight:600; color:#fff;">${t.id} - ${escapeHtml(t.vehicle)}</div>
+              <div style="font-size:0.8rem; color:#94a3b8;">${t.driver} | ${t.city} | 🔋 ${t.battery}%</div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // ─── FORMULARIO DE CAMPAÑAS ───────────────────────────────────────
+      const form = document.getElementById('campaignForm');
+      const editCampId = document.getElementById('editCampId');
+      const formTitleHeading = document.getElementById('formTitleHeading');
+      const btnCancelEdit = document.getElementById('btnCancelEdit');
+      const campScheduleAllDay = document.getElementById('campScheduleAllDay');
+      const groupScheduleHours = document.getElementById('groupScheduleHours');
+
+      campScheduleAllDay.addEventListener('change', () => {
+        groupScheduleHours.style.display = (campScheduleAllDay.value === 'false') ? 'block' : 'none';
+      });
+
+      function resetForm() {
+        form.reset();
+        editCampId.value = '';
+        formTitleHeading.textContent = 'Nueva Campaña Publicitaria';
+        btnCancelEdit.style.display = 'none';
+        groupScheduleHours.style.display = 'none';
+        document.getElementById('campStartDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('campEndDate').value = '2027-12-31';
+      }
+
+      document.getElementById('btnResetForm').addEventListener('click', resetForm);
+      btnCancelEdit.addEventListener('click', () => {
+        resetForm();
+        switchTab('tabCampaigns');
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const payload = {
+          clientName: document.getElementById('campClientName').value.trim(),
+          format: document.getElementById('campFormat').value,
+          title: document.getElementById('campTitle').value.trim(),
+          subtitle: document.getElementById('campSubtitle').value.trim(),
+          mediaUrl: document.getElementById('campMediaUrl').value.trim(),
+          couponCode: document.getElementById('campCoupon').value.trim(),
+          discountOffer: document.getElementById('campDiscount').value.trim(),
+          targetUrl: document.getElementById('campTargetUrl').value.trim(),
+          startDate: document.getElementById('campStartDate').value,
+          endDate: document.getElementById('campEndDate').value,
+          phone: document.getElementById('campPhone').value.trim(),
+          address: document.getElementById('campAddress').value.trim(),
+          priority: document.getElementById('campPriority').value,
+          scheduleAllDay: campScheduleAllDay.value === 'true',
+          scheduleStart: document.getElementById('campScheduleStart').value,
+          scheduleEnd: document.getElementById('campScheduleEnd').value
+        };
+
+        if (editCampId.value) {
+          window.CampaignManager.updateCampaign(editCampId.value, payload);
+          alert('¡Campaña actualizada con éxito!');
+        } else {
+          window.CampaignManager.createCampaign(payload);
+          alert('¡Campaña creada y publicada con éxito!');
+        }
+
+        resetForm();
+        loadAllData();
+        switchTab('tabCampaigns');
+      });
+
+      // ─── ACCIONES GLOBALES DE CAMPAÑA ─────────────────────────────────
+      window.toggleCampStatus = function(id) {
+        window.CampaignManager.toggleCampaignStatus(id);
+        loadAllData();
+      };
+
+      window.deleteCamp = function(id) {
+        if (confirm('¿Estás seguro de eliminar esta campaña publicitaria?')) {
+          window.CampaignManager.deleteCampaign(id);
+          loadAllData();
+        }
+      };
+
+      window.editCamp = function(id) {
+        const camp = window.CampaignManager.getCampaigns().find(c => c.id === id);
+        if (!camp) return;
+
+        editCampId.value = camp.id;
+        document.getElementById('campClientName').value = camp.clientName || '';
+        document.getElementById('campFormat').value = camp.format || 'video_spotlight';
+        document.getElementById('campTitle').value = camp.title || '';
+        document.getElementById('campSubtitle').value = camp.subtitle || '';
+        document.getElementById('campMediaUrl').value = camp.mediaUrl || '';
+        document.getElementById('campCoupon').value = camp.couponCode || '';
+        document.getElementById('campDiscount').value = camp.discountOffer || '';
+        document.getElementById('campTargetUrl').value = camp.targetUrl || '';
+        document.getElementById('campStartDate').value = camp.startDate || '';
+        document.getElementById('campEndDate').value = camp.endDate || '';
+        document.getElementById('campPhone').value = camp.phone || '';
+        document.getElementById('campAddress').value = camp.address || '';
+        document.getElementById('campPriority').value = camp.priority || 'normal';
+        campScheduleAllDay.value = camp.scheduleAllDay ? 'true' : 'false';
+        groupScheduleHours.style.display = camp.scheduleAllDay ? 'none' : 'block';
+        if (camp.scheduleStart) document.getElementById('campScheduleStart').value = camp.scheduleStart;
+        if (camp.scheduleEnd) document.getElementById('campScheduleEnd').value = camp.scheduleEnd;
+
+        formTitleHeading.textContent = `Editar Campaña: ${camp.clientName}`;
+        btnCancelEdit.style.display = 'inline-block';
+        switchTab('tabNewCampaign');
+      };
+
+      // ─── MODAL DE PREVIEW ─────────────────────────────────────────────
+      const previewModal = document.getElementById('previewModal');
+      const previewContainer = document.getElementById('previewContainer');
+      const previewModalTitle = document.getElementById('previewModalTitle');
+      const previewDetails = document.getElementById('previewDetails');
+      const btnClosePreview = document.getElementById('btnClosePreview');
+
+      window.previewCamp = function(id) {
+        const camp = window.CampaignManager.getCampaigns().find(c => c.id === id);
+        if (!camp) return;
+
+        previewModalTitle.textContent = `Previsualización: ${camp.clientName}`;
+        const isVideo = camp.mediaType === 'video' || camp.mediaUrl.endsWith('.mp4') || camp.mediaUrl.endsWith('.webm');
+
+        if (isVideo) {
+          previewContainer.innerHTML = `<video src="${camp.mediaUrl}" controls autoplay muted style="width:100%; border-radius:8px;"></video>`;
+        } else {
+          previewContainer.innerHTML = `<img src="${camp.mediaUrl}" alt="${escapeHtml(camp.title)}" style="width:100%; max-height:300px; object-fit:contain; border-radius:8px;">`;
+        }
+
+        previewDetails.innerHTML = `
+          <div style="margin-bottom:6px;"><strong>Título:</strong> ${escapeHtml(camp.title)}</div>
+          <div style="margin-bottom:6px;"><strong>Formato:</strong> ${camp.format} | <strong>Cupón:</strong> ${camp.couponCode || 'N/A'}</div>
+          <div style="margin-bottom:6px;"><strong>Oferta:</strong> ${escapeHtml(camp.discountOffer || 'N/A')}</div>
+          <div><strong>Enlace QR:</strong> <a href="${camp.targetUrl}" target="_blank" style="color:#38bdf8;">${camp.targetUrl}</a></div>
+        `;
+
+        previewModal.classList.add('active');
+      };
+
+      btnClosePreview.addEventListener('click', () => {
+        previewModal.classList.remove('active');
+        previewContainer.innerHTML = '';
+      });
+
+      document.getElementById('btnTestMediaPreview').addEventListener('click', () => {
+        const url = document.getElementById('campMediaUrl').value.trim();
+        if (!url) {
+          alert('Ingresa una URL o ruta de archivo primero');
+          return;
+        }
+        previewModalTitle.textContent = 'Prueba de Creativo';
+        const isVideo = url.endsWith('.mp4') || url.endsWith('.webm');
+        if (isVideo) {
+          previewContainer.innerHTML = `<video src="${url}" controls autoplay muted style="width:100%;"></video>`;
+        } else {
+          previewContainer.innerHTML = `<img src="${url}" alt="Preview" style="width:100%; max-height:300px; object-fit:contain;">`;
+        }
+        previewDetails.innerHTML = `<div><strong>Ruta:</strong> ${url}</div>`;
+        previewModal.classList.add('active');
+      });
+
+      // ─── GENERADOR DE REPORTES (ROI) ──────────────────────────────────
+      function loadReportTab() {
+        const select = document.getElementById('reportClientSelect');
+        const campaigns = window.CampaignManager.getCampaigns();
+        select.innerHTML = campaigns.map(c => `<option value="${c.id}">${escapeHtml(c.clientName)} - ${escapeHtml(c.title)}</option>`).join('');
+        
+        select.onchange = () => renderReportSheet(select.value);
+        if (campaigns.length > 0) renderReportSheet(campaigns[0].id);
+      }
+
+      function renderReportSheet(campId) {
+        const camp = window.CampaignManager.getCampaigns().find(c => c.id === campId);
+        const container = document.getElementById('reportSheet');
+        if (!camp) {
+          container.innerHTML = '<div style="color:#94a3b8;">Selecciona un cliente válido.</div>';
+          return;
+        }
+
+        const estPassengers = Math.round((camp.impressionsTotal || 0) * 1.8);
+
+        container.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:20px; margin-bottom:20px;">
+            <div>
+              <h2 style="color:#fff; font-size:1.6rem; font-weight:800;">Reporte Oficial de Emisión y Retorno (ROI)</h2>
+              <p style="color:#94a3b8; font-size:0.95rem;">Commercial Copilot Ads Network • Sistema Rideshare Miami</p>
+            </div>
+            <div style="text-align:right;">
+              <span class="brand-badge" style="font-size:0.85rem;">Periodo Vigente</span>
+              <div style="color:#cbd5e1; font-size:0.88rem; margin-top:4px;">${camp.startDate} a ${camp.endDate}</div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:28px;">
+            <div style="background:rgba(255,255,255,0.03); padding:16px; border-radius:12px;">
+              <div style="color:#94a3b8; font-size:0.82rem; text-transform:uppercase;">Cliente Anunciante</div>
+              <div style="color:#fff; font-size:1.2rem; font-weight:700; margin-top:4px;">${escapeHtml(camp.clientName)}</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); padding:16px; border-radius:12px;">
+              <div style="color:#94a3b8; font-size:0.82rem; text-transform:uppercase;">Impresiones Totales</div>
+              <div style="color:#38bdf8; font-size:1.6rem; font-weight:800; margin-top:4px;">${(camp.impressionsTotal || 0).toLocaleString()}</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); padding:16px; border-radius:12px;">
+              <div style="color:#94a3b8; font-size:0.82rem; text-transform:uppercase;">Videos Completados (100%)</div>
+              <div style="color:#34d399; font-size:1.6rem; font-weight:800; margin-top:4px;">${(camp.videoCompletes || 0).toLocaleString()}</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); padding:16px; border-radius:12px;">
+              <div style="color:#94a3b8; font-size:0.82rem; text-transform:uppercase;">Escaneos de Código QR</div>
+              <div style="color:#fbbf24; font-size:1.6rem; font-weight:800; margin-top:4px;">${(camp.qrScans || 0).toLocaleString()}</div>
+            </div>
+          </div>
+
+          <div style="background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.25); border-radius:12px; padding:20px; margin-bottom:24px;">
+            <h4 style="color:#a5b4fc; font-size:1rem; margin-bottom:6px;">📊 Estimación de Impacto de Pasajeros</h4>
+            <p style="color:#cbd5e1; font-size:0.92rem; line-height:1.6;">
+              Durante este ciclo de pauta, tu anuncio impactó a un estimado de <strong>${estPassengers.toLocaleString()} pasajeros rideshare</strong> en viajes de Miami y áreas metropolitanas. Con el código de descuento <strong>${camp.couponCode || 'PROMO'}</strong> se registraron <strong>${(camp.qrScans || 0).toLocaleString()} escaneos directos</strong> hacia tu canal comercial.
+            </p>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#64748b; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px;">
+            <span>Reporte generado el ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</span>
+            <span>Certificado por Copilot Ads Engine</span>
+          </div>
+        `;
+      }
+
+      // ─── CONFIGURACIÓN & EXPORTACIÓN JSON ──────────────────────────────
+      document.getElementById('btnExportJSON').addEventListener('click', () => {
+        const json = window.CampaignManager.exportJSON();
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `copilot_campaigns_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      document.getElementById('importFileInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const success = window.CampaignManager.importJSON(evt.target.result);
+          if (success) {
+            alert('¡Campañas importadas correctamente!');
+            loadAllData();
+          } else {
+            alert('Error al leer el archivo JSON.');
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      document.getElementById('btnResetDefaultCampaigns').addEventListener('click', () => {
+        if (confirm('¿Deseas restablecer las campañas de demostración iniciales? Se perderán las modificaciones no respaldadas.')) {
+          localStorage.removeItem('copilot_ads_campaigns_v1');
+          window.CampaignManager.initStorage();
+          loadAllData();
+          alert('Restablecido con éxito.');
+        }
+      });
+
+      document.getElementById('btnSaveSecurity').addEventListener('click', () => {
+        const pin = document.getElementById('newPinInput').value.trim();
+        const pass = document.getElementById('newPassInput').value.trim();
+        if (!pin && !pass) {
+          alert('Ingresa un nuevo PIN o Contraseña');
+          return;
+        }
+        window.CampaignManager.setAuth(pin || '2026', pass || 'admin2026');
+        alert('Credenciales actualizadas exitosamente');
+        document.getElementById('newPinInput').value = '';
+        document.getElementById('newPassInput').value = '';
+      });
+
+      document.getElementById('btnSimulatePing').addEventListener('click', () => {
+        window.CampaignManager.registerTabletHeartbeat('TBL-01', { battery: Math.floor(Math.random() * 20) + 80 });
+        window.CampaignManager.registerTabletHeartbeat('TBL-02', { battery: Math.floor(Math.random() * 15) + 85 });
+        renderFleet();
+        alert('Se recibió el ping de las tablets activas.');
+      });
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      // Inicializar
+      resetForm();
+      checkAuthSession();
+
+    })();
+  </script>
+</body>
+</html>

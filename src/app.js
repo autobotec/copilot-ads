@@ -1366,8 +1366,43 @@ function renderNewsFeed() {
 }
 
 /* ==========================================================================
-   PROMOTIONAL VIDEO SHOWCASE
+   PROMOTIONAL VIDEO SHOWCASE (CONNECTED TO CAMPAIGN MANAGER)
    ========================================================================== */
+let currentVideoSpotlightIndex = 0;
+let currentActiveCampId = null;
+
+function syncCurrentVideoSpotlight() {
+  if (!window.CampaignManager) return;
+  const spotlights = window.CampaignManager.getActiveVideoSpotlights();
+  if (!spotlights || spotlights.length === 0) return;
+
+  const camp = spotlights[currentVideoSpotlightIndex % spotlights.length];
+  if (!camp) return;
+
+  currentActiveCampId = camp.id;
+
+  if (DOM.pvmBrand) DOM.pvmBrand.textContent = (camp.clientName || 'COPILOT MEDIA').toUpperCase();
+  if (DOM.pvmHeadline) DOM.pvmHeadline.textContent = camp.title || '';
+  if (DOM.pvmSubtext) DOM.pvmSubtext.textContent = camp.subtitle || camp.discountOffer || '';
+  if (DOM.pvmPromoCode) DOM.pvmPromoCode.textContent = camp.couponCode || 'COPILOT';
+
+  if (DOM.promoVideoMainPlayer && camp.mediaUrl) {
+    const currentSrc = DOM.promoVideoMainPlayer.getAttribute('src') || '';
+    if (!currentSrc.includes(camp.mediaUrl)) {
+      DOM.promoVideoMainPlayer.src = camp.mediaUrl;
+      DOM.promoVideoMainPlayer.load();
+    }
+  }
+
+  if (DOM.pvmQrContainer) {
+    generateQrCode(DOM.pvmQrContainer, camp.targetUrl || "https://autobotectesting.site");
+  }
+
+  // Registrar impresión y ping de la tablet
+  window.CampaignManager.recordMetric(camp.id, 'impression');
+  window.CampaignManager.registerTabletHeartbeat('TBL-01', { currentCampaign: camp.clientName, battery: 94 });
+}
+
 function setupVideoPromoShowcase() {
   if (DOM.btnMediaVideoPromo) {
     DOM.btnMediaVideoPromo.addEventListener('click', () => {
@@ -1391,6 +1426,9 @@ function setupVideoPromoShowcase() {
     DOM.btnClaimPromoVideo.addEventListener('click', () => {
       sound.playFanfare();
       notifyUserInteraction();
+      if (currentActiveCampId && window.CampaignManager) {
+        window.CampaignManager.recordMetric(currentActiveCampId, 'tap');
+      }
       showToast(getT().toastAdClaimed);
     });
   }
@@ -1399,16 +1437,34 @@ function setupVideoPromoShowcase() {
     DOM.btnNextPromoVideo.addEventListener('click', () => {
       sound.playTap();
       notifyUserInteraction();
-      advanceMixSegment('weather');
+      currentVideoSpotlightIndex++;
+      syncCurrentVideoSpotlight();
+      startPromoVideoPlayback();
     });
   }
 
   if (DOM.pvmQrContainer) {
-    generateQrCode(DOM.pvmQrContainer, "https://copilot.promo/anunciate-aqui");
+    DOM.pvmQrContainer.addEventListener('click', () => {
+      if (currentActiveCampId && window.CampaignManager) {
+        window.CampaignManager.recordMetric(currentActiveCampId, 'qr_scan');
+      }
+      showToast('📲 ¡Código escaneado registrado!');
+    });
   }
+
+  if (DOM.promoVideoMainPlayer) {
+    DOM.promoVideoMainPlayer.addEventListener('ended', () => {
+      if (currentActiveCampId && window.CampaignManager) {
+        window.CampaignManager.recordMetric(currentActiveCampId, 'video_complete');
+      }
+    });
+  }
+
+  syncCurrentVideoSpotlight();
 }
 
 function startPromoVideoPlayback() {
+  syncCurrentVideoSpotlight();
   if (!DOM.promoVideoMainPlayer) return;
   DOM.promoVideoMainPlayer.currentTime = 0;
   const playPromise = DOM.promoVideoMainPlayer.play();
