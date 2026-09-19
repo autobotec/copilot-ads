@@ -567,6 +567,40 @@ export class GeoLocationService {
           hero_tag: "🎭 BROADWAY LIVE"
         },
         {
+          id: "nyc-news-sports",
+          source_id: "ny_sports_zone",
+          category_es: "DEPORTES LOCALES (NY)",
+          category_en: "LOCAL SPORTS (NYC)",
+          category_slug: "sports",
+          badge_color: "#ff007f",
+          icon: "⚾",
+          city: "New York City",
+          location_tag: "Yankee Stadium & Citi Field",
+          title_es: "Fiebre deportiva en Nueva York: Yankees y Mets encienden la temporada con estadios a máxima capacidad",
+          title_en: "New York Sports Fever: Yankees & Mets Ignite the City with Electrifying Capacity Crowds",
+          summary_es: "El béisbol y el básquetbol neoyorquino desatan la pasión en el Bronx, Queens y el Madison Square Garden con jugadas de antología y una afición volcada a alentar.",
+          summary_en: "New York baseball and basketball electrify the Bronx, Queens and Madison Square Garden with masterclass plays and roaring crowds.",
+          key_points_es: [
+            "Lleno total en el Yankee Stadium y Citi Field con ambiente festivo familiar.",
+            "Grandes actuaciones defensivas y jonrones decisivos en los innings finales.",
+            "Líneas de Subway con trenes especiales y accesos directos habilitados."
+          ],
+          key_points_en: [
+            "Sell-out crowds at Yankee Stadium and Citi Field celebrating with electric energy.",
+            "Stellar defensive highlights and clutch walk-off home runs in late innings.",
+            "Special subway service trains running continuously for fans."
+          ],
+          keywords: ["#Yankees", "#Mets", "#Knicks", "#NYCSports", "#BronxBombers"],
+          quality_score: 5,
+          quality_stars: "⭐⭐⭐⭐⭐ 5.0",
+          source: "New York Sports Tribune",
+          time_ago_es: "Hace 15 min",
+          time_ago_en: "15 min ago",
+          reads: "45.2K lecturas",
+          hero_gradient: "linear-gradient(135deg, #ff007f 0%, #aa0055 100%)",
+          hero_tag: "⚾ DEPORTES NY"
+        },
+        {
           id: "nyc-news-5",
           source_id: "ny_weather_advisory",
           category_es: "CLIMA & CONDICIONES LOCALES",

@@ -709,9 +709,42 @@
                 </div>
               </div>
 
-              <!-- News Cards Grid (Multi-Column Responsive) -->
-              <div class="news-cards-grid" id="newsCardsGrid">
-                <!-- Populated dynamically by JS -->
+              <!-- ROTATING SPOTLIGHT NEWS DISPLAY (UN CUADRO POR PANTALLA) -->
+              <div class="news-spotlight-wrapper" id="newsSpotlightWrapper">
+                <div class="news-spotlight-frame smb3-block-card" id="newsSpotlightFrame">
+                  <span class="smb3-card-rivet c-tl"></span><span class="smb3-card-rivet c-tr"></span><span class="smb3-card-rivet c-bl"></span><span class="smb3-card-rivet c-br"></span>
+
+                  <!-- SPOTLIGHT ROTATION TIMER & PROGRESS BAR -->
+                  <div class="news-spotlight-progress-track">
+                    <div class="news-spotlight-progress-fill" id="newsSpotlightProgressFill"></div>
+                  </div>
+
+                  <!-- SPOTLIGHT INNER CONTENT (POPULATED DYNAMICALLY WITH FADE/SLIDE ANIMATION) -->
+                  <div class="news-spotlight-content" id="newsSpotlightContent">
+                    <!-- Populated by JS -->
+                  </div>
+
+                  <!-- NAVIGATION & CATEGORY ROTATION BAR -->
+                  <div class="news-spotlight-nav-bar">
+                    <div class="news-nav-controls">
+                      <button class="news-nav-btn smb3-btn" id="btnPrevNews" title="Noticia Anterior">◀</button>
+                      <button class="news-nav-btn news-pause-btn smb3-btn" id="btnPauseNewsRotation" title="Pausar / Reanudar Rotación">
+                        <span id="newsPauseIcon">⏸️</span>
+                      </button>
+                      <button class="news-nav-btn smb3-btn" id="btnNextNews" title="Siguiente Noticia">▶</button>
+                    </div>
+
+                    <!-- CATEGORY STEP PILLS -->
+                    <div class="news-category-pills" id="newsCategoryPills">
+                      <!-- Dynamically rendered pills (Tránsito, Deportes, Eventos, etc.) -->
+                    </div>
+
+                    <div class="news-spotlight-timer-badge" id="newsSpotlightTimerBadge">
+                      <span class="timer-dot"></span>
+                      <span id="newsTimerSeconds">Rotación en 12s</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 

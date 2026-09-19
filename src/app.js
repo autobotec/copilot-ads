@@ -181,7 +181,6 @@ const DOM = {
 
   breakingLabel: document.getElementById('breakingLabel'),
   breakingHeadlineText: document.getElementById('breakingHeadlineText'),
-  newsCardsGrid: document.getElementById('newsCardsGrid'),
   newsCityTitle: document.getElementById('newsCityTitle'),
   newsLocationBadge: document.getElementById('newsLocationBadge'),
   newsCuratedSubtitle: document.getElementById('newsCuratedSubtitle'),
@@ -190,6 +189,16 @@ const DOM = {
   newsDetailModal: document.getElementById('newsDetailModal'),
   newsModalContentWrap: document.getElementById('newsModalContentWrap'),
   btnCloseNewsModal: document.getElementById('btnCloseNewsModal'),
+
+  // News Spotlight Rotation
+  newsSpotlightContent: document.getElementById('newsSpotlightContent'),
+  newsSpotlightProgressFill: document.getElementById('newsSpotlightProgressFill'),
+  newsCategoryPills: document.getElementById('newsCategoryPills'),
+  newsTimerSeconds: document.getElementById('newsTimerSeconds'),
+  newsPauseIcon: document.getElementById('newsPauseIcon'),
+  btnPrevNews: document.getElementById('btnPrevNews'),
+  btnNextNews: document.getElementById('btnNextNews'),
+  btnPauseNewsRotation: document.getElementById('btnPauseNewsRotation'),
 
   // Video Promo Showcase
   btnMediaVideoPromo: document.getElementById('btnMediaVideoPromo'),
@@ -1448,13 +1457,24 @@ function updateRideWeather(w) {
   }
 }
 
+/* ==========================================================================
+   NEWS SPOTLIGHT ROTATION ENGINE (1 CUADRO POR PANTALLA, ROTACIÓN AUTO)
+   ========================================================================== */
+let newsSpotlightState = {
+  currentIndex: 0,
+  articles: [],
+  secondsLeft: 12,
+  totalSeconds: 12,
+  isPaused: false,
+  interval: null
+};
+
 function renderNewsFeed() {
   const lang = state.currentLang;
   const loc = (state.liveWeather && state.liveWeather.city) 
     ? state.liveWeather 
     : geoService.currentLocation;
 
-  // Ensure we have local news matching the detected location
   let articles = state.liveNews;
   if (!articles || articles.length === 0) {
     articles = geoService.getLocalizedNews(loc.countryCode, loc.city, loc.state, loc);
@@ -1462,13 +1482,14 @@ function renderNewsFeed() {
   }
   if (!articles || articles.length === 0) return;
 
+  newsSpotlightState.articles = articles;
   const cityName = loc.rawCity || loc.city || (loc.isUSA ? "New York City" : "Santo Domingo");
   const flag = loc.isUSA ? '🇺🇸' : (loc.countryCode === 'DO' ? '🇩🇴' : '📍');
 
-  // Update Location Header Banner
+  // Location Header
   if (DOM.newsCityTitle) {
-    DOM.newsCityTitle.textContent = lang === 'en' 
-      ? `${flag} Local News: ${cityName}` 
+    DOM.newsCityTitle.textContent = lang === 'en'
+      ? `${flag} Local News: ${cityName}`
       : `${flag} Noticias Locales de ${cityName}`;
   }
   if (DOM.newsLocationBadge) {
@@ -1486,77 +1507,212 @@ function renderNewsFeed() {
     DOM.newsCountBadge.textContent = `${articles.length} ${lang === 'en' ? 'REPORTS TODAY' : 'REPORTES HOY'}`;
   }
 
-  // Top Breaking Headline
-  const topStory = articles[0];
+  // Top Breaking Headline (rotating marquee)
+  const topStory = articles[newsSpotlightState.currentIndex] || articles[0];
   if (DOM.breakingHeadlineText && topStory) {
     DOM.breakingHeadlineText.textContent = lang === 'en' ? topStory.title_en : topStory.title_es;
   }
 
-  // Multi-Column Responsive News Grid
-  if (DOM.newsCardsGrid) {
-    DOM.newsCardsGrid.innerHTML = articles.map((item, idx) => {
-      const title = lang === 'en' ? item.title_en : item.title_es;
-      const summary = lang === 'en' ? item.summary_en : item.summary_es;
-      const category = lang === 'en' ? (item.category_en || 'LOCAL') : (item.category_es || 'LOCAL');
-      const timeAgo = lang === 'en' ? (item.time_ago_en || 'Recent') : (item.time_ago_es || 'Reciente');
-      const keyPoints = lang === 'en' ? (item.key_points_en || item.key_points_es || []) : (item.key_points_es || []);
-      const keywords = item.keywords || [];
-      const stars = item.quality_stars || '⭐⭐⭐⭐⭐ 5.0';
-      const heroGradient = item.hero_gradient || 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)';
-      const heroTag = item.hero_tag || `${item.icon || '📰'} ${category}`;
-      const locationTag = item.location_tag || `${cityName}`;
+  // Category Pills
+  renderNewsCategoryPills();
 
-      return `
-        <div class="news-card-item smb3-card" data-idx="${idx}">
-          <div class="news-item-top">
-            <div class="news-top-badges">
-              <span class="news-item-cat" style="background:${item.badge_color || '#e52521'};">${item.icon || '📰'} ${category}</span>
-              <span class="news-score-badge">${stars}</span>
-            </div>
-            <span class="news-item-time">⏱️ ${timeAgo}</span>
-          </div>
+  // Display current spotlight card
+  renderSpotlightCard(newsSpotlightState.currentIndex, false);
 
-          <div class="news-hero-accent" style="background:${heroGradient};">
-            <span class="news-hero-tag">${heroTag}</span>
-            <span class="news-location-subtag">📍 ${locationTag}</span>
-          </div>
+  // Setup navigation buttons
+  setupNewsSpotlightNav();
 
-          <h3 class="news-item-title">${title}</h3>
-          <p class="news-item-desc">${summary}</p>
+  // Start auto-rotation
+  startNewsSpotlightTimer();
+}
 
-          ${keyPoints && keyPoints.length > 0 ? `
-            <div class="news-keypoints-box">
-              <div class="keypoints-title">📌 ${lang === 'en' ? 'KEY TAKEAWAYS' : 'PUNTOS CLAVE'}:</div>
-              <ul class="keypoints-list">
-                ${keyPoints.map(pt => `<li>${pt}</li>`).join('')}
-              </ul>
-            </div>
-          ` : ''}
+function renderNewsCategoryPills() {
+  if (!DOM.newsCategoryPills) return;
+  const articles = newsSpotlightState.articles;
+  DOM.newsCategoryPills.innerHTML = articles.map((item, idx) => {
+    const isActive = idx === newsSpotlightState.currentIndex;
+    return `<span class="news-cat-pill${isActive ? ' active' : ''}" data-idx="${idx}" style="background:${isActive ? (item.badge_color || '#f8b800') : ''};" title="${item.category_slug || ''}"></span>`;
+  }).join('');
 
-          ${keywords && keywords.length > 0 ? `
-            <div class="news-keywords-row">
-              ${keywords.map(kw => `<span class="news-kw-tag">${kw}</span>`).join('')}
-            </div>
-          ` : ''}
+  DOM.newsCategoryPills.querySelectorAll('.news-cat-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const idx = parseInt(pill.getAttribute('data-idx') || '0', 10);
+      sound.playTap();
+      notifyUserInteraction();
+      newsSpotlightState.currentIndex = idx;
+      newsSpotlightState.secondsLeft = newsSpotlightState.totalSeconds;
+      renderSpotlightCard(idx, true);
+      renderNewsCategoryPills();
+      updateNewsTimerUI();
+    });
+  });
+}
 
-          <div class="news-item-footer">
-            <span class="news-source-tag">✓ ${item.source || 'Copilot News'}</span>
-            <span>👁️ ${item.reads || '25K lecturas'}</span>
-            <button class="news-read-btn">${lang === 'en' ? 'Read Full 📄' : 'Leer Más 📄'}</button>
-          </div>
+function renderSpotlightCard(idx, animate) {
+  const articles = newsSpotlightState.articles;
+  if (!articles || articles.length === 0 || !DOM.newsSpotlightContent) return;
+  const item = articles[idx % articles.length];
+  const lang = state.currentLang;
+  const title = lang === 'en' ? item.title_en : item.title_es;
+  const summary = lang === 'en' ? item.summary_en : item.summary_es;
+  const category = lang === 'en' ? (item.category_en || 'LOCAL') : (item.category_es || 'LOCAL');
+  const timeAgo = lang === 'en' ? (item.time_ago_en || 'Recent') : (item.time_ago_es || 'Reciente');
+  const keyPoints = lang === 'en' ? (item.key_points_en || item.key_points_es || []) : (item.key_points_es || []);
+  const keywords = item.keywords || [];
+  const stars = item.quality_stars || '⭐⭐⭐⭐⭐ 5.0';
+  const heroGradient = item.hero_gradient || 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)';
+  const heroTag = item.hero_tag || `${item.icon || '📰'} ${category}`;
+  const locationTag = item.location_tag || '';
+
+  const buildHTML = () => {
+    DOM.newsSpotlightContent.innerHTML = `
+      <div class="spotlight-top-row">
+        <span class="spotlight-cat-badge" style="background:${item.badge_color || '#e52521'};">${item.icon || '📰'} ${category}</span>
+        <div class="spotlight-score-time">
+          <span class="spotlight-score">${stars}</span>
+          <span class="spotlight-time">⏱️ ${timeAgo}</span>
         </div>
-      `;
-    }).join('');
+      </div>
 
-    DOM.newsCardsGrid.querySelectorAll('.news-card-item').forEach(card => {
-      card.addEventListener('click', () => {
+      <div class="spotlight-hero-bar" style="background:${heroGradient};">
+        <span class="spotlight-hero-icon">${heroTag}</span>
+        <span class="spotlight-hero-location">📍 ${locationTag}</span>
+      </div>
+
+      <h2 class="spotlight-title">${title}</h2>
+      <p class="spotlight-summary">${summary}</p>
+
+      ${keyPoints && keyPoints.length > 0 ? `
+        <div class="spotlight-keypoints">
+          <div class="spotlight-kp-title">📌 ${lang === 'en' ? 'KEY TAKEAWAYS' : 'PUNTOS CLAVE'}:</div>
+          <ul class="spotlight-kp-list">
+            ${keyPoints.map(pt => `<li>${pt}</li>`).join('')}
+          </ul>
+        </div>
+      ` : ''}
+
+      ${keywords && keywords.length > 0 ? `
+        <div class="spotlight-keywords-row">
+          ${keywords.map(kw => `<span class="spotlight-kw">${kw}</span>`).join('')}
+        </div>
+      ` : ''}
+
+      <div class="spotlight-footer">
+        <span><span class="spotlight-source">✓ ${item.source || 'Copilot News'}</span> · 👁️ ${item.reads || '25K lecturas'}</span>
+        <button class="spotlight-read-btn" data-read-idx="${idx}">${lang === 'en' ? 'Read Full Report 📄' : 'Leer Reporte Completo 📄'}</button>
+      </div>
+    `;
+
+    // Bind read button
+    const readBtn = DOM.newsSpotlightContent.querySelector('.spotlight-read-btn');
+    if (readBtn) {
+      readBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         sound.playCoin();
         notifyUserInteraction();
-        const idx = parseInt(card.getAttribute('data-idx') || '0', 10);
-        const selectedItem = articles[idx] || articles[0];
-        openNewsDetailModal(selectedItem);
+        openNewsDetailModal(item);
       });
-    });
+    }
+  };
+
+  // Update breaking ticker
+  if (DOM.breakingHeadlineText) {
+    DOM.breakingHeadlineText.textContent = lang === 'en' ? item.title_en : item.title_es;
+  }
+
+  if (animate) {
+    DOM.newsSpotlightContent.classList.remove('fade-in');
+    DOM.newsSpotlightContent.classList.add('fade-out');
+    setTimeout(() => {
+      buildHTML();
+      DOM.newsSpotlightContent.classList.remove('fade-out');
+      DOM.newsSpotlightContent.classList.add('fade-in');
+      setTimeout(() => DOM.newsSpotlightContent.classList.remove('fade-in'), 450);
+    }, 350);
+  } else {
+    buildHTML();
+  }
+}
+
+function setupNewsSpotlightNav() {
+  if (DOM.btnPrevNews) {
+    DOM.btnPrevNews.onclick = () => {
+      sound.playTap();
+      notifyUserInteraction();
+      const total = newsSpotlightState.articles.length;
+      newsSpotlightState.currentIndex = (newsSpotlightState.currentIndex - 1 + total) % total;
+      newsSpotlightState.secondsLeft = newsSpotlightState.totalSeconds;
+      renderSpotlightCard(newsSpotlightState.currentIndex, true);
+      renderNewsCategoryPills();
+      updateNewsTimerUI();
+    };
+  }
+
+  if (DOM.btnNextNews) {
+    DOM.btnNextNews.onclick = () => {
+      sound.playTap();
+      notifyUserInteraction();
+      advanceNewsSpotlight();
+    };
+  }
+
+  if (DOM.btnPauseNewsRotation) {
+    DOM.btnPauseNewsRotation.onclick = () => {
+      sound.playTap();
+      newsSpotlightState.isPaused = !newsSpotlightState.isPaused;
+      if (DOM.newsPauseIcon) {
+        DOM.newsPauseIcon.textContent = newsSpotlightState.isPaused ? '▶️' : '⏸️';
+      }
+      if (DOM.btnPauseNewsRotation) {
+        DOM.btnPauseNewsRotation.classList.toggle('is-paused', newsSpotlightState.isPaused);
+      }
+      updateNewsTimerUI();
+    };
+  }
+}
+
+function advanceNewsSpotlight() {
+  const total = newsSpotlightState.articles.length;
+  newsSpotlightState.currentIndex = (newsSpotlightState.currentIndex + 1) % total;
+  newsSpotlightState.secondsLeft = newsSpotlightState.totalSeconds;
+  renderSpotlightCard(newsSpotlightState.currentIndex, true);
+  renderNewsCategoryPills();
+  updateNewsTimerUI();
+}
+
+function startNewsSpotlightTimer() {
+  clearInterval(newsSpotlightState.interval);
+  newsSpotlightState.secondsLeft = newsSpotlightState.totalSeconds;
+  updateNewsTimerUI();
+
+  newsSpotlightState.interval = setInterval(() => {
+    if (newsSpotlightState.isPaused) return;
+
+    newsSpotlightState.secondsLeft--;
+    if (newsSpotlightState.secondsLeft <= 0) {
+      advanceNewsSpotlight();
+    }
+    updateNewsTimerUI();
+  }, 1000);
+}
+
+function updateNewsTimerUI() {
+  const { secondsLeft, totalSeconds, isPaused } = newsSpotlightState;
+  const lang = state.currentLang;
+
+  // Timer text
+  if (DOM.newsTimerSeconds) {
+    if (isPaused) {
+      DOM.newsTimerSeconds.textContent = lang === 'en' ? 'Paused ⏸️' : 'Pausado ⏸️';
+    } else {
+      DOM.newsTimerSeconds.textContent = lang === 'en' ? `Next in ${secondsLeft}s` : `Rotación en ${secondsLeft}s`;
+    }
+  }
+
+  // Progress bar
+  if (DOM.newsSpotlightProgressFill) {
+    const pct = ((totalSeconds - secondsLeft) / totalSeconds) * 100;
+    DOM.newsSpotlightProgressFill.style.width = `${Math.min(100, Math.max(0, pct))}%`;
   }
 }
 
