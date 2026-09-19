@@ -655,6 +655,7 @@ function switchTab(targetTab) {
   if (targetTab === 'games' && DOM.viewGames) DOM.viewGames.classList.add('active');
   if (targetTab === 'weatherNews' && DOM.viewWeatherNews) {
     DOM.viewWeatherNews.classList.add('active');
+    switchWeatherNewsSubtab('weather');
     renderWeatherExpanded();
     renderNewsFeed();
   }
@@ -670,6 +671,10 @@ function switchTab(targetTab) {
     DOM.promoVideoMainPlayer.pause();
   }
 }
+
+// Expose globally for inline onclick handlers
+window.__appSwitchTab = switchTab;
+window.switchTabGlobal = switchTab;
 
 /* ==========================================================================
    AUTOSTART COUNTDOWN (GAMES HUB)
@@ -1582,6 +1587,11 @@ function toggleMixMode() {
   showToast(state.mixMode.isPaused ? t.mixPillPaused : t.mixPillActive);
 }
 
+// Expose globally for inline onclick handlers
+window.__appToggleMixMode = toggleMixMode;
+window.toggleMixModeGlobal = toggleMixMode;
+window.advanceMixSegmentGlobal = advanceMixSegment;
+
 function notifyUserInteraction() {
   if (!state.mixMode.enabled) return;
 
@@ -1592,41 +1602,45 @@ function notifyUserInteraction() {
   state.mixMode.interactionCooldown = setTimeout(() => {
     state.mixMode.isPaused = false;
     updateMixPillUI();
-  }, 40000);
+  }, 15000);
 }
 
 function setupUserActivityListener() {
   const events = ['pointerdown', 'touchstart', 'keydown'];
   events.forEach(evt => {
     document.addEventListener(evt, (e) => {
-      if (e.target && e.target.closest('#btnToggleMix')) return;
+      if (e.target && (e.target.closest('#btnToggleMix') || e.target.closest('.dock-pill') || e.target.closest('.bottom-dock') || e.target.closest('.dock-weather'))) return;
       notifyUserInteraction();
     }, { passive: true });
   });
 }
 
 function updateMixPillUI() {
-  if (!DOM.btnToggleMix) return;
+  const btn = DOM.btnToggleMix || document.getElementById('btnToggleMix');
+  if (!btn) return;
   const t = getT();
   const isPaused = state.mixMode.isPaused;
 
-  DOM.btnToggleMix.classList.toggle('paused', isPaused);
-  if (DOM.mixStatusText) {
-    DOM.mixStatusText.textContent = isPaused ? t.mixPillPaused : t.mixPillActive;
+  btn.classList.toggle('paused', isPaused);
+  const statusEl = DOM.mixStatusText || document.getElementById('mixStatusText');
+  if (statusEl) {
+    statusEl.textContent = isPaused ? t.mixPillPaused : t.mixPillActive;
   }
 
-  if (DOM.mixNextTag) {
+  const nextTagEl = DOM.mixNextTag || document.getElementById('mixNextTag');
+  if (nextTagEl) {
     const nextMap = {
       trivia: t.mixSegmentWeather,
       weather: t.mixSegmentNews,
       news: t.mixSegmentPromo,
       promoVideo: t.mixSegmentTrivia
     };
-    DOM.mixNextTag.textContent = `${t.mixNextIn} ${nextMap[state.mixMode.currentStep] || ''}`;
+    nextTagEl.textContent = `${t.mixNextIn} ${nextMap[state.mixMode.currentStep] || ''}`;
   }
 
-  if (DOM.mixMiniTimer) {
-    DOM.mixMiniTimer.textContent = isPaused ? '⏸️' : `${state.mixMode.secondsLeft}s`;
+  const timerEl = DOM.mixMiniTimer || document.getElementById('mixMiniTimer');
+  if (timerEl) {
+    timerEl.textContent = isPaused ? '⏸️' : `${state.mixMode.secondsLeft}s`;
   }
 }
 
@@ -2028,6 +2042,31 @@ function setupEventListeners() {
   if (DOM.tabGiveaway) DOM.tabGiveaway.addEventListener('click', () => switchTab('giveaway'));
   if (DOM.tabLeaderboard) DOM.tabLeaderboard.addEventListener('click', () => switchTab('leaderboard'));
 
+  // Fallback delegation on dock pills container
+  const dockNav = document.querySelector('.dock-nav-pills');
+  if (dockNav) {
+    dockNav.addEventListener('click', (e) => {
+      const btn = e.target.closest('.dock-pill');
+      if (btn && btn.dataset.target) {
+        switchTab(btn.dataset.target);
+      }
+    });
+  }
+
+  // Weather widgets in dock and ride info
+  const dockWeatherWidget = document.querySelector('.dock-weather');
+  if (dockWeatherWidget) {
+    dockWeatherWidget.style.cursor = 'pointer';
+    dockWeatherWidget.title = 'Ver pronóstico y noticias';
+    dockWeatherWidget.addEventListener('click', () => switchTab('weatherNews'));
+  }
+  const weatherCardInRide = document.querySelector('.weather-full-card');
+  if (weatherCardInRide) {
+    weatherCardInRide.style.cursor = 'pointer';
+    weatherCardInRide.title = 'Ver pronóstico extendido';
+    weatherCardInRide.addEventListener('click', () => switchTab('weatherNews'));
+  }
+
   // Autostart Pause
   if (DOM.btnPauseAutostart) {
     DOM.btnPauseAutostart.addEventListener('click', (e) => {
@@ -2104,5 +2143,9 @@ function setupEventListeners() {
   initMixEngine();
 }
 
-// Bootstrap on DOM loaded
-document.addEventListener('DOMContentLoaded', init);
+// Bootstrap safely on DOM loaded or immediate if already interactive
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}

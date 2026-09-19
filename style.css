@@ -3380,13 +3380,26 @@ html, body {
   animation: mixSpin 6s linear infinite;
   display: inline-block;
 }
-.mix-mode-pill.paused .mix-spinner-icon {
+.mix-svg-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--splash-lime, #00f5a0);
+  animation: mixSvgSpin 5s linear infinite;
+  flex-shrink: 0;
+}
+.mix-mode-pill.paused .mix-spinner-icon,
+.mix-mode-pill.paused .mix-svg-icon {
   animation-play-state: paused;
-  opacity: 0.7;
+  color: var(--splash-yellow, #ffd000);
+  opacity: 0.85;
 }
 @keyframes mixSpin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+@keyframes mixSvgSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 .mix-meta-box {
   display: flex;

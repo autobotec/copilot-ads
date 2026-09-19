@@ -14,7 +14,87 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700;800&family=Fredoka:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=6" />
+  <link rel="stylesheet" href="style.css?v=20260919_v12" />
+  <style>
+    /* CRITICAL INLINE STYLES FOR MIX MODE PILL & DOCK */
+    button.mix-mode-pill {
+      all: unset;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      background: rgba(15, 23, 42, 0.85) !important;
+      border: 1.5px solid rgba(0, 245, 160, 0.5) !important;
+      padding: 4px 12px !important;
+      border-radius: 999px !important;
+      cursor: pointer !important;
+      color: #fff !important;
+      box-shadow: 0 0 14px rgba(0, 245, 160, 0.25) !important;
+      user-select: none !important;
+      box-sizing: border-box !important;
+      transition: all 0.2s ease !important;
+    }
+    button.mix-mode-pill:hover {
+      border-color: #00f5a0 !important;
+      box-shadow: 0 0 18px rgba(0, 245, 160, 0.45) !important;
+      transform: translateY(-1px) !important;
+    }
+    button.mix-mode-pill.paused {
+      border-color: rgba(255, 208, 0, 0.6) !important;
+      box-shadow: 0 0 14px rgba(255, 208, 0, 0.25) !important;
+    }
+    .mix-svg-icon {
+      width: 15px;
+      height: 15px;
+      color: #00f5a0;
+      animation: mixSvgSpin 5s linear infinite;
+      flex-shrink: 0;
+    }
+    button.mix-mode-pill.paused .mix-svg-icon {
+      animation-play-state: paused;
+      color: #ffd000;
+      opacity: 0.85;
+    }
+    @keyframes mixSvgSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .mix-meta-box {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      line-height: 1.15;
+    }
+    .mix-status-text {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: #00f5a0;
+      text-transform: uppercase;
+    }
+    button.mix-mode-pill.paused .mix-status-text {
+      color: #ffd000;
+    }
+    .mix-next-tag {
+      font-size: 9px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    .mix-mini-timer {
+      background: rgba(255, 255, 255, 0.12);
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 800;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .dock-pill {
+      cursor: pointer !important;
+    }
+    .dock-weather {
+      cursor: pointer !important;
+    }
+  </style>
 </head>
 <body class="theme-splash">
 
@@ -68,8 +148,10 @@
         </div>
 
         <!-- MIX MODE AUTO-ROTATION TOGGLE & STATUS -->
-        <button class="mix-mode-pill active" id="btnToggleMix" title="Activar / Pausar Rotación Automática (Mix)">
-          <span class="mix-spinner-icon">🔄</span>
+        <button class="mix-mode-pill active" id="btnToggleMix" onclick="window.toggleMixModeGlobal ? window.toggleMixModeGlobal() : null" title="Activar / Pausar Rotación Automática (Mix)" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(15, 23, 42, 0.9); border: 1.5px solid #00f5a0; padding: 4px 12px; border-radius: 999px; cursor: pointer; color: #ffffff; box-shadow: 0 0 14px rgba(0, 245, 160, 0.3); font-family: 'Outfit', sans-serif;">
+          <svg class="mix-svg-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3L21.5 8M22 12.5a10 10 0 0 1-18.8 4.2L2.5 16"/>
+          </svg>
           <div class="mix-meta-box">
             <span class="mix-status-text" id="mixStatusText">MIX ACTIVO</span>
             <span class="mix-next-tag" id="mixNextTag">Próx: Clima</span>
@@ -858,39 +940,39 @@
       </div>
 
       <nav class="dock-nav-pills">
-        <button class="dock-pill active" id="tabGames" data-target="games">
+        <button class="dock-pill active" id="tabGames" data-target="games" onclick="window.switchTabGlobal ? window.switchTabGlobal('games') : null">
           <span class="dock-icon">🎮</span>
           <span class="dock-label" id="dockLabelGames">Juegos en Vivo</span>
         </button>
 
-        <button class="dock-pill" id="tabWeatherNews" data-target="weatherNews">
+        <button class="dock-pill" id="tabWeatherNews" data-target="weatherNews" onclick="window.switchTabGlobal ? window.switchTabGlobal('weatherNews') : null">
           <span class="dock-icon">🌤️</span>
           <span class="dock-label" id="dockLabelWeatherNews">Clima & Noticias</span>
         </button>
 
-        <button class="dock-pill" id="tabRideInfo" data-target="rideInfo">
+        <button class="dock-pill" id="tabRideInfo" data-target="rideInfo" onclick="window.switchTabGlobal ? window.switchTabGlobal('rideInfo') : null">
           <span class="dock-icon">🗺️</span>
           <span class="dock-label" id="dockLabelRideInfo">Info de Viaje</span>
         </button>
 
-        <button class="dock-pill" id="tabMediaAds" data-target="mediaAds">
+        <button class="dock-pill" id="tabMediaAds" data-target="mediaAds" onclick="window.switchTabGlobal ? window.switchTabGlobal('mediaAds') : null">
           <span class="dock-icon">📺</span>
           <span class="dock-label" id="dockLabelMediaAds">Media & Anuncios</span>
         </button>
 
-        <button class="dock-pill" id="tabGiveaway" data-target="giveaway">
+        <button class="dock-pill" id="tabGiveaway" data-target="giveaway" onclick="window.switchTabGlobal ? window.switchTabGlobal('giveaway') : null">
           <span class="dock-icon">🎁</span>
           <span class="dock-label" id="dockLabelGiveaway">Sorteo $50</span>
         </button>
 
-        <button class="dock-pill" id="tabLeaderboard" data-target="leaderboard">
+        <button class="dock-pill" id="tabLeaderboard" data-target="leaderboard" onclick="window.switchTabGlobal ? window.switchTabGlobal('leaderboard') : null">
           <span class="dock-icon">🏆</span>
           <span class="dock-label" id="dockLabelLeaderboard">Récords</span>
         </button>
       </nav>
 
       <div class="dock-right-status">
-        <div class="dock-weather">
+        <div class="dock-weather" onclick="window.switchTabGlobal ? window.switchTabGlobal('weatherNews') : null" style="cursor: pointer;" title="Ver pronóstico y noticias">
           <span>☀️</span>
           <strong>27°C</strong>
         </div>
@@ -1079,7 +1161,40 @@
 
   </div>
 
-  <script src="src/campaignManager.js"></script>
-  <script type="module" src="src/app.js"></script>
+  <script>
+    // Global fallback navigation handlers before module finishes loading
+    window.switchTabGlobal = function(targetTab) {
+      if (window.__appSwitchTab) {
+        window.__appSwitchTab(targetTab);
+        return;
+      }
+      document.querySelectorAll('.dock-pill').forEach(function(pill) {
+        pill.classList.toggle('active', pill.getAttribute('data-target') === targetTab);
+      });
+      document.querySelectorAll('.tab-view').forEach(function(view) {
+        view.classList.remove('active');
+      });
+      var targetId = 'view' + targetTab.charAt(0).toUpperCase() + targetTab.slice(1);
+      var targetEl = document.getElementById(targetId);
+      if (targetEl) targetEl.classList.add('active');
+      if (targetTab === 'weatherNews') {
+        var wTab = document.getElementById('wnTabWeather');
+        if (wTab) wTab.classList.add('active');
+        var nTab = document.getElementById('wnTabNews');
+        if (nTab) nTab.classList.remove('active');
+        var bW = document.getElementById('btnWnWeather');
+        if (bW) bW.classList.add('active');
+        var bN = document.getElementById('btnWnNews');
+        if (bN) bN.classList.remove('active');
+      }
+    };
+    window.toggleMixModeGlobal = function() {
+      if (window.__appToggleMixMode) {
+        window.__appToggleMixMode();
+      }
+    };
+  </script>
+  <script src="src/campaignManager.js?v=20260919_v12"></script>
+  <script type="module" src="src/app.js?v=20260919_v12"></script>
 </body>
 </html>
