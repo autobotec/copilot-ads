@@ -26,6 +26,7 @@ const state = {
   streak: 0,
   currentQuestionIndex: 0,
   currentPicIndex: 0,
+  shuffledPicTrivia: [],
   timerSeconds: 12,
   timerInterval: null,
   isAnswerLocked: false,
@@ -921,6 +922,7 @@ function launchGame(gameType, fromUserAction = false) {
     if (DOM.arenaGameTag) DOM.arenaGameTag.textContent = `📸 ${t.pictureBadge}`;
     DOM.arenaContentMount.appendChild(DOM.triviaArenaContainer);
     DOM.pictureClueCard.classList.remove('hidden');
+    shufflePictureTriviaQuestions();
     loadPictureQuestion(0);
   } else if (gameType === 'simon') {
     if (DOM.arenaGameTag) DOM.arenaGameTag.textContent = `🎨 ${t.simonBadge}`;
@@ -992,6 +994,14 @@ function shuffleTriviaQuestions() {
   }
 }
 
+function shufflePictureTriviaQuestions() {
+  state.shuffledPicTrivia = [...PICTURE_TRIVIA_QUESTIONS];
+  for (let i = state.shuffledPicTrivia.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [state.shuffledPicTrivia[i], state.shuffledPicTrivia[j]] = [state.shuffledPicTrivia[j], state.shuffledPicTrivia[i]];
+  }
+}
+
 function stopTrivia() {
   if (state.timerInterval) {
     clearInterval(state.timerInterval);
@@ -1042,6 +1052,7 @@ function triggerTriviaGameOver(isPicTrivia) {
     if ((isPicTrivia && state.activeGameMode !== 'picture') || (!isPicTrivia && state.activeGameMode !== 'classic')) return;
 
     if (isPicTrivia) {
+      shufflePictureTriviaQuestions();
       loadPictureQuestion(0);
     } else {
       shuffleTriviaQuestions();
@@ -1121,10 +1132,20 @@ function loadPictureQuestion(index) {
     return;
   }
 
+  if (!state.shuffledPicTrivia || state.shuffledPicTrivia.length === 0) {
+    shufflePictureTriviaQuestions();
+  }
+
+  const total = state.shuffledPicTrivia.length || PICTURE_TRIVIA_QUESTIONS.length;
+  // If we looped through all 100+ questions, re-shuffle for fresh unpredictability
+  if (index > 0 && index % total === 0) {
+    shufflePictureTriviaQuestions();
+  }
+
   const t = getT();
   const lang = state.currentLang;
-  state.currentPicIndex = index % PICTURE_TRIVIA_QUESTIONS.length;
-  const q = PICTURE_TRIVIA_QUESTIONS[state.currentPicIndex];
+  state.currentPicIndex = index % total;
+  const q = state.shuffledPicTrivia[state.currentPicIndex] || PICTURE_TRIVIA_QUESTIONS[0];
   state.isAnswerLocked = false;
 
   const category = lang === 'en' ? q.category_en : q.category_es;
@@ -1142,13 +1163,17 @@ function loadPictureQuestion(index) {
 
   DOM.triviaCatIcon.textContent = q.categoryIcon;
   DOM.triviaCatName.textContent = category;
-  DOM.questionCounter.textContent = `${t.visualChallengeOf} ${state.currentPicIndex + 1} ${t.ofWord} ${PICTURE_TRIVIA_QUESTIONS.length}`;
+  DOM.questionCounter.textContent = `${t.visualChallengeOf} ${state.currentPicIndex + 1} ${t.ofWord} ${total}`;
   DOM.triviaQuestion.textContent = question;
   DOM.triviaFeedback.classList.add('hidden');
   updateTriviaStrikesUI();
 
   if (DOM.pictureClueCard) DOM.pictureClueCard.classList.remove('hidden');
   if (DOM.picClueImg) {
+    DOM.picClueImg.onerror = function() {
+      this.onerror = null;
+      this.src = 'assets/images/trivia/eiffel_tower.webp';
+    };
     DOM.picClueImg.src = q.imageUrl || 'assets/images/trivia/eiffel_tower.webp';
     DOM.picClueImg.alt = q.imageAlt || imageTitle;
   }
@@ -1308,7 +1333,9 @@ function handleTriviaTimeout(isPicTrivia) {
   state.streak = 0;
   if (DOM.streakCount) DOM.streakCount.textContent = `${t.streak} x1`;
 
-  const q = isPicTrivia ? PICTURE_TRIVIA_QUESTIONS[state.currentPicIndex] : state.shuffledTrivia[state.currentQuestionIndex];
+  const q = isPicTrivia
+    ? (state.shuffledPicTrivia?.[state.currentPicIndex] || PICTURE_TRIVIA_QUESTIONS[0])
+    : (state.shuffledTrivia?.[state.currentQuestionIndex] || TRIVIA_QUESTIONS[0]);
   const allBtns = DOM.triviaOptions.querySelectorAll('.option-btn');
   const fact = lang === 'en' ? q.fact_en : q.fact_es;
 
