@@ -979,6 +979,10 @@ function returnToGamesHub() {
   state.activeGameMode = 'none';
   state.activeGameInstance = null;
   state.isUserActivelyPlaying = false;
+  const classicCard = DOM.triviaArenaContainer?.querySelector('.trivia-card') || document.querySelector('.trivia-card');
+  if (classicCard) {
+    classicCard.classList.remove('is-picture-mode');
+  }
   if (!state.mixMode.manualUserPause) {
     state.mixMode.isPaused = false;
     updateMixPillUI();
@@ -1102,7 +1106,7 @@ function loadClassicQuestion(index) {
   if (DOM.pictureClueCard) DOM.pictureClueCard.classList.add('hidden');
   const classicCard = DOM.triviaArenaContainer?.querySelector('.trivia-card') || document.querySelector('.trivia-card');
   if (classicCard) {
-    classicCard.classList.remove('pic-contrast-light', 'pic-contrast-dark');
+    classicCard.classList.remove('pic-contrast-light', 'pic-contrast-dark', 'is-picture-mode');
   }
   updateTriviaStrikesUI();
 
@@ -1168,6 +1172,7 @@ function loadPictureQuestion(index) {
   const triviaCard = DOM.triviaArenaContainer?.querySelector('.trivia-card') || document.querySelector('.trivia-card');
   if (triviaCard) {
     triviaCard.classList.remove('pic-contrast-light', 'pic-contrast-dark');
+    triviaCard.classList.add('is-picture-mode');
     const contrastClass = q.textContrast === 'light' ? 'pic-contrast-light' : 'pic-contrast-dark';
     triviaCard.classList.add(contrastClass);
   }
