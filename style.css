@@ -6043,42 +6043,36 @@ html.theme-day ::-webkit-scrollbar-thumb {
   letter-spacing: 0.5px !important;
 }
 
-/* SMB3 POWER METER — auto-hide on tablet widths <= 1260px so dock pills have maximum space */
-.smb3-dock-pmeter {
-  flex-shrink: 0 !important;
-  padding: 2px 6px !important;
-}
-
-@media (max-width: 1260px) {
-  .smb3-dock-pmeter {
-    display: none !important;
-  }
-}
-
+/* EXPANDED DOCK NAV PILLS: maximum accessibility without copilot star or power meter */
 .dock-nav-pills {
   flex: 1 1 auto !important;
   min-width: 0 !important;
   display: flex !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   align-items: center !important;
-  gap: clamp(3px, 0.6vw, 6px) !important;
-  padding: 0 2px !important;
+  gap: clamp(4px, 0.8vw, 10px) !important;
+  padding: 0 4px !important;
 }
 
 .dock-pill {
   flex: 1 1 0 !important;
   min-width: 0 !important;
-  max-width: 142px !important;
+  max-width: 215px !important;
   height: 46px !important;
   min-height: 46px !important;
-  padding: 3px 6px !important;
-  gap: 5px !important;
-  border-radius: 10px !important;
+  padding: 4px 10px !important;
+  gap: 7px !important;
+  border-radius: 12px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   box-sizing: border-box !important;
   overflow: hidden !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.dock-pill:hover {
+  transform: translateY(-2px) !important;
 }
 
 .dock-icon {
