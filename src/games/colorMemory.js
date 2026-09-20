@@ -14,6 +14,8 @@ export class ColorMemoryGame {
     this.isInputAllowed = false;
     this.score = 0;
     this.seqTimeout = null;
+    this.resizeObserver = null;
+    this.boundResize = null;
   }
 
   get t() {
@@ -135,6 +137,47 @@ export class ColorMemoryGame {
     }
   }
 
+  fitConsole() {
+    const stage = this.container.querySelector('.simon-arena-stage');
+    const circle = this.container.querySelector('#simonCircle');
+    if (!stage || !circle) return;
+
+    const stageW = stage.clientWidth;
+    const stageH = stage.clientHeight;
+    if (!stageW || !stageH) return;
+
+    // Safety margin so circle NEVER touches edges, header or dock
+    const diameter = Math.max(160, Math.floor(Math.min(stageW - 8, stageH - 8)));
+    circle.style.width = `${diameter}px`;
+    circle.style.height = `${diameter}px`;
+  }
+
+  setupAutoResize() {
+    const stage = this.container.querySelector('.simon-arena-stage');
+    if (!stage) return;
+
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+
+    if (window.ResizeObserver) {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.fitConsole();
+      });
+      this.resizeObserver.observe(stage);
+    }
+
+    this.boundResize = () => this.fitConsole();
+    window.addEventListener('resize', this.boundResize);
+    window.addEventListener('orientationchange', this.boundResize);
+
+    requestAnimationFrame(() => {
+      this.fitConsole();
+      setTimeout(() => this.fitConsole(), 80);
+      setTimeout(() => this.fitConsole(), 250);
+    });
+  }
+
   start() {
     this.sequence = [];
     this.playerStep = 0;
@@ -202,7 +245,7 @@ export class ColorMemoryGame {
           </div>
         </div>
 
-        <!-- MAIN STAGE: MAXIMIZED HIGH-TECH SIMON CONSOLE -->
+        <!-- MAIN STAGE: HIGH-TECH SIMON CONSOLE (PERFECTLY SCALED) -->
         <div class="simon-arena-stage">
           <div class="splash-simon-circle" id="simonCircle">
             
@@ -251,6 +294,7 @@ export class ColorMemoryGame {
       </div>
     `;
 
+    this.setupAutoResize();
     this.bindEvents();
   }
 
@@ -389,5 +433,14 @@ export class ColorMemoryGame {
     this.isInputAllowed = false;
     this.isPlayingSequence = false;
     if (this.seqTimeout) clearTimeout(this.seqTimeout);
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
+    }
+    if (this.boundResize) {
+      window.removeEventListener('resize', this.boundResize);
+      window.removeEventListener('orientationchange', this.boundResize);
+      this.boundResize = null;
+    }
   }
 }
