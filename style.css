@@ -4612,15 +4612,18 @@ html, body {
 .pvm-video-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.4) 100%);
+  background: transparent !important;
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 16px 20px;
   pointer-events: none;
 }
 .pvm-sponsor-meta {
-  max-width: 65%;
+  display: none !important;
+}
+.pvm-qr-card {
+  pointer-events: auto;
 }
 .pvm-sponsor-brand {
   font-size: 10px;
@@ -6670,10 +6673,7 @@ html.theme-day ::-webkit-scrollbar-thumb {
 }
 
 .fsa-gradient-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.1) 30%, rgba(0, 0, 0, 0.25) 55%, rgba(0, 0, 0, 0.95) 100%);
-  pointer-events: none;
+  display: none !important;
 }
 
 .fsa-top-bar {
@@ -6800,24 +6800,29 @@ html.theme-day ::-webkit-scrollbar-thumb {
 }
 
 .fsa-bottom-panel {
-  position: relative;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 10;
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 24px;
   padding: 16px max(24px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
-  background: linear-gradient(0deg, rgba(8, 12, 22, 0.96) 0%, rgba(8, 12, 22, 0.8) 65%, transparent 100%);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  pointer-events: none;
 }
 
 .fsa-info-col {
-  flex: 1;
-  max-width: 68%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: none !important;
+}
+
+.fsa-qr-col {
+  flex-shrink: 0;
+  pointer-events: auto;
 }
 
 .fsa-sponsor-brand {
@@ -7124,17 +7129,18 @@ html[data-aspect-ratio="portrait"] .trivia-options-grid {
 }
 
 html[data-aspect-ratio="portrait"] .fsa-bottom-panel {
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  gap: 12px !important;
+  flex-direction: row !important;
+  align-items: flex-end !important;
+  justify-content: flex-end !important;
+  background: transparent !important;
 }
 
 html[data-aspect-ratio="portrait"] .fsa-info-col {
-  max-width: 100% !important;
+  display: none !important;
 }
 
 html[data-aspect-ratio="portrait"] .fsa-qr-col {
-  align-self: center !important;
+  align-self: flex-end !important;
 }
 
 
