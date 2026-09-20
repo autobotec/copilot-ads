@@ -60,7 +60,11 @@ function verifyAuthToken(req) {
   } else {
     try {
       const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-      token = (urlObj.searchParams.get('token') || '').trim();
+      const qToken = (urlObj.searchParams.get('token') || '').trim();
+      if (qToken) {
+        console.warn(`[SECURITY WARNING] Token administrativo suministrado por query string en URL. Se recomienda usar cabecera Authorization o X-Admin-Token.`);
+        token = qToken;
+      }
     } catch (e) {}
   }
 
@@ -173,6 +177,8 @@ function setSecurityAndCorsHeaders(res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Token, X-Requested-With');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 }
 

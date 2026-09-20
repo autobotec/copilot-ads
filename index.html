@@ -8,13 +8,14 @@
   <meta name="apple-mobile-web-app-title" content="Copilot" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="screen-orientation" content="landscape" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; media-src 'self' data: blob: https:; frame-src https://www.youtube.com https://www.youtube-nocookie.com; connect-src 'self' https://api.open-meteo.com https://nominatim.openstreetmap.org https://ipwho.is;" />
   <title>Copilot Driver | Rideshare Entertainment & Tablet Ads</title>
   
   <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700;800&family=Fredoka:wght@600;700&family=Pixelify+Sans:wght@400;600;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260920_fullscreen_fix_v10" />
+  <link rel="stylesheet" href="style.css?v=20260920_sec_harden_v11" />
   <style>
     /* CRITICAL INLINE STYLES FOR MIX MODE PILL & DOCK */
     button.mix-mode-pill {
@@ -1412,6 +1413,11 @@
               <input type="text" id="cfgDriverBio" value="¡Hola y bienvenido a bordo! Siéntete como en casa." />
             </div>
             <div class="form-group">
+              <label id="lblCfgDriverPin">PIN de Conductor (4 dígitos):</label>
+              <input type="password" id="cfgDriverPin" maxlength="8" placeholder="••••" />
+              <small id="cfgDriverPinWarning" style="display:none; color:#f87171; font-size:0.75rem; margin-top:4px;">⚠️ Usando PIN por defecto (1234). Cámbialo por seguridad.</small>
+            </div>
+            <div class="form-group">
               <label id="lblCfgThemeMode">Tema Visual (Día / Noche):</label>
               <select id="cfgThemeMode" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(15, 23, 42, 0.9); color: #fff; font-family: 'Outfit', sans-serif;">
                 <option value="auto">Automático (Día 6AM-7PM / Noche)</option>
@@ -1644,6 +1650,6 @@
   </script>
   <script src="src/qrcode.js?v=20260920_qr_autobotec"></script>
   <script src="src/campaignManager.js?v=20260920_v2_futuristic"></script>
-  <script type="module" src="src/app.js?v=20260920_fullscreen_fix_v10"></script>
+  <script type="module" src="src/app.js?v=20260920_sec_harden_v11"></script>
 </body>
 </html>

@@ -538,6 +538,9 @@ const DOM = {
   cfgDriverPlaylist: document.getElementById('cfgDriverPlaylist'),
   lblCfgDriverBio: document.getElementById('lblCfgDriverBio'),
   cfgDriverBio: document.getElementById('cfgDriverBio'),
+  lblCfgDriverPin: document.getElementById('lblCfgDriverPin'),
+  cfgDriverPin: document.getElementById('cfgDriverPin'),
+  cfgDriverPinWarning: document.getElementById('cfgDriverPinWarning'),
   btnSaveDriverConfig: document.getElementById('btnSaveDriverConfig'),
   btnResetStats: document.getElementById('btnResetStats'),
 
@@ -546,9 +549,65 @@ const DOM = {
 };
 
 /* ==========================================================================
+   SECURITY & PRIVACY HELPERS
+   ========================================================================== */
+function maskContact(contact) {
+  if (!contact || typeof contact !== 'string') return '***';
+  const trimmed = contact.trim();
+  if (trimmed.includes('@')) {
+    const parts = trimmed.split('@');
+    const user = parts[0];
+    const domain = parts[1] || '';
+    const maskedUser = user.length <= 2 ? user[0] + '***' : user[0] + '***' + user.slice(-1);
+    return `${maskedUser}@${domain}`;
+  }
+  const cleanDigits = trimmed.replace(/\D/g, '');
+  if (cleanDigits.length >= 7) {
+    const last4 = cleanDigits.slice(-4);
+    const prefix = cleanDigits.length > 10 ? cleanDigits.slice(0, cleanDigits.length - 10) : '';
+    return `${prefix ? '+' + prefix + ' ' : ''}(***) ***-${last4}`;
+  }
+  if (trimmed.length > 4) {
+    return trimmed.slice(0, 2) + '***' + trimmed.slice(-2);
+  }
+  return '***';
+}
+
+function sanitizeStoredTickets() {
+  try {
+    const rawTickets = localStorage.getItem('copilot_claimed_tickets');
+    if (rawTickets) {
+      const parsed = JSON.parse(rawTickets);
+      if (Array.isArray(parsed)) {
+        let changed = false;
+        const sanitized = parsed.map(t => {
+          if (t && t.contact && !t.contact.includes('***')) {
+            changed = true;
+            return { ...t, contact: maskContact(t.contact) };
+          }
+          return t;
+        });
+        if (changed) {
+          localStorage.setItem('copilot_claimed_tickets', JSON.stringify(sanitized));
+        }
+      }
+    }
+    const lastTicket = localStorage.getItem('copilot_last_ticket');
+    if (lastTicket) {
+      const parsed = JSON.parse(lastTicket);
+      if (parsed && parsed.contact && !parsed.contact.includes('***')) {
+        parsed.contact = maskContact(parsed.contact);
+        localStorage.setItem('copilot_last_ticket', JSON.stringify(parsed));
+      }
+    }
+  } catch (e) {}
+}
+
+/* ==========================================================================
    INITIALIZATION
    ========================================================================== */
 function init() {
+  sanitizeStoredTickets();
   loadDriverConfig();
   setupClock();
   setupDayNightTheme();
@@ -3405,10 +3464,15 @@ function registerOfficialTicket(contact, nickname = '') {
   };
 
   try {
+    // Redact passenger contact (PII) before persisting to public tablet localStorage
+    const storageTicket = {
+      ...ticket,
+      contact: maskContact(ticket.contact)
+    };
     const existing = JSON.parse(localStorage.getItem('copilot_claimed_tickets') || '[]');
-    existing.unshift(ticket);
+    existing.unshift(storageTicket);
     localStorage.setItem('copilot_claimed_tickets', JSON.stringify(existing.slice(0, 25)));
-    localStorage.setItem('copilot_last_ticket', JSON.stringify(ticket));
+    localStorage.setItem('copilot_last_ticket', JSON.stringify(storageTicket));
   } catch (e) {
     console.error('Error saving ticket to storage:', e);
   }
@@ -3842,7 +3906,8 @@ function closeAdminModal() {
 
 function verifyAdminPin() {
   const pin = DOM.adminPinInput.value.trim();
-  if (pin === state.driverConfig.pin || pin === "1234") {
+  const validPin = state.driverConfig.pin || "1234";
+  if (pin === validPin) {
     sound.playCorrect();
     DOM.adminPinScreen.classList.add('hidden');
     DOM.adminSettingsScreen.classList.remove('hidden');
@@ -3862,6 +3927,13 @@ function populateAdminSettings() {
   DOM.cfgDriverPlaylist.value = state.driverConfig.playlist;
   DOM.cfgDriverBio.value = state.driverConfig.bio;
 
+  if (DOM.cfgDriverPin) {
+    DOM.cfgDriverPin.value = state.driverConfig.pin || '1234';
+    if (DOM.cfgDriverPinWarning) {
+      DOM.cfgDriverPinWarning.style.display = (state.driverConfig.pin === '1234' || !state.driverConfig.pin) ? 'block' : 'none';
+    }
+  }
+
   const selTheme = document.getElementById('cfgThemeMode');
   if (selTheme) {
     selTheme.value = localStorage.getItem('copilot_manual_theme') || 'auto';
@@ -3880,6 +3952,10 @@ function saveAdminSettings() {
   state.driverConfig.tipHandle = DOM.cfgDriverTipHandle.value.trim() || state.driverConfig.tipHandle;
   state.driverConfig.playlist = DOM.cfgDriverPlaylist.value.trim() || state.driverConfig.playlist;
   state.driverConfig.bio = DOM.cfgDriverBio.value.trim() || state.driverConfig.bio;
+
+  if (DOM.cfgDriverPin && DOM.cfgDriverPin.value.trim()) {
+    state.driverConfig.pin = DOM.cfgDriverPin.value.trim();
+  }
 
   const selTheme = document.getElementById('cfgThemeMode');
   if (selTheme) {
