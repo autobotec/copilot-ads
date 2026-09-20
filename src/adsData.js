@@ -8,7 +8,7 @@ export const SPONSORED_ADS = [
     headline_en: "ADVERTISE YOUR BUSINESS HERE! · AUTOBOTEC.NET",
     subtext: "Llega a más de 3,000+ pasajeros cautivos cada mes en Uber y Lyft con pantallas interactivas de alta conversión. Escanea el código QR para tarifas y contratación inmediata.",
     subtext_en: "Reach over 3,000+ captive passengers every month on Uber & Lyft with high-converting interactive screens. Scan the QR code to hire ads.",
-    videoUrl: "assets/videos/anuncia_aqui_autobotec.mp4",
+    videoUrl: "assets/videos/video_autobotec_1789922115206.mp4",
     qrCodeText: "https://autobotec.net",
     promoCode: "AUTOBOTEC26",
     theme: "amber",

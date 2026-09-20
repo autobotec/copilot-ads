@@ -19,7 +19,7 @@
       status: 'active', // 'active' | 'paused' | 'expired'
       title: '¡ANUNCIA TU NEGOCIO AQUÍ!',
       subtitle: 'Llega a más de 3,000+ pasajeros al mes en Uber y Lyft con pantallas interactivas de alta conversión. Escanea el código QR para contratar tu pauta.',
-      mediaUrl: 'assets/videos/anuncia_aqui_autobotec.mp4',
+      mediaUrl: 'assets/videos/video_autobotec_1789922115206.mp4',
       mediaType: 'video',
       couponCode: 'AUTOBOTEC26',
       discountOffer: 'Pauta publicitaria oficial en Copilot Driver & Desarrollo Web',
@@ -98,6 +98,9 @@
         const storedCamps = localStorage.getItem(STORAGE_KEY_CAMPAIGNS);
         if (!storedCamps || storedCamps.includes('camp-demo-01')) {
           localStorage.setItem(STORAGE_KEY_CAMPAIGNS, JSON.stringify(DEFAULT_CAMPAIGNS));
+        } else if (storedCamps.includes('anuncia_aqui_autobotec.mp4')) {
+          const updated = storedCamps.replace(/assets\/videos\/anuncia_aqui_autobotec\.mp4/g, 'assets/videos/video_autobotec_1789922115206.mp4');
+          localStorage.setItem(STORAGE_KEY_CAMPAIGNS, updated);
         }
         if (!localStorage.getItem(STORAGE_KEY_AUTH)) {
           localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify({ pin: '2026', pass: 'admin2026' }));

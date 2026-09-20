@@ -2051,9 +2051,14 @@ function startPromoVideoPlayback() {
   syncCurrentVideoSpotlight();
   if (!DOM.promoVideoMainPlayer) return;
   DOM.promoVideoMainPlayer.currentTime = 0;
+  DOM.promoVideoMainPlayer.muted = true;
   const playPromise = DOM.promoVideoMainPlayer.play();
   if (playPromise !== undefined) {
-    playPromise.catch(() => {
+    playPromise.then(() => {
+      if (!sound.isMuted()) {
+        DOM.promoVideoMainPlayer.muted = false;
+      }
+    }).catch(() => {
       DOM.promoVideoMainPlayer.muted = true;
       DOM.promoVideoMainPlayer.play().catch(() => {});
     });
@@ -2186,7 +2191,34 @@ function advanceMixSegment(forceNextStep = null) {
    ========================================================================== */
 function openFullscreenAd(customAd = null) {
   state.isFullscreenAdActive = true;
-  const ad = customAd || SPONSORED_ADS[state.mixMode.promoVideoIndex % SPONSORED_ADS.length] || SPONSORED_ADS[0];
+
+  // Priorizar campaña de video activa desde CampaignManager
+  let ad = customAd;
+  if (!ad && window.CampaignManager) {
+    const spotlights = window.CampaignManager.getActiveVideoSpotlights();
+    if (spotlights && spotlights.length > 0) {
+      const camp = spotlights[state.mixMode.promoVideoIndex % spotlights.length];
+      if (camp) {
+        ad = {
+          id: camp.id,
+          brand: (camp.clientName || 'AUTOBOTEC.NET · MEDIA NETWORK').toUpperCase(),
+          badge: camp.format === 'video_spotlight' ? 'SPOT DE VIDEO PATROCINADO' : 'ANUNCIO PATROCINADO',
+          badge_en: 'SPONSORED VIDEO SPOT',
+          headline: camp.title || '¡ANUNCIA TU NEGOCIO AQUÍ!',
+          headline_en: camp.title || 'ADVERTISE YOUR BUSINESS HERE!',
+          subtext: camp.subtitle || camp.discountOffer || '',
+          subtext_en: camp.subtitle || camp.discountOffer || '',
+          videoUrl: camp.mediaUrl || 'assets/videos/video_autobotec_1789922115206.mp4',
+          qrCodeText: camp.targetUrl || 'https://autobotec.net',
+          promoCode: camp.couponCode || 'AUTOBOTEC26'
+        };
+      }
+    }
+  }
+
+  if (!ad) {
+    ad = SPONSORED_ADS[state.mixMode.promoVideoIndex % SPONSORED_ADS.length] || SPONSORED_ADS[0];
+  }
   state.mixMode.promoVideoIndex++;
 
   if (DOM.fullscreenAdOverlay) {
@@ -2214,7 +2246,7 @@ function openFullscreenAd(customAd = null) {
       : (ad.subtext || "Llega a más de 3,000+ pasajeros cautivos al mes en Uber y Lyft con pantallas interactivas de alta conversión. Escanea el código QR para contratar tu pauta publicitaria en Autobotec.net.");
   }
   if (DOM.fsaPromoVal) {
-    DOM.fsaPromoVal.textContent = ad.promoCode || "COPILOT30";
+    DOM.fsaPromoVal.textContent = ad.promoCode || "AUTOBOTEC26";
   }
 
   if (DOM.fsaQrContainer) {
@@ -2222,12 +2254,21 @@ function openFullscreenAd(customAd = null) {
   }
 
   if (DOM.fsaVideoPlayer) {
-    DOM.fsaVideoPlayer.src = ad.videoUrl || "assets/videos/anuncia_aqui_autobotec.mp4";
+    const targetUrl = ad.videoUrl || "assets/videos/video_autobotec_1789922115206.mp4";
+    const currentSrc = DOM.fsaVideoPlayer.getAttribute('src') || DOM.fsaVideoPlayer.currentSrc || DOM.fsaVideoPlayer.src || '';
+    if (!currentSrc.includes(targetUrl)) {
+      DOM.fsaVideoPlayer.src = targetUrl;
+      DOM.fsaVideoPlayer.load();
+    }
     DOM.fsaVideoPlayer.currentTime = 0;
-    DOM.fsaVideoPlayer.muted = sound.isMuted();
+    DOM.fsaVideoPlayer.muted = true; // Iniciar muteado para cumplir política de autoplay
     const playPromise = DOM.fsaVideoPlayer.play();
     if (playPromise !== undefined) {
-      playPromise.catch(() => {
+      playPromise.then(() => {
+        if (!sound.isMuted()) {
+          DOM.fsaVideoPlayer.muted = false;
+        }
+      }).catch(() => {
         DOM.fsaVideoPlayer.muted = true;
         DOM.fsaVideoPlayer.play().catch(() => {});
       });
