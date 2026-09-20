@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700;800&family=Fredoka:wght@600;700&family=Pixelify+Sans:wght@400;600;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260919_news_v3" />
+  <link rel="stylesheet" href="style.css?v=20260920_fullscreen_mix30" />
   <style>
     /* CRITICAL INLINE STYLES FOR MIX MODE PILL & DOCK */
     button.mix-mode-pill {
@@ -1277,6 +1277,72 @@
       </div>
     </div>
 
+    <!-- ====================================================================
+         FULLSCREEN TABLET AD / SPONSOR SPOTLIGHT OVERLAY (KIOSK 100% DISPLAY)
+         ==================================================================== -->
+    <div id="fullscreenAdOverlay" class="fullscreen-ad-overlay hidden" aria-hidden="true">
+      <div class="fsa-backdrop"></div>
+      
+      <!-- Video or Visual Media Background -->
+      <div class="fsa-media-wrap">
+        <video id="fsaVideoPlayer" class="fsa-video" playsinline webkit-playsinline preload="auto" loop muted>
+          <source src="assets/videos/anuncia_aqui_autobotec.mp4" type="video/mp4" />
+        </video>
+        <div class="fsa-gradient-overlay"></div>
+      </div>
+
+      <!-- Top Bar: Badge, 30s Countdown, Sound & Close -->
+      <div class="fsa-top-bar">
+        <div class="fsa-brand-pill">
+          <span class="fsa-live-dot"></span>
+          <span class="fsa-badge-text" id="fsaBadgeTitle">SPOT DE VIDEO PATROCINADO</span>
+        </div>
+        <div class="fsa-top-actions">
+          <div class="fsa-timer-badge">
+            <svg class="fsa-timer-svg" viewBox="0 0 36 36">
+              <path class="fsa-timer-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path id="fsaCountdownCircle" class="fsa-timer-circle" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <span id="fsaSecondsCount" class="fsa-timer-number">30s</span>
+          </div>
+          <button class="fsa-icon-btn" id="btnFsaSound" title="Silenciar / Activar Sonido">🔊</button>
+          <button class="fsa-icon-btn fsa-close-btn" id="btnFsaClose" title="Continuar">✕</button>
+        </div>
+      </div>
+
+      <!-- Bottom Content Panel: Headline, Brand, Description, Promo Code, QR -->
+      <div class="fsa-bottom-panel">
+        <div class="fsa-info-col">
+          <div class="fsa-sponsor-brand" id="fsaSponsorTagline">AUTOBOTEC.NET · MEDIA NETWORK</div>
+          <h1 class="fsa-sponsor-headline" id="fsaSponsorTitle">¡ANUNCIA TU NEGOCIO AQUÍ!</h1>
+          <p class="fsa-sponsor-desc" id="fsaSponsorDesc">Llega a más de 3,000+ pasajeros cautivos al mes en Uber y Lyft con pantallas interactivas de alta conversión. Escanea el código QR para contratar tu pauta publicitaria en Autobotec.net.</p>
+          <div class="fsa-perks-row">
+            <div class="fsa-coupon-pill">
+              <span class="fsa-coupon-lbl">CÓDIGO / WEB:</span>
+              <strong class="fsa-coupon-code" id="fsaPromoVal">AUTOBOTEC26</strong>
+            </div>
+            <div class="fsa-tag-pill" id="fsaTagPill">
+              <span>⭐ PUBLICIDAD DE ALTO IMPACTO</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="fsa-qr-col">
+          <div class="fsa-qr-card">
+            <div class="fsa-qr-box" id="fsaQrContainer"></div>
+            <div class="fsa-qr-caption">
+              <span>📱</span> Escanea con la cámara de tu móvil
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 30-Second Bottom Linear Progress Fill -->
+      <div class="fsa-progress-track">
+        <div class="fsa-progress-bar" id="fsaProgressFill"></div>
+      </div>
+    </div>
+
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -1315,7 +1381,7 @@
       }
     };
   </script>
-  <script src="src/campaignManager.js?v=20260919_news_v3"></script>
-  <script type="module" src="src/app.js?v=20260919_news_v3"></script>
+  <script src="src/campaignManager.js?v=20260920_fullscreen_mix30"></script>
+  <script type="module" src="src/app.js?v=20260920_fullscreen_mix30"></script>
 </body>
 </html>

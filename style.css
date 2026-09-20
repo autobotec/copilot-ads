@@ -6610,3 +6610,524 @@ html.theme-day ::-webkit-scrollbar-thumb {
   padding: 10px 22px !important;
 }
 
+/* ==========================================================================
+   FULLSCREEN TABLET AD & SPONSOR SPOTLIGHT MODE (KIOSK 100% DISPLAY)
+   ========================================================================== */
+.fullscreen-ad-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+  height: 100dvh;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  background: #000000;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.4s;
+}
+
+.fullscreen-ad-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.fsa-backdrop {
+  position: absolute;
+  inset: 0;
+  background: #000000;
+  z-index: 1;
+}
+
+.fsa-media-wrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.fsa-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.fsa-gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.1) 30%, rgba(0, 0, 0, 0.25) 55%, rgba(0, 0, 0, 0.95) 100%);
+  pointer-events: none;
+}
+
+.fsa-top-bar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(14px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) 10px max(20px, env(safe-area-inset-left));
+}
+
+.fsa-brand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1.5px solid #f8b800;
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: 0 4px 18px rgba(248, 184, 0, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.fsa-live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #f8b800;
+  box-shadow: 0 0 10px #f8b800;
+  animation: fsaPulse 1.5s infinite ease-in-out;
+}
+
+@keyframes fsaPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 0.6; }
+}
+
+.fsa-badge-text {
+  font-family: 'Space Grotesk', 'Outfit', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #f8b800;
+  text-transform: uppercase;
+}
+
+.fsa-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fsa-timer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  padding: 4px 12px;
+  border-radius: 999px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.fsa-timer-svg {
+  width: 22px;
+  height: 22px;
+  transform: rotate(-90deg);
+}
+
+.fsa-timer-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 3.5;
+}
+
+.fsa-timer-circle {
+  fill: none;
+  stroke: #00f5a0;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.fsa-timer-number {
+  font-family: 'Space Grotesk', 'Outfit', monospace;
+  font-size: 13px;
+  font-weight: 800;
+  color: #00f5a0;
+  min-width: 26px;
+  text-align: right;
+}
+
+.fsa-icon-btn {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.fsa-icon-btn:hover {
+  background: #f8b800;
+  border-color: #f8b800;
+  color: #000000;
+  transform: scale(1.08);
+}
+
+.fsa-close-btn {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.fsa-bottom-panel {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 16px max(24px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+  background: linear-gradient(0deg, rgba(8, 12, 22, 0.96) 0%, rgba(8, 12, 22, 0.8) 65%, transparent 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.fsa-info-col {
+  flex: 1;
+  max-width: 68%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fsa-sponsor-brand {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #f8b800;
+  text-transform: uppercase;
+}
+
+.fsa-sponsor-headline {
+  font-family: 'Space Grotesk', 'Outfit', sans-serif;
+  font-size: clamp(20px, 2.8vw, 32px);
+  font-weight: 900;
+  line-height: 1.18;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.85);
+}
+
+.fsa-sponsor-desc {
+  font-size: clamp(12px, 1.25vw, 15px);
+  line-height: 1.45;
+  color: #cbd5e1;
+  margin: 0;
+  max-width: 650px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+}
+
+.fsa-perks-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.fsa-coupon-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1.5px dashed #00f5a0;
+  padding: 6px 14px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 245, 160, 0.2);
+}
+
+.fsa-coupon-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 1px;
+}
+
+.fsa-coupon-code {
+  font-family: 'Space Grotesk', monospace;
+  font-size: 15px;
+  font-weight: 900;
+  color: #00f5a0;
+  letter-spacing: 1px;
+}
+
+.fsa-tag-pill {
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffd000;
+  background: rgba(248, 184, 0, 0.15);
+  border: 1px solid rgba(248, 184, 0, 0.4);
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.fsa-qr-col {
+  flex-shrink: 0;
+}
+
+.fsa-qr-card {
+  background: rgba(15, 23, 42, 0.94);
+  border: 2px solid #f8b800;
+  box-shadow: 0 6px 26px rgba(248, 184, 0, 0.45);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.fsa-qr-box {
+  width: clamp(100px, 12vw, 135px);
+  height: clamp(100px, 12vw, 135px);
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.fsa-qr-caption {
+  font-size: 11px;
+  font-weight: 800;
+  color: #f8b800;
+  text-align: center;
+  max-width: 135px;
+  line-height: 1.25;
+}
+
+.fsa-progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.15);
+  z-index: 20;
+}
+
+.fsa-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #f8b800, #00f5a0);
+  box-shadow: 0 0 10px #00f5a0;
+  transition: width 1s linear;
+}
+
+/* ==========================================================================
+   RESPONSIVE DEVICE ADAPTATION SYSTEM (ANTI-OVERLAPPING & FLUID LAYOUT)
+   ========================================================================== */
+
+/* Universal flex safety */
+.kiosk-container {
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+  height: 100dvh;
+  max-height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.main-layout {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.view-panel {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.trivia-arena-container,
+.trivia-arena-card,
+.trivia-card {
+  min-height: 0 !important;
+}
+
+/* COMPACT SCREENS: <= 660px Height (7" tablets, small Android tablets, browser bar active) */
+html[data-screen-height="compact"] .kiosk-container {
+  padding: max(3px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right)) max(3px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left)) !important;
+  gap: 3px !important;
+}
+
+html[data-screen-height="compact"] .top-header {
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 8px !important;
+}
+
+html[data-screen-height="compact"] .brand-splash-logo {
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 14px !important;
+}
+
+html[data-screen-height="compact"] .brand-title {
+  font-size: 13.5px !important;
+}
+
+html[data-screen-height="compact"] .quick-pill-banner,
+html[data-screen-height="compact"] .bonus-banner {
+  padding: 2px 8px !important;
+  font-size: 10px !important;
+}
+
+html[data-screen-height="compact"] .bottom-dock {
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 8px !important;
+}
+
+html[data-screen-height="compact"] .dock-pill {
+  padding: 3px 8px !important;
+  font-size: 10.5px !important;
+  gap: 4px !important;
+}
+
+html[data-screen-height="compact"] .dock-icon {
+  font-size: 12px !important;
+}
+
+html[data-screen-height="compact"] .trivia-card {
+  padding: 6px 12px !important;
+  gap: 4px !important;
+}
+
+html[data-screen-height="compact"] .trivia-question {
+  font-size: clamp(12px, 1.4vw + 0.3vh, 15px) !important;
+  line-height: 1.22 !important;
+  margin: 2px 0 !important;
+}
+
+html[data-screen-height="compact"] .trivia-options-grid {
+  gap: 4px !important;
+}
+
+html[data-screen-height="compact"] .option-btn {
+  padding: 4px 8px !important;
+  min-height: 34px !important;
+  font-size: 11.5px !important;
+}
+
+html[data-screen-height="compact"] .option-letter {
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 10px !important;
+}
+
+html[data-screen-height="compact"] .trivia-feedback-banner {
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+}
+
+html[data-screen-height="compact"] .games-hub-header {
+  padding: 6px 12px !important;
+}
+
+html[data-screen-height="compact"] .hub-main-title {
+  font-size: 16px !important;
+}
+
+html[data-screen-height="compact"] .hub-subtitle {
+  font-size: 10.5px !important;
+}
+
+html[data-screen-height="compact"] .game-launch-card {
+  padding: 6px 10px !important;
+}
+
+html[data-screen-height="compact"] .game-name {
+  font-size: 13px !important;
+}
+
+html[data-screen-height="compact"] .game-desc {
+  font-size: 9.5px !important;
+}
+
+html[data-screen-height="compact"] .fsa-sponsor-headline {
+  font-size: 20px !important;
+}
+
+html[data-screen-height="compact"] .fsa-sponsor-desc {
+  font-size: 11.5px !important;
+  max-width: 500px !important;
+}
+
+html[data-screen-height="compact"] .fsa-qr-box {
+  width: 90px !important;
+  height: 90px !important;
+}
+
+/* STANDARD TABLET ASPECT RATIO (4:3 iPad e.g. 1024x768, 2048x1536) */
+html[data-aspect-ratio="landscape-standard"] .deals-showcase-layout {
+  gap: 8px !important;
+}
+
+html[data-aspect-ratio="landscape-standard"] .ad-card {
+  padding: 14px 18px !important;
+}
+
+html[data-aspect-ratio="landscape-standard"] .trivia-card {
+  padding: 8px 14px !important;
+}
+
+/* PORTRAIT DISPLAY ADAPTATION */
+html[data-aspect-ratio="portrait"] .top-header {
+  padding: 0 6px !important;
+}
+
+html[data-aspect-ratio="portrait"] .quick-pill-banner {
+  display: none !important;
+}
+
+html[data-aspect-ratio="portrait"] .trivia-options-grid {
+  grid-template-columns: 1fr !important;
+}
+
+html[data-aspect-ratio="portrait"] .fsa-bottom-panel {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+}
+
+html[data-aspect-ratio="portrait"] .fsa-info-col {
+  max-width: 100% !important;
+}
+
+html[data-aspect-ratio="portrait"] .fsa-qr-col {
+  align-self: center !important;
+}
+
+

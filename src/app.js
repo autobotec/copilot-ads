@@ -11,6 +11,9 @@ import { NEWS_ARTICLES } from './newsData.js';
 import { WEATHER_INFO } from './weatherData.js';
 import { geoService } from './geoService.js';
 
+// Mix Segment Duration Constant (30 seconds per content rotation)
+export const MIX_SEGMENT_DURATION = 30;
+
 /* ==========================================================================
    STATE MANAGEMENT
    ========================================================================== */
@@ -34,13 +37,17 @@ const state = {
     enabled: true,
     isPaused: false,
     currentStep: 'trivia', // 'trivia' | 'weather' | 'news' | 'promoVideo'
-    secondsLeft: 14,
+    secondsLeft: MIX_SEGMENT_DURATION,
+    duration: MIX_SEGMENT_DURATION,
     interval: null,
     interactionCooldown: null,
-    triviaQuestionsPlayed: 0,
-    triviaMaxPerCycle: 2,
     promoVideoIndex: 0
   },
+
+  // Active Player state: protects human players from being interrupted by rotation
+  isUserActivelyPlaying: false,
+  lastUserInteraction: 0,
+  isFullscreenAdActive: false,
 
   // Autostart timer on Games Hub
   autostartSeconds: 8,
@@ -218,6 +225,21 @@ const DOM = {
   pvmPromoCode: document.getElementById('pvmPromoCode'),
   btnClaimPromoVideo: document.getElementById('btnClaimPromoVideo'),
   btnNextPromoVideo: document.getElementById('btnNextPromoVideo'),
+
+  // Fullscreen Tablet Ad Overlay
+  fullscreenAdOverlay: document.getElementById('fullscreenAdOverlay'),
+  fsaVideoPlayer: document.getElementById('fsaVideoPlayer'),
+  fsaBadgeTitle: document.getElementById('fsaBadgeTitle'),
+  fsaSecondsCount: document.getElementById('fsaSecondsCount'),
+  fsaCountdownCircle: document.getElementById('fsaCountdownCircle'),
+  btnFsaSound: document.getElementById('btnFsaSound'),
+  btnFsaClose: document.getElementById('btnFsaClose'),
+  fsaSponsorTagline: document.getElementById('fsaSponsorTagline'),
+  fsaSponsorTitle: document.getElementById('fsaSponsorTitle'),
+  fsaSponsorDesc: document.getElementById('fsaSponsorDesc'),
+  fsaPromoVal: document.getElementById('fsaPromoVal'),
+  fsaQrContainer: document.getElementById('fsaQrContainer'),
+  fsaProgressFill: document.getElementById('fsaProgressFill'),
 
   // Games Hub Screen & Autostart
   gamesHubScreen: document.getElementById('gamesHubScreen'),
@@ -759,6 +781,10 @@ function launchGame(gameType) {
   clearInterval(state.autostartInterval);
   sound.playSplashPop();
   state.activeGameMode = gameType;
+  state.isUserActivelyPlaying = true;
+  state.lastUserInteraction = Date.now();
+  state.mixMode.isPaused = true;
+  updateMixPillUI();
 
   if (!isAdminUnlocked && !document.fullscreenElement && !document.webkitFullscreenElement) {
     requestFullscreenSafely();
@@ -819,6 +845,7 @@ function returnToGamesHub() {
   clearInterval(state.timerInterval);
   state.activeGameMode = 'none';
   state.activeGameInstance = null;
+  state.isUserActivelyPlaying = false;
 
   if (DOM.gameArenaScreen) DOM.gameArenaScreen.classList.add('hidden');
   if (DOM.gamesHubScreen) DOM.gamesHubScreen.classList.remove('hidden');
@@ -1016,28 +1043,18 @@ function handleTriviaAnswer(isCorrect, selectedBtn, questionData, isPicTrivia) {
   DOM.feedbackFact.textContent = fact;
   DOM.triviaFeedback.classList.remove('hidden');
 
-  setTimeout(() => {
-    // Check Mix Mode rotation
-    if (state.mixMode.enabled && !state.mixMode.isPaused) {
-      state.mixMode.triviaQuestionsPlayed++;
-      if (state.mixMode.triviaQuestionsPlayed >= state.mixMode.triviaMaxPerCycle) {
-        state.mixMode.triviaQuestionsPlayed = 0;
-        advanceMixSegment('weather');
-        return;
-      }
-    }
+  // Player is actively engaged: protect session so mix mode does not kick them out
+  state.isUserActivelyPlaying = true;
+  state.lastUserInteraction = Date.now();
+  state.mixMode.isPaused = true;
+  updateMixPillUI();
 
-    state.questionsSinceLastAd++;
-    if (state.questionsSinceLastAd >= state.driverConfig.adFrequency) {
-      state.questionsSinceLastAd = 0;
-      switchTab('mediaAds');
-      switchMediaSubtab('deals');
+  setTimeout(() => {
+    // Continue directly to the next question in the 500-question pool
+    if (isPicTrivia) {
+      loadPictureQuestion(state.currentPicIndex + 1);
     } else {
-      if (isPicTrivia) {
-        loadPictureQuestion(state.currentPicIndex + 1);
-      } else {
-        loadClassicQuestion(state.currentQuestionIndex + 1);
-      }
+      loadClassicQuestion(state.currentQuestionIndex + 1);
     }
   }, 2500);
 }
@@ -1065,16 +1082,7 @@ function handleTriviaTimeout(isPicTrivia) {
   DOM.triviaFeedback.classList.remove('hidden');
 
   setTimeout(() => {
-    // Check Mix Mode rotation
-    if (state.mixMode.enabled && !state.mixMode.isPaused) {
-      state.mixMode.triviaQuestionsPlayed++;
-      if (state.mixMode.triviaQuestionsPlayed >= state.mixMode.triviaMaxPerCycle) {
-        state.mixMode.triviaQuestionsPlayed = 0;
-        advanceMixSegment('weather');
-        return;
-      }
-    }
-
+    // Continue directly to the next question without interrupting
     if (isPicTrivia) {
       loadPictureQuestion(state.currentPicIndex + 1);
     } else {
@@ -1911,6 +1919,12 @@ function startMixTicker() {
     }
 
     if (state.mixMode.currentStep === 'trivia') {
+      // IF player is actively answering questions or playing, DO NOT leave trivia!
+      if (state.isUserActivelyPlaying) {
+        state.mixMode.secondsLeft = MIX_SEGMENT_DURATION;
+        updateMixPillUI();
+        return;
+      }
       state.mixMode.secondsLeft--;
       if (state.mixMode.secondsLeft <= 0) {
         advanceMixSegment('weather');
@@ -1927,14 +1941,17 @@ function startMixTicker() {
       }
     } else if (state.mixMode.currentStep === 'promoVideo') {
       state.mixMode.secondsLeft--;
+      updateFullscreenAdProgress(state.mixMode.secondsLeft, MIX_SEGMENT_DURATION);
+
       if (DOM.pvmTimer) {
         DOM.pvmTimer.textContent = `0:${String(Math.max(0, state.mixMode.secondsLeft)).padStart(2, '0')}`;
       }
       if (DOM.pvmProgressFill) {
-        const pct = ((14 - state.mixMode.secondsLeft) / 14) * 100;
+        const pct = ((MIX_SEGMENT_DURATION - state.mixMode.secondsLeft) / MIX_SEGMENT_DURATION) * 100;
         DOM.pvmProgressFill.style.width = `${Math.min(100, Math.max(0, pct))}%`;
       }
       if (state.mixMode.secondsLeft <= 0) {
+        closeFullscreenAd();
         advanceMixSegment('trivia');
       }
     }
@@ -1952,27 +1969,200 @@ function advanceMixSegment(forceNextStep = null) {
   }
 
   state.mixMode.currentStep = nextStep;
-  state.mixMode.secondsLeft = 14;
+  state.mixMode.secondsLeft = MIX_SEGMENT_DURATION;
 
   if (nextStep === 'trivia') {
-    state.mixMode.secondsLeft = 32;
-    state.mixMode.triviaQuestionsPlayed = 0;
+    closeFullscreenAd();
     switchTab('games');
     if (state.activeGameMode !== 'classic') {
       launchGame('classic');
     }
   } else if (nextStep === 'weather') {
+    closeFullscreenAd();
     switchTab('weatherNews');
     switchWeatherNewsSubtab('weather');
   } else if (nextStep === 'news') {
+    closeFullscreenAd();
     switchTab('weatherNews');
     switchWeatherNewsSubtab('news');
   } else if (nextStep === 'promoVideo') {
     switchTab('mediaAds');
     switchMediaSubtab('videoPromo');
+    openFullscreenAd();
   }
 
   updateMixPillUI();
+}
+
+/* ==========================================================================
+   FULLSCREEN TABLET AD CONTROLS & LIFECYCLE
+   ========================================================================== */
+function openFullscreenAd(customAd = null) {
+  state.isFullscreenAdActive = true;
+  const ad = customAd || SPONSORED_ADS[state.mixMode.promoVideoIndex % SPONSORED_ADS.length] || SPONSORED_ADS[0];
+  state.mixMode.promoVideoIndex++;
+
+  if (DOM.fullscreenAdOverlay) {
+    DOM.fullscreenAdOverlay.classList.remove('hidden');
+    DOM.fullscreenAdOverlay.classList.add('active');
+    DOM.fullscreenAdOverlay.setAttribute('aria-hidden', 'false');
+  }
+
+  if (DOM.fsaBadgeTitle) {
+    DOM.fsaBadgeTitle.textContent = state.currentLang === 'en' 
+      ? (ad.badge_en || ad.badge || "SPONSORED VIDEO SPOT") 
+      : (ad.badge || "SPOT DE VIDEO PATROCINADO");
+  }
+  if (DOM.fsaSponsorTagline) {
+    DOM.fsaSponsorTagline.textContent = ad.brand || "AUTOBOTEC.NET · MEDIA NETWORK";
+  }
+  if (DOM.fsaSponsorTitle) {
+    DOM.fsaSponsorTitle.textContent = state.currentLang === 'en' 
+      ? (ad.headline_en || ad.headline || "ADVERTISE YOUR BUSINESS HERE!") 
+      : (ad.headline || "¡ANUNCIA TU NEGOCIO AQUÍ!");
+  }
+  if (DOM.fsaSponsorDesc) {
+    DOM.fsaSponsorDesc.textContent = state.currentLang === 'en' 
+      ? (ad.subtext_en || ad.subtext || "Reach captive passengers every month with interactive high-converting screens.") 
+      : (ad.subtext || "Llega a más de 3,000+ pasajeros cautivos al mes en Uber y Lyft con pantallas interactivas de alta conversión. Escanea el código QR para contratar tu pauta publicitaria en Autobotec.net.");
+  }
+  if (DOM.fsaPromoVal) {
+    DOM.fsaPromoVal.textContent = ad.promoCode || "COPILOT30";
+  }
+
+  if (DOM.fsaQrContainer) {
+    generateQrCode(DOM.fsaQrContainer, ad.qrCodeText || "https://autobotec.net");
+  }
+
+  if (DOM.fsaVideoPlayer) {
+    DOM.fsaVideoPlayer.src = ad.videoUrl || "assets/videos/anuncia_aqui_autobotec.mp4";
+    DOM.fsaVideoPlayer.currentTime = 0;
+    DOM.fsaVideoPlayer.muted = sound.isMuted();
+    const playPromise = DOM.fsaVideoPlayer.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        DOM.fsaVideoPlayer.muted = true;
+        DOM.fsaVideoPlayer.play().catch(() => {});
+      });
+    }
+  }
+
+  updateFullscreenAdProgress(state.mixMode.secondsLeft, MIX_SEGMENT_DURATION);
+}
+
+function closeFullscreenAd(andAdvance = false) {
+  if (!state.isFullscreenAdActive) return;
+  state.isFullscreenAdActive = false;
+
+  if (DOM.fullscreenAdOverlay) {
+    DOM.fullscreenAdOverlay.classList.remove('active');
+    DOM.fullscreenAdOverlay.classList.add('hidden');
+    DOM.fullscreenAdOverlay.setAttribute('aria-hidden', 'true');
+  }
+
+  if (DOM.fsaVideoPlayer) {
+    DOM.fsaVideoPlayer.pause();
+  }
+
+  if (andAdvance) {
+    advanceMixSegment('trivia');
+  }
+}
+
+function updateFullscreenAdProgress(secondsLeft, totalDuration) {
+  const safeSec = Math.max(0, secondsLeft);
+  if (DOM.fsaSecondsCount) {
+    DOM.fsaSecondsCount.textContent = `${safeSec}s`;
+  }
+  const pct = Math.min(100, Math.max(0, ((totalDuration - safeSec) / totalDuration) * 100));
+  if (DOM.fsaProgressFill) {
+    DOM.fsaProgressFill.style.width = `${pct}%`;
+  }
+  if (DOM.fsaCountdownCircle) {
+    // Circumference stroke-dasharray is 100
+    const dashoffset = 100 - ((safeSec / totalDuration) * 100);
+    DOM.fsaCountdownCircle.style.strokeDashoffset = `${dashoffset}`;
+  }
+}
+
+function setupFullscreenAdControls() {
+  if (DOM.btnFsaSound) {
+    DOM.btnFsaSound.addEventListener('click', () => {
+      sound.playTap();
+      if (DOM.fsaVideoPlayer) {
+        DOM.fsaVideoPlayer.muted = !DOM.fsaVideoPlayer.muted;
+        DOM.btnFsaSound.textContent = DOM.fsaVideoPlayer.muted ? '🔇' : '🔊';
+      }
+    });
+  }
+
+  if (DOM.btnFsaClose) {
+    DOM.btnFsaClose.addEventListener('click', () => {
+      sound.playTap();
+      closeFullscreenAd(true);
+    });
+  }
+
+  // Also hook into ad cards in deals tab to preview in fullscreen
+  if (DOM.btnClaimAd) {
+    DOM.btnClaimAd.addEventListener('click', () => {
+      openFullscreenAd(SPONSORED_ADS[state.currentAdIndex]);
+    });
+  }
+}
+
+/* ==========================================================================
+   DEVICE & SCREEN ADAPTER (RESPONSIVE AUTO-DETECTION)
+   ========================================================================== */
+function initDeviceScreenAdapter() {
+  function adaptLayout() {
+    const w = window.innerWidth || document.documentElement.clientWidth;
+    const h = window.innerHeight || document.documentElement.clientHeight;
+    const ratio = w / (h || 1);
+    const root = document.documentElement;
+
+    root.style.setProperty('--vh', `${h * 0.01}px`);
+    root.style.setProperty('--app-window-width', `${w}px`);
+    root.style.setProperty('--app-window-height', `${h}px`);
+
+    // Screen height tier
+    let heightTier = 'tall';
+    if (h <= 660) {
+      heightTier = 'compact';
+    } else if (h <= 820) {
+      heightTier = 'medium';
+    }
+    root.setAttribute('data-screen-height', heightTier);
+
+    // Screen width tier
+    let widthTier = 'wide';
+    if (w <= 800) {
+      widthTier = 'compact';
+    } else if (w <= 1100) {
+      widthTier = 'medium';
+    }
+    root.setAttribute('data-screen-width', widthTier);
+
+    // Aspect ratio category
+    let aspectCategory = 'landscape-wide';
+    if (ratio < 1.1) {
+      aspectCategory = 'portrait';
+    } else if (ratio < 1.45) {
+      aspectCategory = 'landscape-standard';
+    }
+    root.setAttribute('data-aspect-ratio', aspectCategory);
+
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    root.setAttribute('data-touch-device', isTouch ? 'true' : 'false');
+    root.setAttribute('data-orientation', h > w ? 'portrait' : 'landscape');
+  }
+
+  adaptLayout();
+  window.addEventListener('resize', adaptLayout, { passive: true });
+  window.addEventListener('orientationchange', () => setTimeout(adaptLayout, 150), { passive: true });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', adaptLayout, { passive: true });
+  }
 }
 
 function toggleMixMode() {
@@ -1990,6 +2180,11 @@ window.toggleMixModeGlobal = toggleMixMode;
 window.advanceMixSegmentGlobal = advanceMixSegment;
 
 function notifyUserInteraction() {
+  state.lastUserInteraction = Date.now();
+  if (state.activeTab === 'games' && state.activeGameMode !== 'none') {
+    state.isUserActivelyPlaying = true;
+  }
+
   if (!state.mixMode.enabled) return;
 
   state.mixMode.isPaused = true;
@@ -1997,9 +2192,14 @@ function notifyUserInteraction() {
 
   clearTimeout(state.mixMode.interactionCooldown);
   state.mixMode.interactionCooldown = setTimeout(() => {
+    // If playing actively and interacted within 60s, maintain pause!
+    if (state.isUserActivelyPlaying && (Date.now() - state.lastUserInteraction < 60000)) {
+      return;
+    }
+    state.isUserActivelyPlaying = false;
     state.mixMode.isPaused = false;
     updateMixPillUI();
-  }, 15000);
+  }, 60000); // 60s idle timeout
 }
 
 function setupUserActivityListener() {
@@ -2652,6 +2852,10 @@ function setupEventListeners() {
       showToast(getT().toastTipThankYou);
     });
   }
+
+  // Device Screen Adaptive Analyzer & Fullscreen Ads
+  initDeviceScreenAdapter();
+  setupFullscreenAdControls();
 
   // Giveaway, Admin & Kiosk Mode
   setupGiveaway();
