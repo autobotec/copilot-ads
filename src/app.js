@@ -2272,7 +2272,7 @@ function openFullscreenAd(customAd = null) {
           headline_en: camp.title || 'ADVERTISE YOUR BUSINESS HERE!',
           subtext: camp.subtitle || camp.discountOffer || '',
           subtext_en: camp.subtitle || camp.discountOffer || '',
-          videoUrl: camp.mediaUrl || 'assets/videos/video_autobotec_1789922115206.mp4',
+          videoUrl: camp.mediaUrl || 'assets/videos/video_autobotec_v2_futuristic.mp4',
           videoDuration: camp.videoDuration || null,
           qrCodeText: camp.targetUrl || 'https://autobotec.net',
           promoCode: camp.couponCode || 'AUTOBOTEC26'
@@ -2320,7 +2320,7 @@ function openFullscreenAd(customAd = null) {
 
   if (DOM.fsaVideoPlayer) {
     DOM.fsaVideoPlayer.loop = false;
-    const targetUrl = ad.videoUrl || "assets/videos/video_autobotec_1789922115206.mp4";
+    const targetUrl = ad.videoUrl || "assets/videos/video_autobotec_v2_futuristic.mp4";
     const currentSrc = DOM.fsaVideoPlayer.getAttribute('src') || DOM.fsaVideoPlayer.currentSrc || DOM.fsaVideoPlayer.src || '';
     if (!currentSrc.includes(targetUrl)) {
       DOM.fsaVideoPlayer.src = targetUrl;

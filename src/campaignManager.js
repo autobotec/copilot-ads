@@ -19,7 +19,7 @@
       status: 'active', // 'active' | 'paused' | 'expired'
       title: '¡ANUNCIA TU NEGOCIO AQUÍ!',
       subtitle: 'Llega a más de 3,000+ pasajeros al mes en Uber y Lyft con pantallas interactivas de alta conversión. Escanea el código QR para contratar tu pauta.',
-      mediaUrl: 'assets/videos/video_autobotec_1789922115206.mp4',
+      mediaUrl: 'assets/videos/video_autobotec_v2_futuristic.mp4',
       mediaType: 'video',
       videoDuration: 63,
       couponCode: 'AUTOBOTEC26',
@@ -99,8 +99,10 @@
         const storedCamps = localStorage.getItem(STORAGE_KEY_CAMPAIGNS);
         if (!storedCamps || storedCamps.includes('camp-demo-01')) {
           localStorage.setItem(STORAGE_KEY_CAMPAIGNS, JSON.stringify(DEFAULT_CAMPAIGNS));
-        } else if (storedCamps.includes('anuncia_aqui_autobotec.mp4')) {
-          const updated = storedCamps.replace(/assets\/videos\/anuncia_aqui_autobotec\.mp4/g, 'assets/videos/video_autobotec_1789922115206.mp4');
+        } else if (storedCamps.includes('video_autobotec_1789922115206.mp4') || storedCamps.includes('anuncia_aqui_autobotec.mp4')) {
+          const updated = storedCamps
+            .replace(/assets\/videos\/video_autobotec_1789922115206\.mp4/g, 'assets/videos/video_autobotec_v2_futuristic.mp4')
+            .replace(/assets\/videos\/anuncia_aqui_autobotec\.mp4/g, 'assets/videos/video_autobotec_v2_futuristic.mp4');
           localStorage.setItem(STORAGE_KEY_CAMPAIGNS, updated);
         }
         if (!localStorage.getItem(STORAGE_KEY_AUTH)) {
