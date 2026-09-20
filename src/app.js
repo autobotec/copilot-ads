@@ -1982,6 +1982,17 @@ function syncCurrentVideoSpotlight() {
     generateQrCode(DOM.pvmQrContainer, camp.targetUrl || "https://autobotec.net");
   }
 
+  // Modo limpio solo para el video predeterminado Autobotec (solo QR flotante)
+  const isDefaultCamp = Boolean(
+    (camp.mediaUrl && (camp.mediaUrl.includes('video_autobotec_v2_futuristic') || camp.mediaUrl.includes('video_autobotec_1789922115206'))) ||
+    camp.id === 'camp-autobotec-01' ||
+    camp.id === 'ad-video-1'
+  );
+  const pvmOverlay = document.querySelector('.pvm-video-overlay');
+  if (pvmOverlay) {
+    pvmOverlay.classList.toggle('pvm-clean-mode', isDefaultCamp);
+  }
+
   // Registrar impresión y ping de la tablet
   window.CampaignManager.recordMetric(camp.id, 'impression');
   window.CampaignManager.registerTabletHeartbeat('TBL-01', { currentCampaign: camp.clientName, battery: 94 });
@@ -2290,6 +2301,15 @@ function openFullscreenAd(customAd = null) {
     DOM.fullscreenAdOverlay.classList.remove('hidden');
     DOM.fullscreenAdOverlay.classList.add('active');
     DOM.fullscreenAdOverlay.setAttribute('aria-hidden', 'false');
+
+    // Modo limpio: únicamente para el video predeterminado Autobotec (solo QR flotante en la esquina inferior derecha)
+    // Para todos los demás videos (subidos/anunciantes), se mantiene el diseño estándar completo del app con textos, franja y códigos
+    const isDefaultVideo = Boolean(
+      (ad.videoUrl && (ad.videoUrl.includes('video_autobotec_v2_futuristic') || ad.videoUrl.includes('video_autobotec_1789922115206'))) ||
+      ad.id === 'camp-autobotec-01' ||
+      ad.id === 'ad-video-1'
+    );
+    DOM.fullscreenAdOverlay.classList.toggle('fsa-clean-mode', isDefaultVideo);
   }
 
   if (DOM.fsaBadgeTitle) {
@@ -2395,6 +2415,7 @@ function closeFullscreenAd(andAdvance = false) {
 
   if (DOM.fullscreenAdOverlay) {
     DOM.fullscreenAdOverlay.classList.remove('active');
+    DOM.fullscreenAdOverlay.classList.remove('fsa-clean-mode');
     DOM.fullscreenAdOverlay.classList.add('hidden');
     DOM.fullscreenAdOverlay.setAttribute('aria-hidden', 'true');
   }

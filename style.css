@@ -4612,18 +4612,27 @@ html, body {
 .pvm-video-overlay {
   position: absolute;
   inset: 0;
-  background: transparent !important;
+  background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.4) 100%);
   display: flex;
   align-items: flex-end;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding: 16px 20px;
   pointer-events: none;
 }
 .pvm-sponsor-meta {
-  display: none !important;
+  max-width: 65%;
 }
 .pvm-qr-card {
   pointer-events: auto;
+}
+
+/* Modo limpio exclusivo para el video predeterminado Autobotec (solo QR flotante) */
+.pvm-video-overlay.pvm-clean-mode {
+  background: transparent !important;
+  justify-content: flex-end !important;
+}
+.pvm-video-overlay.pvm-clean-mode .pvm-sponsor-meta {
+  display: none !important;
 }
 .pvm-sponsor-brand {
   font-size: 10px;
@@ -6673,7 +6682,10 @@ html.theme-day ::-webkit-scrollbar-thumb {
 }
 
 .fsa-gradient-overlay {
-  display: none !important;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.1) 30%, rgba(0, 0, 0, 0.25) 55%, rgba(0, 0, 0, 0.95) 100%);
+  pointer-events: none;
 }
 
 .fsa-top-bar {
@@ -6800,28 +6812,52 @@ html.theme-day ::-webkit-scrollbar-thumb {
 }
 
 .fsa-bottom-panel {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   z-index: 10;
   display: flex;
   align-items: flex-end;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 24px;
   padding: 16px max(24px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  pointer-events: none;
+  background: linear-gradient(0deg, rgba(8, 12, 22, 0.96) 0%, rgba(8, 12, 22, 0.8) 65%, transparent 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .fsa-info-col {
-  display: none !important;
+  flex: 1;
+  max-width: 68%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .fsa-qr-col {
   flex-shrink: 0;
+}
+
+/* Modo limpio exclusivo para el video predeterminado (solo QR flotante en la esquina inferior derecha) */
+.fullscreen-ad-overlay.fsa-clean-mode .fsa-gradient-overlay {
+  display: none !important;
+}
+
+.fullscreen-ad-overlay.fsa-clean-mode .fsa-bottom-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  justify-content: flex-end !important;
+  pointer-events: none;
+}
+
+.fullscreen-ad-overlay.fsa-clean-mode .fsa-info-col {
+  display: none !important;
+}
+
+.fullscreen-ad-overlay.fsa-clean-mode .fsa-qr-col {
   pointer-events: auto;
 }
 
@@ -7129,17 +7165,27 @@ html[data-aspect-ratio="portrait"] .trivia-options-grid {
 }
 
 html[data-aspect-ratio="portrait"] .fsa-bottom-panel {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+}
+
+html[data-aspect-ratio="portrait"] .fsa-info-col {
+  max-width: 100% !important;
+}
+
+html[data-aspect-ratio="portrait"] .fsa-qr-col {
+  align-self: center !important;
+}
+
+html[data-aspect-ratio="portrait"] .fullscreen-ad-overlay.fsa-clean-mode .fsa-bottom-panel {
   flex-direction: row !important;
   align-items: flex-end !important;
   justify-content: flex-end !important;
   background: transparent !important;
 }
 
-html[data-aspect-ratio="portrait"] .fsa-info-col {
-  display: none !important;
-}
-
-html[data-aspect-ratio="portrait"] .fsa-qr-col {
+html[data-aspect-ratio="portrait"] .fullscreen-ad-overlay.fsa-clean-mode .fsa-qr-col {
   align-self: flex-end !important;
 }
 
