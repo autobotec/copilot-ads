@@ -2080,6 +2080,7 @@ function initMixEngine() {
 
   if (DOM.btnToggleMix) {
     DOM.btnToggleMix.addEventListener('click', (e) => {
+      e.preventDefault();
       e.stopPropagation();
       toggleMixMode();
     });
@@ -2393,20 +2394,45 @@ function initDeviceScreenAdapter() {
   }
 }
 
+let lastToggleMixTimestamp = 0;
+
 function toggleMixMode() {
+  const now = Date.now();
+  if (now - lastToggleMixTimestamp < 350) {
+    return;
+  }
+  lastToggleMixTimestamp = now;
+
   sound.playTap();
   state.mixMode.isPaused = !state.mixMode.isPaused;
   state.mixMode.manualUserPause = state.mixMode.isPaused;
+
   if (!state.mixMode.isPaused) {
     state.isUserActivelyPlaying = false;
+    // Si se reanuda el mix y hay un video de spotlight o promo activo, reanudar
+    if (state.isFullscreenAdActive && DOM.fsaVideoPlayer) {
+      DOM.fsaVideoPlayer.play().catch(() => {});
+    }
+    if (state.activeTab === 'mediaAds' && DOM.promoVideoMainPlayer) {
+      DOM.promoVideoMainPlayer.play().catch(() => {});
+    }
+  } else {
+    // Si se pausa el mix y hay un video activo, pausar el video
+    if (state.isFullscreenAdActive && DOM.fsaVideoPlayer) {
+      DOM.fsaVideoPlayer.pause();
+    }
+    if (state.activeTab === 'mediaAds' && DOM.promoVideoMainPlayer) {
+      DOM.promoVideoMainPlayer.pause();
+    }
   }
+
   clearTimeout(state.mixMode.interactionCooldown);
   updateMixPillUI();
   const t = getT();
-  showToast(state.mixMode.isPaused ? t.mixPillPaused : t.mixPillActive);
+  showToast(state.mixMode.isPaused ? (t.mixPillPaused || '⏸️ MIX PAUSADO') : (t.mixPillActive || '🔄 MODO MIX REANUDADO'));
 }
 
-// Expose globally for inline onclick handlers
+// Expose globally for inline or external calls
 window.__appToggleMixMode = toggleMixMode;
 window.toggleMixModeGlobal = toggleMixMode;
 window.advanceMixSegmentGlobal = advanceMixSegment;
@@ -2456,9 +2482,12 @@ function updateMixPillUI() {
   const btn = DOM.btnToggleMix || document.getElementById('btnToggleMix');
   if (!btn) return;
   const t = getT();
-  const isPaused = state.mixMode.isPaused;
+  const isPaused = !!state.mixMode.isPaused;
 
   btn.classList.toggle('paused', isPaused);
+  btn.setAttribute('aria-pressed', isPaused ? 'true' : 'false');
+  btn.title = isPaused ? (t.mixPillPaused || 'MIX PAUSADO - Toca para Reanudar') : (t.mixPillActive || 'SUPER STAR MIX - Toca para Pausar');
+
   const statusEl = DOM.mixStatusText || document.getElementById('mixStatusText');
   if (statusEl) {
     statusEl.textContent = isPaused ? (t.mixPillPaused || 'MIX PAUSADO') : (t.mixPillActive || 'SUPER STAR MIX');
@@ -2473,12 +2502,12 @@ function updateMixPillUI() {
       promoVideo: t.mixSegmentTrivia || 'Trivia'
     };
     const prefix = t.mixNextIn || 'Próx:';
-    nextTagEl.textContent = `${prefix} ${nextMap[state.mixMode.currentStep] || ''}`;
+    nextTagEl.textContent = isPaused ? 'En Pausa' : `${prefix} ${nextMap[state.mixMode.currentStep] || ''}`;
   }
 
   const timerEl = DOM.mixMiniTimer || document.getElementById('mixMiniTimer');
   if (timerEl) {
-    timerEl.textContent = isPaused ? '⏸️' : `${state.mixMode.secondsLeft}s`;
+    timerEl.textContent = isPaused ? '⏸️' : `${Math.max(0, state.mixMode.secondsLeft)}s`;
   }
 }
 

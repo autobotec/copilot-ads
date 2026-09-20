@@ -19,40 +19,43 @@
     /* CRITICAL INLINE STYLES FOR MIX MODE PILL & DOCK */
     button.mix-mode-pill {
       all: unset;
-      display: flex !important;
+      display: inline-flex !important;
       align-items: center !important;
       gap: 8px !important;
-      background: rgba(15, 23, 42, 0.85) !important;
-      border: 1.5px solid rgba(0, 245, 160, 0.5) !important;
+      background: rgba(15, 23, 42, 0.92) !important;
+      border: 1.5px solid #f8b800 !important;
       padding: 4px 12px !important;
       border-radius: 999px !important;
       cursor: pointer !important;
-      color: #fff !important;
-      box-shadow: 0 0 14px rgba(0, 245, 160, 0.25) !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 14px rgba(248, 184, 0, 0.35) !important;
       user-select: none !important;
       box-sizing: border-box !important;
-      transition: all 0.2s ease !important;
+      transition: all 0.25s ease !important;
+      font-family: 'Outfit', sans-serif !important;
     }
     button.mix-mode-pill:hover {
-      border-color: #00f5a0 !important;
-      box-shadow: 0 0 18px rgba(0, 245, 160, 0.45) !important;
+      border-color: #f8b800 !important;
+      box-shadow: 0 0 18px rgba(248, 184, 0, 0.6) !important;
       transform: translateY(-1px) !important;
     }
     button.mix-mode-pill.paused {
-      border-color: rgba(255, 208, 0, 0.6) !important;
-      box-shadow: 0 0 14px rgba(255, 208, 0, 0.25) !important;
+      background: rgba(30, 27, 75, 0.95) !important;
+      border-color: #f59e0b !important;
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.45) !important;
     }
     .mix-svg-icon {
-      width: 15px;
-      height: 15px;
-      color: #00f5a0;
+      width: 16px;
+      height: 16px;
+      stroke: #f8b800;
       animation: mixSvgSpin 5s linear infinite;
       flex-shrink: 0;
+      transition: all 0.25s ease;
     }
     button.mix-mode-pill.paused .mix-svg-icon {
-      animation-play-state: paused;
-      color: #ffd000;
-      opacity: 0.85;
+      animation-play-state: paused !important;
+      stroke: #f59e0b !important;
+      opacity: 0.9;
     }
     @keyframes mixSvgSpin {
       from { transform: rotate(0deg); }
@@ -67,12 +70,14 @@
     .mix-status-text {
       font-size: 10px;
       font-weight: 800;
-      letter-spacing: 0.8px;
-      color: #00f5a0;
+      letter-spacing: 0.5px;
+      color: #f8b800;
       text-transform: uppercase;
+      font-family: 'Pixelify Sans', cursive, sans-serif;
+      transition: color 0.25s ease;
     }
     button.mix-mode-pill.paused .mix-status-text {
-      color: #ffd000;
+      color: #f59e0b !important;
     }
     .mix-next-tag {
       font-size: 9px;
@@ -85,8 +90,14 @@
       border-radius: 10px;
       font-size: 10px;
       font-weight: 800;
-      color: #fff;
+      color: #ffffff;
       border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.25s ease;
+    }
+    button.mix-mode-pill.paused .mix-mini-timer {
+      background: rgba(245, 158, 11, 0.25) !important;
+      border-color: rgba(245, 158, 11, 0.5) !important;
+      color: #fef08a !important;
     }
     .dock-pill {
       cursor: pointer !important;
@@ -166,15 +177,15 @@
         </div>
 
         <!-- MIX MODE AUTO-ROTATION TOGGLE & STATUS -->
-        <button class="mix-mode-pill smb3-star-pill active" id="btnToggleMix" onclick="window.toggleMixModeGlobal ? window.toggleMixModeGlobal() : null" title="Activar / Pausar Rotación Automática (Mix)" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(15, 23, 42, 0.92); border: 1.5px solid #f8b800; padding: 4px 12px; border-radius: 999px; cursor: pointer; color: #ffffff; box-shadow: 0 0 14px rgba(248, 184, 0, 0.4); font-family: 'Outfit', sans-serif;">
+        <button class="mix-mode-pill smb3-star-pill active" id="btnToggleMix" title="Activar / Pausar Rotación Automática (Mix)" aria-pressed="false">
           <svg class="mix-svg-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#f8b800" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3L21.5 8M22 12.5a10 10 0 0 1-18.8 4.2L2.5 16"/>
           </svg>
           <div class="mix-meta-box">
-            <span class="mix-status-text" id="mixStatusText" style="color: #f8b800; font-family: 'Pixelify Sans', cursive, sans-serif; letter-spacing: 0.5px;">SUPER STAR MIX</span>
+            <span class="mix-status-text" id="mixStatusText">SUPER STAR MIX</span>
             <span class="mix-next-tag" id="mixNextTag">Próx: Clima</span>
           </div>
-          <span class="mix-mini-timer" id="mixMiniTimer">14s</span>
+          <span class="mix-mini-timer" id="mixMiniTimer">30s</span>
         </button>
       </div>
 
@@ -1395,6 +1406,6 @@
   </script>
   <script src="src/qrcode.js?v=20260920_qr_autobotec"></script>
   <script src="src/campaignManager.js?v=20260920_fullscreen_mix30"></script>
-  <script type="module" src="src/app.js?v=20260920_fullscreen_mix30"></script>
+  <script type="module" src="src/app.js?v=20260920_mix_pause_fix"></script>
 </body>
 </html>
