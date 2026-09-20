@@ -36,6 +36,7 @@ const state = {
   mixMode: {
     enabled: true,
     isPaused: false,
+    manualUserPause: false,
     currentStep: 'trivia', // 'trivia' | 'weather' | 'news' | 'promoVideo'
     secondsLeft: MIX_SEGMENT_DURATION,
     duration: MIX_SEGMENT_DURATION,
@@ -770,7 +771,7 @@ function startAutostartCountdown() {
 
     if (state.autostartSeconds <= 0) {
       clearInterval(state.autostartInterval);
-      launchGame('classic');
+      launchGame('classic', false);
     }
   }, 1000);
 }
@@ -796,7 +797,7 @@ function togglePauseAutostart() {
 /* ==========================================================================
    GAME LAUNCHER & ROUTER
    ========================================================================== */
-function launchGame(gameType) {
+function launchGame(gameType, fromUserAction = false) {
   const t = getT();
   clearInterval(state.autostartInterval);
   stopTrivia();
@@ -805,11 +806,17 @@ function launchGame(gameType) {
   }
   state.activeGameInstance = null;
 
-  sound.playSplashPop();
+  if (fromUserAction) {
+    sound.playSplashPop();
+    state.isUserActivelyPlaying = true;
+    state.lastUserInteraction = Date.now();
+    state.mixMode.isPaused = true;
+  } else {
+    // Si fue lanzado automáticamente por el Mix Mode o Autostart, NO pausar el mix
+    state.isUserActivelyPlaying = false;
+    state.mixMode.isPaused = false;
+  }
   state.activeGameMode = gameType;
-  state.isUserActivelyPlaying = true;
-  state.lastUserInteraction = Date.now();
-  state.mixMode.isPaused = true;
   updateMixPillUI();
 
   if (!isAdminUnlocked && !document.fullscreenElement && !document.webkitFullscreenElement) {
@@ -879,6 +886,10 @@ function returnToGamesHub() {
   state.activeGameMode = 'none';
   state.activeGameInstance = null;
   state.isUserActivelyPlaying = false;
+  if (!state.mixMode.manualUserPause) {
+    state.mixMode.isPaused = false;
+    updateMixPillUI();
+  }
 
   if (DOM.gameArenaScreen) DOM.gameArenaScreen.classList.add('hidden');
   if (DOM.gamesHubScreen) DOM.gamesHubScreen.classList.remove('hidden');
@@ -2076,13 +2087,23 @@ function initMixEngine() {
 function startMixTicker() {
   clearInterval(state.mixMode.interval);
   state.mixMode.interval = setInterval(() => {
+    // Si no está pausado manualmente con el botón, verificar si el usuario dejó de interactuar (20s)
+    if (!state.mixMode.manualUserPause && (state.isUserActivelyPlaying || state.mixMode.isPaused)) {
+      const idleTime = Date.now() - (state.lastUserInteraction || 0);
+      if (idleTime > 20000) {
+        state.isUserActivelyPlaying = false;
+        state.mixMode.isPaused = false;
+        updateMixPillUI();
+      }
+    }
+
     if (state.mixMode.isPaused) {
       updateMixPillUI();
       return;
     }
 
     if (state.mixMode.currentStep === 'trivia') {
-      // IF player is actively answering questions or playing, DO NOT leave trivia!
+      // Si el jugador está respondiendo activamente, mantener trivia hasta que termine o se distraiga
       if (state.isUserActivelyPlaying) {
         state.mixMode.secondsLeft = MIX_SEGMENT_DURATION;
         updateMixPillUI();
@@ -2138,7 +2159,10 @@ function advanceMixSegment(forceNextStep = null) {
     closeFullscreenAd();
     switchTab('games');
     if (state.activeGameMode !== 'classic') {
-      launchGame('classic');
+      launchGame('classic', false);
+    } else {
+      state.isUserActivelyPlaying = false;
+      state.mixMode.isPaused = false;
     }
   } else if (nextStep === 'weather') {
     closeFullscreenAd();
@@ -2331,6 +2355,10 @@ function initDeviceScreenAdapter() {
 function toggleMixMode() {
   sound.playTap();
   state.mixMode.isPaused = !state.mixMode.isPaused;
+  state.mixMode.manualUserPause = state.mixMode.isPaused;
+  if (!state.mixMode.isPaused) {
+    state.isUserActivelyPlaying = false;
+  }
   clearTimeout(state.mixMode.interactionCooldown);
   updateMixPillUI();
   const t = getT();
@@ -2342,27 +2370,35 @@ window.__appToggleMixMode = toggleMixMode;
 window.toggleMixModeGlobal = toggleMixMode;
 window.advanceMixSegmentGlobal = advanceMixSegment;
 
-function notifyUserInteraction() {
+function notifyUserInteraction(event) {
   state.lastUserInteraction = Date.now();
-  if (state.activeTab === 'games' && state.activeGameMode !== 'none') {
+
+  const target = event && event.target;
+  const isGameInteraction = target && (
+    target.closest('.option-btn') ||
+    target.closest('.trivia-options') ||
+    target.closest('.game-card') ||
+    target.closest('#arenaContentMount') ||
+    target.closest('.simon-pad') ||
+    target.closest('.match-card')
+  );
+
+  // Solo pausamos el mix si el pasajero está interactuando con elementos jugables
+  if (isGameInteraction) {
     state.isUserActivelyPlaying = true;
+    state.mixMode.isPaused = true;
+    updateMixPillUI();
   }
 
-  if (!state.mixMode.enabled) return;
-
-  state.mixMode.isPaused = true;
-  updateMixPillUI();
-
+  // Cooldown de inactividad: Si no toca nada por 20s, reactivar el mix automáticamente
   clearTimeout(state.mixMode.interactionCooldown);
   state.mixMode.interactionCooldown = setTimeout(() => {
-    // If playing actively and interacted within 60s, maintain pause!
-    if (state.isUserActivelyPlaying && (Date.now() - state.lastUserInteraction < 60000)) {
-      return;
+    if (!state.mixMode.manualUserPause) {
+      state.isUserActivelyPlaying = false;
+      state.mixMode.isPaused = false;
+      updateMixPillUI();
     }
-    state.isUserActivelyPlaying = false;
-    state.mixMode.isPaused = false;
-    updateMixPillUI();
-  }, 60000); // 60s idle timeout
+  }, 20000);
 }
 
 function setupUserActivityListener() {
@@ -2370,7 +2406,7 @@ function setupUserActivityListener() {
   events.forEach(evt => {
     document.addEventListener(evt, (e) => {
       if (e.target && (e.target.closest('#btnToggleMix') || e.target.closest('.dock-pill') || e.target.closest('.bottom-dock') || e.target.closest('.dock-weather'))) return;
-      notifyUserInteraction();
+      notifyUserInteraction(e);
     }, { passive: true });
   });
 }
@@ -2985,10 +3021,10 @@ function setupEventListeners() {
   }
 
   // Games Hub Cards
-  if (DOM.cardLaunchClassic) DOM.cardLaunchClassic.addEventListener('click', () => launchGame('classic'));
-  if (DOM.cardLaunchPicture) DOM.cardLaunchPicture.addEventListener('click', () => launchGame('picture'));
-  if (DOM.cardLaunchSimon) DOM.cardLaunchSimon.addEventListener('click', () => launchGame('simon'));
-  if (DOM.cardLaunchMatch) DOM.cardLaunchMatch.addEventListener('click', () => launchGame('match'));
+  if (DOM.cardLaunchClassic) DOM.cardLaunchClassic.addEventListener('click', () => launchGame('classic', true));
+  if (DOM.cardLaunchPicture) DOM.cardLaunchPicture.addEventListener('click', () => launchGame('picture', true));
+  if (DOM.cardLaunchSimon) DOM.cardLaunchSimon.addEventListener('click', () => launchGame('simon', true));
+  if (DOM.cardLaunchMatch) DOM.cardLaunchMatch.addEventListener('click', () => launchGame('match', true));
 
   // Back from Game Arena
   if (DOM.btnBackToGamesHub) DOM.btnBackToGamesHub.addEventListener('click', returnToGamesHub);
