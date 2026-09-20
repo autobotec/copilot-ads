@@ -5,37 +5,37 @@
 (function(window) {
   'use strict';
 
-  const STORAGE_KEY_CAMPAIGNS = 'copilot_ads_campaigns_v1';
-  const STORAGE_KEY_METRICS = 'copilot_ads_metrics_v1';
-  const STORAGE_KEY_FLEET = 'copilot_ads_fleet_v1';
-  const STORAGE_KEY_AUTH = 'copilot_ads_auth_v1';
+  const STORAGE_KEY_CAMPAIGNS = 'copilot_ads_campaigns_v2';
+  const STORAGE_KEY_METRICS = 'copilot_ads_metrics_v2';
+  const STORAGE_KEY_FLEET = 'copilot_ads_fleet_v2';
+  const STORAGE_KEY_AUTH = 'copilot_ads_auth_v2';
 
   // Campañas semilla predeterminadas
   const DEFAULT_CAMPAIGNS = [
     {
-      id: 'camp-demo-01',
-      clientName: 'Copilot Ads Network',
+      id: 'camp-autobotec-01',
+      clientName: 'Autobotec.net',
       format: 'video_spotlight', // 'video_spotlight' | 'banner' | 'deal' | 'sponsor'
       status: 'active', // 'active' | 'paused' | 'expired'
-      title: 'Tu Marca en Miles de Viajes Rideshare',
-      subtitle: 'Alcanza pasajeros en Miami todos los días',
-      mediaUrl: 'assets/videos/demo_promo.mp4',
+      title: '¡ANUNCIA TU NEGOCIO AQUÍ!',
+      subtitle: 'Llega a más de 3,000+ pasajeros al mes en Uber y Lyft con pantallas interactivas de alta conversión. Escanea el código QR para contratar tu pauta.',
+      mediaUrl: 'assets/videos/anuncia_aqui_autobotec.mp4',
       mediaType: 'video',
-      couponCode: 'RIDE25',
-      discountOffer: '25% OFF en tu primer mes de pauta',
-      targetUrl: 'https://autobotectesting.site/ads?coupon=RIDE25',
+      couponCode: 'AUTOBOTEC26',
+      discountOffer: 'Pauta publicitaria oficial en Copilot Driver & Desarrollo Web',
+      targetUrl: 'https://autobotec.net',
       phone: '+1 (305) 555-0199',
-      address: 'Brickell City Centre, Miami, FL',
+      address: 'Autobotec Media & Web Solutions · autobotec.net',
       startDate: '2026-01-01',
-      endDate: '2027-12-31',
+      endDate: '2030-12-31',
       scheduleAllDay: true,
       scheduleStart: '06:00',
       scheduleEnd: '23:59',
       priority: 'high',
-      impressionsTotal: 1420,
-      videoCompletes: 980,
-      qrScans: 164,
-      taps: 230,
+      impressionsTotal: 3420,
+      videoCompletes: 2840,
+      qrScans: 412,
+      taps: 590,
       createdAt: '2026-09-01T10:00:00Z'
     },
     {
@@ -95,7 +95,8 @@
 
     initStorage() {
       try {
-        if (!localStorage.getItem(STORAGE_KEY_CAMPAIGNS)) {
+        const storedCamps = localStorage.getItem(STORAGE_KEY_CAMPAIGNS);
+        if (!storedCamps || storedCamps.includes('camp-demo-01')) {
           localStorage.setItem(STORAGE_KEY_CAMPAIGNS, JSON.stringify(DEFAULT_CAMPAIGNS));
         }
         if (!localStorage.getItem(STORAGE_KEY_AUTH)) {

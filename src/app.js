@@ -1256,14 +1256,14 @@ function loadAd(index) {
   state.currentAdIndex = index % SPONSORED_ADS.length;
   const ad = SPONSORED_ADS[state.currentAdIndex];
 
-  if (DOM.adBadge) DOM.adBadge.textContent = state.currentLang === 'en' ? "LOCAL SPONSOR DEAL" : ad.badge;
+  if (DOM.adBadge) DOM.adBadge.textContent = state.currentLang === 'en' ? (ad.badge_en || ad.badge) : ad.badge;
   if (DOM.adBrandLogo) DOM.adBrandLogo.textContent = ad.icon;
   if (DOM.adBrandName) DOM.adBrandName.textContent = ad.brand;
-  if (DOM.adHeadline) DOM.adHeadline.textContent = state.currentLang === 'en' ? "Your favorite artisanal coffee awaits at the next stop!" : ad.headline;
-  if (DOM.adSubtext) DOM.adSubtext.textContent = state.currentLang === 'en' ? "Show your rideshare trip and get 30% OFF on your first order + free croissant." : ad.subtext;
+  if (DOM.adHeadline) DOM.adHeadline.textContent = state.currentLang === 'en' ? (ad.headline_en || ad.headline) : ad.headline;
+  if (DOM.adSubtext) DOM.adSubtext.textContent = state.currentLang === 'en' ? (ad.subtext_en || ad.subtext) : ad.subtext;
   if (DOM.adPromoCode) DOM.adPromoCode.textContent = ad.promoCode;
 
-  generateQrCode(DOM.adQrContainer, ad.qrCodeText);
+  generateQrCode(DOM.adQrContainer, ad.qrCodeText || "https://autobotec.net");
 }
 
 function nextAd() {
@@ -1797,7 +1797,7 @@ function syncCurrentVideoSpotlight() {
   }
 
   if (DOM.pvmQrContainer) {
-    generateQrCode(DOM.pvmQrContainer, camp.targetUrl || "https://autobotectesting.site");
+    generateQrCode(DOM.pvmQrContainer, camp.targetUrl || "https://autobotec.net");
   }
 
   // Registrar impresión y ping de la tablet
@@ -1831,7 +1831,7 @@ function setupVideoPromoShowcase() {
       if (currentActiveCampId && window.CampaignManager) {
         window.CampaignManager.recordMetric(currentActiveCampId, 'tap');
       }
-      showToast(getT().toastAdClaimed);
+      showToast('🚀 <strong>Autobotec.net:</strong> Escanea el código QR con tu celular o visita <u>www.autobotec.net</u> para contratar publicidad interactiva.');
     });
   }
 
@@ -2127,10 +2127,14 @@ function showAndroidToast(msg) {
 }
 
 function requestFullscreenSafely() {
+  if (isAdminUnlocked) return;
   const elem = document.documentElement;
   try {
+    const opts = { navigationUI: 'hide' };
     if (elem.requestFullscreen) {
-      elem.requestFullscreen().catch(() => {});
+      elem.requestFullscreen(opts).catch(() => {
+        elem.requestFullscreen().catch(() => {});
+      });
     } else if (elem.webkitRequestFullscreen) {
       elem.webkitRequestFullscreen();
     } else if (elem.msRequestFullscreen) {
@@ -2153,6 +2157,49 @@ function exitFullscreenSafely() {
   } catch (e) {
     console.warn('Exit fullscreen error:', e);
   }
+}
+
+/* ==========================================================================
+   SCREEN WAKE LOCK CONTROLLER (KEEP TABLET AWAKE PERMANENTLY)
+   ========================================================================== */
+let screenWakeLockSentinel = null;
+
+async function requestScreenWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      screenWakeLockSentinel = await navigator.wakeLock.request('screen');
+      console.log('Screen Wake Lock active: Tablet will stay awake');
+      screenWakeLockSentinel.addEventListener('release', () => {
+        screenWakeLockSentinel = null;
+      });
+    }
+  } catch (err) {
+    console.warn('Screen WakeLock notice:', err);
+  }
+
+  // Fallback: Trigger play on the hidden keep-awake video
+  const keepAwakeVid = document.getElementById('kioskKeepAwakeVideo');
+  if (keepAwakeVid && keepAwakeVid.paused) {
+    keepAwakeVid.play().catch(() => {});
+  }
+}
+
+function setupScreenWakeLock() {
+  requestScreenWakeLock();
+
+  // Re-acquire when user returns to app or tab becomes visible
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      requestScreenWakeLock();
+    }
+  });
+
+  // Re-acquire on user interactions
+  window.addEventListener('pointerdown', () => {
+    if (!screenWakeLockSentinel) {
+      requestScreenWakeLock();
+    }
+  }, { passive: true });
 }
 
 /* ==========================================================================
@@ -2254,6 +2301,16 @@ function setupKioskMode() {
       requestFullscreenSafely();
     }
   });
+
+  // Strict Fullscreen Watchdog: ensures kiosk remains fullscreen unless admin unlocked
+  setInterval(() => {
+    if (!isAdminUnlocked && !document.fullscreenElement && !document.webkitFullscreenElement) {
+      requestFullscreenSafely();
+    }
+  }, 2500);
+
+  // Initialize Screen WakeLock
+  setupScreenWakeLock();
 
   // Bind 7-tap admin mode listeners on secret hotspots
   if (adminHotspot) adminHotspot.addEventListener('pointerdown', triggerAdminTap);
