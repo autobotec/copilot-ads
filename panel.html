@@ -684,8 +684,11 @@
         document.getElementById('kpiQrScans').textContent = kpis.totalQr.toLocaleString();
       }
 
-      function formatBadge(format) {
-        if (format === 'video_spotlight') return '<span class="badge-format badge-video">🎬 Video Spotlight</span>';
+      function formatBadge(format, c = null) {
+        if (format === 'video_spotlight') {
+          const dur = c && c.videoDuration ? ` (${c.videoDuration}s)` : '';
+          return `<span class="badge-format badge-video">🎬 Video Spotlight${dur}</span>`;
+        }
         if (format === 'deal') return '<span class="badge-format badge-deal">🏷️ Descuento / Deal</span>';
         return '<span class="badge-format badge-banner">🖼️ Banner Lateral</span>';
       }
@@ -710,7 +713,7 @@
                 </div>
               </div>
             </td>
-            <td>${formatBadge(c.format)}</td>
+            <td>${formatBadge(c.format, c)}</td>
             <td><span style="font-weight:600; color:#38bdf8;">${c.couponCode ? escapeHtml(c.couponCode) : '—'}</span></td>
             <td><strong>${(c.impressionsTotal || 0).toLocaleString()}</strong></td>
             <td><strong style="color:#34d399;">${(c.qrScans || 0).toLocaleString()}</strong></td>
@@ -741,7 +744,7 @@
                   </div>
                 </div>
               </td>
-              <td>${formatBadge(c.format)}</td>
+              <td>${formatBadge(c.format, c)}</td>
               <td style="font-size:0.85rem; color:#cbd5e1;">${c.startDate} al ${c.endDate}</td>
               <td style="font-size:0.85rem; color:#94a3b8;">${c.scheduleAllDay ? '24/7' : `${c.scheduleStart} - ${c.scheduleEnd}`}</td>
               <td style="font-size:0.85rem;">
@@ -819,6 +822,7 @@
       function resetForm() {
         form.reset();
         editCampId.value = '';
+        window.__lastDetectedVideoDuration = null;
         formTitleHeading.textContent = 'Nueva Campaña Publicitaria';
         btnCancelEdit.style.display = 'none';
         groupScheduleHours.style.display = 'none';
@@ -849,6 +853,7 @@
           phone: document.getElementById('campPhone').value.trim(),
           address: document.getElementById('campAddress').value.trim(),
           priority: document.getElementById('campPriority').value,
+          videoDuration: window.__lastDetectedVideoDuration || (editCampId.value ? (window.CampaignManager.getCampaigns().find(c => c.id === editCampId.value) || {}).videoDuration : null),
           scheduleAllDay: campScheduleAllDay.value === 'true',
           scheduleStart: document.getElementById('campScheduleStart').value,
           scheduleEnd: document.getElementById('campScheduleEnd').value
@@ -905,6 +910,7 @@
 
         formTitleHeading.textContent = `Editar Campaña: ${camp.clientName}`;
         btnCancelEdit.style.display = 'inline-block';
+        window.__lastDetectedVideoDuration = camp.videoDuration || null;
         updateFormMediaPreview(camp.mediaUrl);
         switchTab('tabNewCampaign');
       };
@@ -1155,9 +1161,29 @@
         }
         const isVideo = url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov') || url.includes('/videos/');
         if (isVideo) {
-          formMediaPreviewContainer.innerHTML = `<video src="${url}" controls autoplay style="width:100%; max-height:220px; object-fit:contain; border-radius:4px;"></video>`;
+          formMediaPreviewContainer.innerHTML = `
+            <video src="${url}" controls autoplay style="width:100%; max-height:220px; object-fit:contain; border-radius:4px;"></video>
+            <div id="videoMetaBadge" style="margin-top:8px; padding:6px 12px; background:rgba(248,184,0,0.1); border:1px solid rgba(248,184,0,0.3); border-radius:6px; font-size:12px; color:#f8b800; display:flex; align-items:center; gap:8px;">
+              <span>⏳ Analizando duración del video...</span>
+            </div>
+          `;
+          const vid = formMediaPreviewContainer.querySelector('video');
+          if (vid) {
+            vid.addEventListener('loadedmetadata', () => {
+              const sec = Math.ceil(vid.duration);
+              const m = Math.floor(sec / 60);
+              const s = sec % 60;
+              const formatted = m > 0 ? `${m}m ${s}s` : `${sec}s`;
+              const badge = document.getElementById('videoMetaBadge');
+              if (badge) {
+                badge.innerHTML = `<span>⏱️ Duración detectada: <strong>${formatted} (${sec}s)</strong> · La tablet lo reproducirá <strong>100% completo</strong> sin corte fijo de 30s.</span>`;
+              }
+              window.__lastDetectedVideoDuration = sec;
+            });
+          }
         } else {
           formMediaPreviewContainer.innerHTML = `<img src="${url}" alt="Preview" style="max-width:100%; max-height:220px; object-fit:contain; border-radius:4px;">`;
+          window.__lastDetectedVideoDuration = null;
         }
         formMediaPreviewWrapper.style.display = 'block';
       }

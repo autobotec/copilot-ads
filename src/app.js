@@ -40,6 +40,7 @@ const state = {
     currentStep: 'trivia', // 'trivia' | 'weather' | 'news' | 'promoVideo'
     secondsLeft: MIX_SEGMENT_DURATION,
     duration: MIX_SEGMENT_DURATION,
+    videoTotalDuration: null,
     interval: null,
     interactionCooldown: null,
     promoVideoIndex: 0
@@ -2037,10 +2038,33 @@ function setupVideoPromoShowcase() {
   }
 
   if (DOM.promoVideoMainPlayer) {
+    DOM.promoVideoMainPlayer.loop = false;
+    DOM.promoVideoMainPlayer.addEventListener('timeupdate', () => {
+      if (state.activeTab === 'mediaAds' && state.activeMediaSubtab === 'videoPromo') {
+        const vid = DOM.promoVideoMainPlayer;
+        if (isFinite(vid.duration) && vid.duration > 0) {
+          const total = Math.ceil(vid.duration);
+          const cur = vid.currentTime || 0;
+          const rem = Math.max(0, Math.ceil(total - cur));
+          if (DOM.pvmTimer) {
+            const m = Math.floor(rem / 60);
+            const s = String(rem % 60).padStart(2, '0');
+            DOM.pvmTimer.textContent = `${m}:${s}`;
+          }
+          if (DOM.pvmProgressFill) {
+            DOM.pvmProgressFill.style.width = `${Math.min(100, Math.max(0, (cur / total) * 100))}%`;
+          }
+        }
+      }
+    });
+
     DOM.promoVideoMainPlayer.addEventListener('ended', () => {
       if (currentActiveCampId && window.CampaignManager) {
         window.CampaignManager.recordMetric(currentActiveCampId, 'video_complete');
       }
+      currentVideoSpotlightIndex++;
+      syncCurrentVideoSpotlight();
+      startPromoVideoPlayback();
     });
   }
 
@@ -2050,6 +2074,7 @@ function setupVideoPromoShowcase() {
 function startPromoVideoPlayback() {
   syncCurrentVideoSpotlight();
   if (!DOM.promoVideoMainPlayer) return;
+  DOM.promoVideoMainPlayer.loop = false;
   DOM.promoVideoMainPlayer.currentTime = 0;
 
   const shouldMute = sound.isMuted();
@@ -2135,19 +2160,37 @@ function startMixTicker() {
         advanceMixSegment('promoVideo');
       }
     } else if (state.mixMode.currentStep === 'promoVideo') {
-      state.mixMode.secondsLeft--;
-      updateFullscreenAdProgress(state.mixMode.secondsLeft, MIX_SEGMENT_DURATION);
+      const vid = DOM.fsaVideoPlayer;
+      if (vid && !vid.paused && isFinite(vid.duration) && vid.duration > 0) {
+        const total = Math.ceil(vid.duration);
+        const cur = vid.currentTime || 0;
+        const rem = Math.max(0, Math.ceil(total - cur));
+        state.mixMode.secondsLeft = rem;
+        state.mixMode.videoTotalDuration = total;
+        updateFullscreenAdProgress(rem, total);
 
-      if (DOM.pvmTimer) {
-        DOM.pvmTimer.textContent = `0:${String(Math.max(0, state.mixMode.secondsLeft)).padStart(2, '0')}`;
-      }
-      if (DOM.pvmProgressFill) {
-        const pct = ((MIX_SEGMENT_DURATION - state.mixMode.secondsLeft) / MIX_SEGMENT_DURATION) * 100;
-        DOM.pvmProgressFill.style.width = `${Math.min(100, Math.max(0, pct))}%`;
-      }
-      if (state.mixMode.secondsLeft <= 0) {
-        closeFullscreenAd();
-        advanceMixSegment('trivia');
+        if (DOM.pvmTimer) {
+          const m = Math.floor(rem / 60);
+          const s = String(rem % 60).padStart(2, '0');
+          DOM.pvmTimer.textContent = `${m}:${s}`;
+        }
+        if (DOM.pvmProgressFill) {
+          const pct = total > 0 ? (cur / total) * 100 : 0;
+          DOM.pvmProgressFill.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+        }
+
+        if (vid.ended || cur >= total - 0.3) {
+          closeFullscreenAd();
+          advanceMixSegment('trivia');
+        }
+      } else {
+        state.mixMode.secondsLeft--;
+        const total = state.mixMode.videoTotalDuration || 30;
+        updateFullscreenAdProgress(state.mixMode.secondsLeft, total);
+        if (state.mixMode.secondsLeft <= 0) {
+          closeFullscreenAd();
+          advanceMixSegment('trivia');
+        }
       }
     }
 
@@ -2164,9 +2207,9 @@ function advanceMixSegment(forceNextStep = null) {
   }
 
   state.mixMode.currentStep = nextStep;
-  state.mixMode.secondsLeft = MIX_SEGMENT_DURATION;
 
   if (nextStep === 'trivia') {
+    state.mixMode.secondsLeft = MIX_SEGMENT_DURATION;
     closeFullscreenAd();
     switchTab('games');
     if (state.activeGameMode !== 'classic') {
@@ -2176,14 +2219,28 @@ function advanceMixSegment(forceNextStep = null) {
       state.mixMode.isPaused = false;
     }
   } else if (nextStep === 'weather') {
+    state.mixMode.secondsLeft = MIX_SEGMENT_DURATION;
     closeFullscreenAd();
     switchTab('weatherNews');
     switchWeatherNewsSubtab('weather');
   } else if (nextStep === 'news') {
+    state.mixMode.secondsLeft = MIX_SEGMENT_DURATION;
     closeFullscreenAd();
     switchTab('weatherNews');
     switchWeatherNewsSubtab('news');
   } else if (nextStep === 'promoVideo') {
+    let estimatedDuration = 30;
+    if (window.CampaignManager) {
+      const spotlights = window.CampaignManager.getActiveVideoSpotlights();
+      if (spotlights && spotlights.length > 0) {
+        const nextCamp = spotlights[state.mixMode.promoVideoIndex % spotlights.length];
+        if (nextCamp && nextCamp.videoDuration && nextCamp.videoDuration > 0) {
+          estimatedDuration = nextCamp.videoDuration;
+        }
+      }
+    }
+    state.mixMode.videoTotalDuration = estimatedDuration;
+    state.mixMode.secondsLeft = estimatedDuration;
     switchTab('mediaAds');
     switchMediaSubtab('videoPromo');
     openFullscreenAd();
@@ -2215,6 +2272,7 @@ function openFullscreenAd(customAd = null) {
           subtext: camp.subtitle || camp.discountOffer || '',
           subtext_en: camp.subtitle || camp.discountOffer || '',
           videoUrl: camp.mediaUrl || 'assets/videos/video_autobotec_1789922115206.mp4',
+          videoDuration: camp.videoDuration || null,
           qrCodeText: camp.targetUrl || 'https://autobotec.net',
           promoCode: camp.couponCode || 'AUTOBOTEC26'
         };
@@ -2260,6 +2318,7 @@ function openFullscreenAd(customAd = null) {
   }
 
   if (DOM.fsaVideoPlayer) {
+    DOM.fsaVideoPlayer.loop = false;
     const targetUrl = ad.videoUrl || "assets/videos/video_autobotec_1789922115206.mp4";
     const currentSrc = DOM.fsaVideoPlayer.getAttribute('src') || DOM.fsaVideoPlayer.currentSrc || DOM.fsaVideoPlayer.src || '';
     if (!currentSrc.includes(targetUrl)) {
@@ -2267,6 +2326,36 @@ function openFullscreenAd(customAd = null) {
       DOM.fsaVideoPlayer.load();
     }
     DOM.fsaVideoPlayer.currentTime = 0;
+
+    function applyVideoDuration(dur) {
+      if (typeof dur === 'number' && !isNaN(dur) && isFinite(dur) && dur > 0) {
+        const totalSecs = Math.ceil(dur);
+        state.mixMode.videoTotalDuration = totalSecs;
+        state.mixMode.duration = totalSecs;
+        state.mixMode.secondsLeft = Math.max(0, Math.ceil(totalSecs - (DOM.fsaVideoPlayer.currentTime || 0)));
+        updateFullscreenAdProgress(state.mixMode.secondsLeft, totalSecs);
+        updateMixPillUI();
+        if (ad.id && window.CampaignManager) {
+          window.CampaignManager.updateCampaign(ad.id, { videoDuration: totalSecs });
+        }
+      }
+    }
+
+    if (ad.videoDuration && ad.videoDuration > 0) {
+      applyVideoDuration(ad.videoDuration);
+    } else if (isFinite(DOM.fsaVideoPlayer.duration) && DOM.fsaVideoPlayer.duration > 0) {
+      applyVideoDuration(DOM.fsaVideoPlayer.duration);
+    } else {
+      const initDur = state.mixMode.videoTotalDuration || 30;
+      updateFullscreenAdProgress(initDur, initDur);
+    }
+
+    DOM.fsaVideoPlayer.onloadedmetadata = () => {
+      applyVideoDuration(DOM.fsaVideoPlayer.duration);
+    };
+    DOM.fsaVideoPlayer.ondurationchange = () => {
+      applyVideoDuration(DOM.fsaVideoPlayer.duration);
+    };
 
     const shouldMute = sound.isMuted();
     DOM.fsaVideoPlayer.muted = shouldMute;
@@ -2296,7 +2385,7 @@ function openFullscreenAd(customAd = null) {
     }
   }
 
-  updateFullscreenAdProgress(state.mixMode.secondsLeft, MIX_SEGMENT_DURATION);
+  updateFullscreenAdProgress(state.mixMode.secondsLeft, state.mixMode.videoTotalDuration || MIX_SEGMENT_DURATION);
 }
 
 function closeFullscreenAd(andAdvance = false) {
@@ -2320,16 +2409,22 @@ function closeFullscreenAd(andAdvance = false) {
 
 function updateFullscreenAdProgress(secondsLeft, totalDuration) {
   const safeSec = Math.max(0, secondsLeft);
+  const safeTot = Math.max(1, totalDuration || 30);
   if (DOM.fsaSecondsCount) {
-    DOM.fsaSecondsCount.textContent = `${safeSec}s`;
+    if (safeTot > 60) {
+      const m = Math.floor(safeSec / 60);
+      const s = String(safeSec % 60).padStart(2, '0');
+      DOM.fsaSecondsCount.textContent = `${m}:${s}`;
+    } else {
+      DOM.fsaSecondsCount.textContent = `${safeSec}s`;
+    }
   }
-  const pct = Math.min(100, Math.max(0, ((totalDuration - safeSec) / totalDuration) * 100));
+  const pct = Math.min(100, Math.max(0, ((safeTot - safeSec) / safeTot) * 100));
   if (DOM.fsaProgressFill) {
     DOM.fsaProgressFill.style.width = `${pct}%`;
   }
   if (DOM.fsaCountdownCircle) {
-    // Circumference stroke-dasharray is 100
-    const dashoffset = 100 - ((safeSec / totalDuration) * 100);
+    const dashoffset = 100 - ((safeSec / safeTot) * 100);
     DOM.fsaCountdownCircle.style.strokeDashoffset = `${dashoffset}`;
   }
 }
@@ -2350,6 +2445,51 @@ function setupFullscreenAdControls() {
   }
 
   if (DOM.fsaVideoPlayer) {
+    DOM.fsaVideoPlayer.loop = false;
+    DOM.fsaVideoPlayer.addEventListener('timeupdate', () => {
+      if (!state.isFullscreenAdActive) return;
+      const vid = DOM.fsaVideoPlayer;
+      const dur = (isFinite(vid.duration) && vid.duration > 0)
+        ? Math.ceil(vid.duration)
+        : (state.mixMode.videoTotalDuration || 30);
+      const cur = vid.currentTime || 0;
+      const rem = Math.max(0, Math.ceil(dur - cur));
+      state.mixMode.secondsLeft = rem;
+      state.mixMode.videoTotalDuration = dur;
+      updateFullscreenAdProgress(rem, dur);
+
+      if (DOM.pvmTimer) {
+        const m = Math.floor(rem / 60);
+        const s = String(rem % 60).padStart(2, '0');
+        DOM.pvmTimer.textContent = `${m}:${s}`;
+      }
+      if (DOM.pvmProgressFill) {
+        const pct = dur > 0 ? (cur / dur) * 100 : 0;
+        DOM.pvmProgressFill.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+      }
+      updateMixPillUI();
+    });
+
+    DOM.fsaVideoPlayer.addEventListener('ended', () => {
+      if (state.isFullscreenAdActive) {
+        if (currentActiveCampId && window.CampaignManager) {
+          window.CampaignManager.recordMetric(currentActiveCampId, 'video_complete');
+        }
+        closeFullscreenAd();
+        advanceMixSegment('trivia');
+      }
+    });
+
+    DOM.fsaVideoPlayer.addEventListener('error', (e) => {
+      console.warn('Error en reproducción de video de anuncio fullscreen:', e);
+      setTimeout(() => {
+        if (state.isFullscreenAdActive) {
+          closeFullscreenAd();
+          advanceMixSegment('trivia');
+        }
+      }, 3000);
+    });
+
     DOM.fsaVideoPlayer.addEventListener('click', () => {
       if (DOM.fsaVideoPlayer.muted) {
         DOM.fsaVideoPlayer.muted = false;
