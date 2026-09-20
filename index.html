@@ -780,11 +780,11 @@
 
             <!-- MEDIA SUBTABS (Play, Watch, Listen, Billboard, Deals) -->
             <div class="media-subnav">
-              <button class="media-subnav-btn active" data-mediatab="deals" id="btnMediaDeals">
-                <span>🎁</span> <span id="tabDealsText">Ofertas & Cupones</span>
+              <button class="media-subnav-btn active" data-mediatab="videoPromo" id="btnMediaVideoPromo">
+                <span>🎥</span> <span id="tabVideoPromoText">Video Spotlight · Autobotec</span>
               </button>
-              <button class="media-subnav-btn" data-mediatab="videoPromo" id="btnMediaVideoPromo">
-                <span>🎥</span> <span id="tabVideoPromoText">Video Promo</span>
+              <button class="media-subnav-btn" data-mediatab="deals" id="btnMediaDeals">
+                <span>🎁</span> <span id="tabDealsText">Ofertas & Cupones</span>
               </button>
               <button class="media-subnav-btn" data-mediatab="billboard" id="btnMediaBillboard">
                 <span>📊</span> <span id="tabBillboardText">Billboard & Deportes</span>
@@ -798,8 +798,51 @@
             </div>
           </div>
 
+          <!-- SUBTAB CONTENT: PROMOTIONAL VIDEO SHOWCASE (PRIMARY SPOTLIGHT) -->
+          <div class="media-tab-content active" id="mediaTabVideoPromo">
+            <div class="video-promo-showcase-layout">
+              <div class="promo-video-main-card">
+                <div class="pvm-top-bar">
+                  <div class="pvm-badge"><span class="live-dot"></span> <span id="pvmBadgeText">SPOT DE VIDEO PATROCINADO · AUTOBOTEC.NET</span></div>
+                  <div class="pvm-controls">
+                    <button class="pvm-sound-btn" id="btnPvmSound" title="Silenciar / Activar Sonido">🔊</button>
+                    <span class="pvm-timer" id="pvmTimer">0:15</span>
+                  </div>
+                </div>
+
+                <div class="pvm-player-wrapper">
+                  <video id="promoVideoMainPlayer" class="pvm-video-element" playsinline webkit-playsinline preload="auto" loop muted autoplay>
+                    <source src="assets/videos/anuncia_aqui_autobotec.mp4" type="video/mp4" />
+                  </video>
+                  <div class="pvm-video-overlay">
+                    <div class="pvm-sponsor-meta">
+                      <span class="pvm-sponsor-brand" id="pvmBrand">AUTOBOTEC.NET · MEDIA NETWORK</span>
+                      <h2 class="pvm-sponsor-title" id="pvmHeadline">¡ANUNCIA TU NEGOCIO AQUÍ!</h2>
+                      <p class="pvm-sponsor-desc" id="pvmSubtext">Llega a más de 3,000+ pasajeros cautivos al mes en Uber y Lyft con pantallas interactivas de alta conversión. Escanea el código QR para contratar tu pauta publicitaria en Autobotec.net.</p>
+                    </div>
+                    <div class="pvm-qr-card">
+                      <div class="pvm-qr-img" id="pvmQrContainer"></div>
+                      <span class="pvm-qr-tag" id="pvmQrInstruction">📱 Escanea para ir a Autobotec.net</span>
+                    </div>
+                  </div>
+                  <div class="pvm-progress-track">
+                    <div class="pvm-progress-fill" id="pvmProgressFill"></div>
+                  </div>
+                </div>
+
+                <div class="pvm-bottom-actions">
+                  <div class="pvm-coupon-pill">
+                    <span id="pvmPromoLabel">WEB:</span> <strong id="pvmPromoCode">WWW.AUTOBOTEC.NET</strong>
+                  </div>
+                  <button class="pvm-action-btn primary" id="btnClaimPromoVideo">Contratar Publicidad / Info Web</button>
+                  <button class="pvm-action-btn secondary" id="btnNextPromoVideo">Siguiente Spot ▶</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- SUBTAB CONTENT: DEALS & SPONSORED INTERSTITIAL ADS -->
-          <div class="media-tab-content active" id="mediaTabDeals">
+          <div class="media-tab-content" id="mediaTabDeals">
             <div class="deals-showcase-layout">
 
               <!-- HERO FEATURED SPONSOR AD -->
@@ -814,24 +857,26 @@
 
                 <div class="ad-content-split">
                   <div class="ad-left-info" id="adLeftInfo">
-                    <div class="ad-brand-logo" id="adBrandLogo">☕</div>
-                    <h2 class="ad-brand-name" id="adBrandName">VELOCE ESPRESSO & BAKERY</h2>
-                    <h1 class="ad-headline" id="adHeadline">¡Tu café artesanal favorito te espera en la próxima parada!</h1>
-                    <p class="ad-subtext" id="adSubtext">Muestra este anuncio en tu viaje y obtén 30% de descuento inmediato en tu primera orden.</p>
+                    <div class="ad-brand-logo" id="adBrandLogo">🚀</div>
+                    <h2 class="ad-brand-name" id="adBrandName">AUTOBOTEC.NET · MEDIA NETWORK</h2>
+                    <h1 class="ad-headline" id="adHeadline">¡ANUNCIA TU NEGOCIO AQUÍ!</h1>
+                    <p class="ad-subtext" id="adSubtext">Llega a más de 3,000+ pasajeros cautivos al mes con pantallas interactivas de alta conversión.</p>
                     
                     <div class="ad-promo-box">
-                      <span class="promo-label" id="promoLabelText">CÓDIGO DE DESCUENTO:</span>
-                      <span class="promo-code" id="adPromoCode">COPILOT30</span>
+                      <span class="promo-label" id="promoLabelText">CÓDIGO DE DESCUENTO / WEB:</span>
+                      <span class="promo-code" id="adPromoCode">AUTOBOTEC26</span>
                     </div>
                   </div>
 
                   <!-- MODO VIDEO OPCIONAL -->
-                  <div class="ad-video-container hidden" id="adVideoContainer">
+                  <div class="ad-video-container" id="adVideoContainer">
                     <div class="video-overlay-header">
-                      <span class="video-sponsor-tag" id="videoSponsorTag">▶ SPOT DE VIDEO</span>
+                      <span class="video-sponsor-tag" id="videoSponsorTag">▶ SPOT AUTOBOTEC.NET</span>
                       <button class="video-sound-btn" id="btnVideoSound" title="Silenciar / Activar Sonido">🔊</button>
                     </div>
-                    <video id="adVideoPlayer" class="ad-video-element" playsinline webkit-playsinline preload="auto"></video>
+                    <video id="adVideoPlayer" class="ad-video-element" playsinline webkit-playsinline preload="auto" loop muted autoplay>
+                      <source src="assets/videos/anuncia_aqui_autobotec.mp4" type="video/mp4" />
+                    </video>
                     <div class="video-progress-line">
                       <div class="video-progress-fill" id="adVideoProgress"></div>
                     </div>
@@ -844,7 +889,7 @@
                         <!-- Dynamic SVG QR Code -->
                       </div>
                       <div class="qr-instruction" id="qrInstructionText">
-                        <span>📱</span> Escanea con la cámara de tu móvil para canjear oferta
+                        <span>📱</span> Escanea con tu cámara para ir a Autobotec.net
                       </div>
                     </div>
                   </div>
@@ -863,23 +908,6 @@
 
             </div>
           </div>
-
-          <!-- SUBTAB CONTENT: PROMOTIONAL VIDEO SHOWCASE -->
-          <div class="media-tab-content" id="mediaTabVideoPromo">
-            <div class="video-promo-showcase-layout">
-              <div class="promo-video-main-card">
-                <div class="pvm-top-bar">
-                  <div class="pvm-badge"><span class="live-dot"></span> <span id="pvmBadgeText">SPOT DE VIDEO PATROCINADO</span></div>
-                  <div class="pvm-controls">
-                    <button class="pvm-sound-btn" id="btnPvmSound" title="Silenciar / Activar Sonido">🔊</button>
-                    <span class="pvm-timer" id="pvmTimer">0:14</span>
-                  </div>
-                </div>
-
-                <div class="pvm-player-wrapper">
-                  <video id="promoVideoMainPlayer" class="pvm-video-element" playsinline webkit-playsinline preload="auto" loop muted>
-                    <source src="assets/videos/anuncia_aqui_autobotec.mp4" type="video/mp4" />
-                  </video>
                   <div class="pvm-video-overlay">
                     <div class="pvm-sponsor-meta">
                       <span class="pvm-sponsor-brand" id="pvmBrand">AUTOBOTEC.NET · MEDIA NETWORK</span>
@@ -1252,7 +1280,7 @@
             <button class="btn-exit-kiosk-bar" id="btnExitKioskBar">
               <span>🌐</span> Salir de Pantalla Completa (Ver Barra Navegador)
             </button>
-            <a href="admin.html" target="_blank" class="btn-lock-kiosk" style="text-decoration: none; text-align: center; margin-top: 10px; background: linear-gradient(135deg, #6366f1, #3b82f6);">
+            <a href="panel.html" target="_blank" class="btn-lock-kiosk" style="text-decoration: none; text-align: center; margin-top: 10px; background: linear-gradient(135deg, #6366f1, #3b82f6);">
               <span>📊</span> Abrir Panel de Publicidad (/admin)
             </a>
           </div>
@@ -1365,6 +1393,7 @@
       }
     };
   </script>
+  <script src="src/qrcode.js?v=20260920_qr_autobotec"></script>
   <script src="src/campaignManager.js?v=20260920_fullscreen_mix30"></script>
   <script type="module" src="src/app.js?v=20260920_fullscreen_mix30"></script>
 </body>

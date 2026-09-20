@@ -375,6 +375,8 @@ const DOM = {
   adPromoCode: document.getElementById('adPromoCode'),
   qrInstructionText: document.getElementById('qrInstructionText'),
   adQrContainer: document.getElementById('adQrContainer'),
+  adVideoContainer: document.getElementById('adVideoContainer'),
+  adVideoPlayer: document.getElementById('adVideoPlayer'),
   btnNextAd: document.getElementById('btnNextAd'),
   btnClaimAd: document.getElementById('btnClaimAd'),
 
@@ -725,6 +727,9 @@ function switchTab(targetTab) {
   if (targetTab === 'rideInfo' && DOM.viewRideInfo) DOM.viewRideInfo.classList.add('active');
   if (targetTab === 'mediaAds' && DOM.viewMediaAds) {
     DOM.viewMediaAds.classList.add('active');
+    switchMediaSubtab('videoPromo');
+    syncCurrentVideoSpotlight();
+    startPromoVideoPlayback();
   }
   if (targetTab === 'giveaway' && DOM.viewGiveaway) DOM.viewGiveaway.classList.add('active');
   if (targetTab === 'leaderboard' && DOM.viewLeaderboard) DOM.viewLeaderboard.classList.add('active');
@@ -1411,6 +1416,22 @@ function loadAd(index) {
   if (DOM.adSubtext) DOM.adSubtext.textContent = state.currentLang === 'en' ? (ad.subtext_en || ad.subtext) : ad.subtext;
   if (DOM.adPromoCode) DOM.adPromoCode.textContent = ad.promoCode;
 
+  const videoSrc = ad.videoUrl || (ad.id === 'ad-video-1' ? 'assets/videos/anuncia_aqui_autobotec.mp4' : 'assets/videos/anuncia_aqui_autobotec.mp4');
+  if (DOM.adVideoContainer) {
+    DOM.adVideoContainer.classList.remove('hidden');
+  }
+  if (DOM.adVideoPlayer) {
+    const currentSrc = DOM.adVideoPlayer.getAttribute('src') || '';
+    if (!currentSrc.includes(videoSrc)) {
+      DOM.adVideoPlayer.src = videoSrc;
+    }
+    DOM.adVideoPlayer.muted = true;
+    const p = DOM.adVideoPlayer.play();
+    if (p !== undefined) {
+      p.catch(() => {});
+    }
+  }
+
   generateQrCode(DOM.adQrContainer, ad.qrCodeText || "https://autobotec.net");
 }
 
@@ -1959,6 +1980,8 @@ function setupVideoPromoShowcase() {
       sound.playTap();
       notifyUserInteraction();
       switchMediaSubtab('videoPromo');
+      syncCurrentVideoSpotlight();
+      startPromoVideoPlayback();
     });
   }
 
@@ -2819,13 +2842,40 @@ function applyDriverConfigToUI() {
 }
 
 /* ==========================================================================
-   QR CODE VECTOR GENERATOR (SVG CLEAN)
+   QR CODE VECTOR GENERATOR (STANDARDS-COMPLIANT SCANNABLE SVG)
    ========================================================================== */
 function generateQrCode(container, text) {
   if (!container) return;
+  const targetUrl = text || "https://autobotec.net";
+
+  try {
+    const qrLib = (typeof qrcode === 'function') ? qrcode : (window.qrcode || null);
+    if (qrLib) {
+      // Version 0 (auto-sizing), level 'M' (15% error correction)
+      const qr = qrLib(0, 'M');
+      qr.addData(targetUrl);
+      qr.make();
+      const svgTag = qr.createSvgTag({ scalable: true, margin: 2 });
+      container.innerHTML = svgTag;
+      const svgEl = container.querySelector('svg');
+      if (svgEl) {
+        svgEl.style.width = '100%';
+        svgEl.style.height = '100%';
+        svgEl.style.display = 'block';
+        svgEl.style.borderRadius = '6px';
+        svgEl.setAttribute('role', 'img');
+        svgEl.setAttribute('aria-label', `Código QR: ${targetUrl}`);
+      }
+      return;
+    }
+  } catch (err) {
+    console.warn('QR generator notice:', err);
+  }
+
+  // Fallback if library failed
   let hash = 0;
-  for (let i = 0; i < text.length; i++) {
-    hash = ((hash << 5) - hash) + text.charCodeAt(i);
+  for (let i = 0; i < targetUrl.length; i++) {
+    hash = ((hash << 5) - hash) + targetUrl.charCodeAt(i);
     hash |= 0;
   }
 
