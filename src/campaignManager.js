@@ -103,7 +103,10 @@
           localStorage.setItem(STORAGE_KEY_CAMPAIGNS, updated);
         }
         if (!localStorage.getItem(STORAGE_KEY_AUTH)) {
-          localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify({ pin: '2026', pass: 'admin2026' }));
+          localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify({
+            pinHash: 'b30bb662f3a693c12aa8944519cfa117961b369ecfaeef1ee3a2c5896b0f1997', // SHA-256 de '2026'
+            passHash: '6425143a4e40280eb4c6a66699fc2fa8ecae294c730e69b50db1f85e4fceb158' // SHA-256 de 'admin2026'
+          }));
         }
         if (!localStorage.getItem(STORAGE_KEY_FLEET)) {
           const defaultFleet = [
@@ -118,25 +121,61 @@
       }
     }
 
+    async hashValue(val) {
+      if (!val) return '';
+      try {
+        if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
+          const buffer = new TextEncoder().encode(val.toString());
+          const digest = await window.crypto.subtle.digest('SHA-256', buffer);
+          return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+      } catch (e) {}
+      let hash = 0;
+      const str = val.toString();
+      for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return 'f_' + Math.abs(hash).toString(16);
+    }
+
     getAuth() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY_AUTH);
-        return raw ? JSON.parse(raw) : { pin: '2026', pass: 'admin2026' };
+        return raw ? JSON.parse(raw) : {
+          pinHash: 'b30bb662f3a693c12aa8944519cfa117961b369ecfaeef1ee3a2c5896b0f1997',
+          passHash: '6425143a4e40280eb4c6a66699fc2fa8ecae294c730e69b50db1f85e4fceb158'
+        };
       } catch (e) {
-        return { pin: '2026', pass: 'admin2026' };
+        return {
+          pinHash: 'b30bb662f3a693c12aa8944519cfa117961b369ecfaeef1ee3a2c5896b0f1997',
+          passHash: '6425143a4e40280eb4c6a66699fc2fa8ecae294c730e69b50db1f85e4fceb158'
+        };
       }
     }
 
-    verifyAuth(input) {
+    async verifyAuth(input) {
       if (!input) return false;
-      const auth = this.getAuth();
       const trimmed = input.toString().trim();
-      return trimmed === auth.pin || trimmed === auth.pass;
+      const auth = this.getAuth();
+      const inputHash = await this.hashValue(trimmed);
+
+      // Verificación segura por hash SHA-256
+      if (auth.pinHash && (inputHash === auth.pinHash || inputHash === auth.passHash)) {
+        return true;
+      }
+      // Retrocompatibilidad con texto plano preexistente (auto-migración inmediata)
+      if (auth.pin && (trimmed === auth.pin || trimmed === auth.pass)) {
+        this.setAuth(auth.pin, auth.pass);
+        return true;
+      }
+      return false;
     }
 
-    setAuth(pin, pass) {
-      const data = { pin: pin || '2026', pass: pass || 'admin2026' };
-      localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(data));
+    async setAuth(pin, pass) {
+      const pinHash = await this.hashValue(pin || '2026');
+      const passHash = await this.hashValue(pass || 'admin2026');
+      localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify({ pinHash, passHash }));
       return true;
     }
 

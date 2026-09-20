@@ -25,9 +25,6 @@
       </div>
       
       <button id="btnAuthSubmit" class="btn-primary">Acceder al Panel</button>
-      <div style="margin-top: 14px; font-size: 0.8rem; color: #64748b;">
-        PIN por defecto: <strong>2026</strong> o contraseña <strong>admin2026</strong>
-      </div>
     </div>
   </div>
 
@@ -609,9 +606,10 @@
         }
       }
 
-      function doLogin() {
+      async function doLogin() {
         const val = authInput.value.trim();
-        if (window.CampaignManager.verifyAuth(val)) {
+        const isValid = await window.CampaignManager.verifyAuth(val);
+        if (isValid) {
           sessionStorage.setItem('copilot_admin_logged', 'true');
           authOverlay.style.display = 'none';
           authError.textContent = '';
@@ -1065,15 +1063,15 @@
         }
       });
 
-      document.getElementById('btnSaveSecurity').addEventListener('click', () => {
+      document.getElementById('btnSaveSecurity').addEventListener('click', async () => {
         const pin = document.getElementById('newPinInput').value.trim();
         const pass = document.getElementById('newPassInput').value.trim();
         if (!pin && !pass) {
           alert('Ingresa un nuevo PIN o Contraseña');
           return;
         }
-        window.CampaignManager.setAuth(pin || '2026', pass || 'admin2026');
-        alert('Credenciales actualizadas exitosamente');
+        await window.CampaignManager.setAuth(pin || '2026', pass || 'admin2026');
+        alert('Credenciales actualizadas exitosamente con cifrado seguro');
         document.getElementById('newPinInput').value = '';
         document.getElementById('newPassInput').value = '';
       });
@@ -1098,6 +1096,7 @@
       const API_BASE = (window.location.protocol === 'file:' || window.location.port === '5500' || window.location.port === '3000')
         ? 'http://localhost:3008/api'
         : '/api';
+      const API_TOKEN = 'copilot_admin_sec_2026_x9k';
 
       let cachedMediaFiles = [];
       let currentMediaFilter = 'all';
@@ -1138,6 +1137,8 @@
           xhr.addEventListener('abort', () => reject(new Error('Subida cancelada')));
 
           xhr.open('POST', `${API_BASE}/upload`);
+          xhr.setRequestHeader('Authorization', `Bearer ${API_TOKEN}`);
+          xhr.setRequestHeader('X-Admin-Token', API_TOKEN);
           xhr.send(formData);
         });
       }
@@ -1422,7 +1423,11 @@
         try {
           const res = await fetch(`${API_BASE}/media`, {
             method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${API_TOKEN}`,
+              'X-Admin-Token': API_TOKEN
+            },
             body: JSON.stringify({ path: url })
           });
           const data = await res.json();

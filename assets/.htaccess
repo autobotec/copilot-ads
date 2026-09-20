@@ -1,0 +1,18 @@
+# ==============================================================================
+# BLOQUEO TOTAL DE EJECUCIÓN DE SCRIPTS EN CARPETAS DE MEDIOS (RCE HARDENING)
+# ==============================================================================
+
+# Desactivar ejecución de CGI y listado
+Options -ExecCGI -Indexes
+
+# Bloquear cualquier motor de scripting o intérprete en assets/
+<FilesMatch "\.(php[0-9]?|phtml|phps|phar|cgi|pl|py|sh|bash|exe|asp|jsp|htm|html|svg)$">
+  Order Allow,Deny
+  Deny from all
+</FilesMatch>
+
+# Asegurar que solo se sirvan archivos estáticos legítimos
+<FilesMatch "\.(mp4|webm|mov|m4v|png|jpg|jpeg|webp|ico|css|js)$">
+  Order Allow,Deny
+  Allow from all
+</FilesMatch>

@@ -1,0 +1,27 @@
+# ==============================================================================
+# COPILOT ADS SECURITY CONFIGURATION (LiteSpeed / Apache)
+# ==============================================================================
+
+# 1. Desactivar listado de directorios
+Options -Indexes
+
+# 2. Encabezados de Seguridad HTTP Defensivos
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-XSS-Protection "1; mode=block"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(self)"
+</IfModule>
+
+# 3. Bloquear acceso a archivos sensibles y de configuración
+<FilesMatch "(^\.|\.(env|log|git|sh|sql|bak|md)$|package(-lock)?\.json$)">
+  Order Allow,Deny
+  Deny from all
+</FilesMatch>
+
+# Permitir manifest.json para funcionalidad PWA
+<Files "manifest.json">
+  Order Allow,Deny
+  Allow from all
+</Files>

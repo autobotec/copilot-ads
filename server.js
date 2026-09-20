@@ -1,18 +1,28 @@
 /**
- * Copilot Ads & Media API Server (Node.js)
+ * Copilot Ads & Media API Server (Node.js) - Blindaje de Seguridad
  * Maneja subida de videos/imágenes por streaming directo a disco,
- * listado de medios y sincronización de producción.
+ * listado de medios, sincronización de producción y protección contra ataques.
  * Puerto predeterminado: 3008 (conectado a OpenLiteSpeed proxy /api)
  */
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const busboy = require('busboy');
 
 const PORT = parseInt(process.env.PORT, 10) || 3008;
+const BIND_HOST = process.env.HOST || '127.0.0.1';
 const BASE_DIR = __dirname;
 const VIDEOS_DIR = path.join(BASE_DIR, 'assets', 'videos');
 const IMAGES_DIR = path.join(BASE_DIR, 'assets', 'images');
+
+// Token administrativo para proteger operaciones de escritura y borrado
+const API_ADMIN_TOKEN = process.env.API_ADMIN_TOKEN || 'copilot_admin_sec_2026_x9k';
+
+// Extensiones y formatos estrictamente permitidos (Whitelist defensiva)
+const ALLOWED_VIDEO_EXTS = new Set(['.mp4', '.webm', '.mov', '.m4v']);
+const ALLOWED_IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
+const DANGEROUS_EXT_REGEX = /\.(php[0-9]?|phtml|phps|phar|sh|bash|exe|cgi|pl|py|js|ts|mjs|cjs|html|htm|svg|htaccess|env)(\.|$)/i;
 
 // Ruta espejo en servidor de producción
 const PROD_MIRROR_BASE = '/home/autobotectesting.site/public_html';
@@ -35,21 +45,84 @@ function formatBytes(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// Sanitizar nombre de archivo (seguro para URLs y sistemas de archivos)
-function sanitizeFilename(originalName) {
-  const ext = path.extname(originalName).toLowerCase();
-  const base = path.basename(originalName, ext);
-  
-  // Normalizar acentos y quitar caracteres especiales
+// Verificación de autenticación resistente a timing attacks
+function verifyAuthToken(req) {
+  const authHeader = req.headers['authorization'] || '';
+  const xToken = req.headers['x-admin-token'] || '';
+  let token = '';
+
+  if (authHeader.startsWith('Bearer ')) {
+    token = authHeader.slice(7).trim();
+  } else if (authHeader) {
+    token = authHeader.trim();
+  } else if (xToken) {
+    token = xToken.trim();
+  } else {
+    try {
+      const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      token = (urlObj.searchParams.get('token') || '').trim();
+    } catch (e) {}
+  }
+
+  if (!token) return false;
+
+  const expectedBuffer = Buffer.from(API_ADMIN_TOKEN);
+  const actualBuffer = Buffer.from(token);
+
+  if (expectedBuffer.length !== actualBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(expectedBuffer, actualBuffer);
+}
+
+// Validación estricta de archivo multimedia
+function isValidMediaFile(filename, mimeType) {
+  if (!filename || typeof filename !== 'string') {
+    return { valid: false, reason: 'Nombre de archivo no válido' };
+  }
+
+  // Rechazar intentos de doble extensión peligrosa (ej. exploit.php.mp4)
+  if (DANGEROUS_EXT_REGEX.test(filename)) {
+    return { valid: false, reason: 'El archivo contiene una extensión ejecutable no permitida' };
+  }
+
+  const ext = path.extname(filename).toLowerCase();
+  const isVideo = ALLOWED_VIDEO_EXTS.has(ext);
+  const isImage = ALLOWED_IMAGE_EXTS.has(ext);
+
+  if (!isVideo && !isImage) {
+    return {
+      valid: false,
+      reason: `Extensión no permitida (${ext || 'sin extensión'}). Formatos válidos: mp4, webm, mov, png, jpg, webp.`
+    };
+  }
+
+  // Validación de MIME type
+  const cleanMime = (mimeType || '').toLowerCase();
+  if (isVideo && cleanMime && !cleanMime.startsWith('video/') && cleanMime !== 'application/octet-stream') {
+    return { valid: false, reason: 'El tipo MIME no coincide con un formato de video' };
+  }
+  if (isImage && cleanMime && !cleanMime.startsWith('image/') && cleanMime !== 'application/octet-stream') {
+    return { valid: false, reason: 'El tipo MIME no coincide con un formato de imagen' };
+  }
+
+  return { valid: true, isVideo, ext };
+}
+
+// Sanitizar nombre de archivo garantizando unicidad y extensión validada
+function sanitizeFilename(originalName, validExt) {
+  const base = path.basename(originalName, path.extname(originalName));
   const cleanBase = base
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-zA-Z0-9_-]/g, '_')
     .replace(/_+/g, '_')
-    .slice(0, 80);
+    .slice(0, 50);
 
   const timestamp = Date.now();
-  return `${cleanBase || 'archivo'}_${timestamp}${ext}`;
+  const randomSuffix = crypto.randomBytes(4).toString('hex');
+  return `${cleanBase || 'media'}_${timestamp}_${randomSuffix}${validExt}`;
 }
 
 // Espejar archivo al directorio de producción si existe
@@ -93,16 +166,19 @@ function deleteFromProduction(relPath) {
   }
 }
 
-// Helper CORS
-function setCorsHeaders(res) {
+// Helper CORS y encabezados de seguridad HTTP
+function setSecurityAndCorsHeaders(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Token, X-Requested-With');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 }
 
 // Helper para responder JSON
 function sendJson(res, statusCode, data) {
-  setCorsHeaders(res);
+  setSecurityAndCorsHeaders(res);
   res.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(data));
 }
@@ -111,7 +187,13 @@ function sendJson(res, statusCode, data) {
 function parseJsonBody(req) {
   return new Promise((resolve) => {
     let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
+    req.on('data', chunk => {
+      body += chunk.toString();
+      if (body.length > 1048576) { // Límite de 1MB para payloads JSON
+        req.destroy();
+        resolve({});
+      }
+    });
     req.on('end', () => {
       try {
         resolve(JSON.parse(body || '{}'));
@@ -149,9 +231,9 @@ function getFilesFromDir(dir, type, relPrefix) {
   }
 }
 
-// Crear servidor
+// Crear servidor HTTP
 const server = http.createServer(async (req, res) => {
-  setCorsHeaders(res);
+  setSecurityAndCorsHeaders(res);
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -162,26 +244,25 @@ const server = http.createServer(async (req, res) => {
   const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const pathname = urlObj.pathname;
 
-  // 1. Health check
-  if ((pathname === '/api/health' || pathname === '/health') && req.method === 'GET') {
+  // 1. Health check (Público)
+  if ((pathname === '/api/health' || pathname === '/health') && (req.method === 'GET' || req.method === 'HEAD')) {
     return sendJson(res, 200, {
       status: 'ok',
       service: 'copilot-ads-api',
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
-      port: PORT
+      security: 'hardened'
     });
   }
 
-  // 2. Listar medios existentes (videos e imágenes)
-  if ((pathname === '/api/media' || pathname === '/media') && req.method === 'GET') {
+  // 2. Listar medios existentes (videos e imágenes - Público para la tablet)
+  if ((pathname === '/api/media' || pathname === '/media') && (req.method === 'GET' || req.method === 'HEAD')) {
     ensureDirs();
     const videos = getFilesFromDir(VIDEOS_DIR, 'video', 'assets/videos');
     const images = getFilesFromDir(IMAGES_DIR, 'image', 'assets/images');
     
     // Unir y ordenar por fecha más reciente
     const allFiles = [...videos, ...images].sort((a, b) => new Date(b.mtime) - new Date(a.mtime));
-
     const totalBytes = allFiles.reduce((acc, f) => acc + f.size, 0);
 
     return sendJson(res, 200, {
@@ -194,8 +275,15 @@ const server = http.createServer(async (req, res) => {
     });
   }
 
-  // 3. Subir archivos (streaming directo a disco)
+  // 3. Subir archivos (Protegido por Token + Whitelist)
   if ((pathname === '/api/upload' || pathname === '/upload') && req.method === 'POST') {
+    if (!verifyAuthToken(req)) {
+      return sendJson(res, 401, {
+        success: false,
+        error: 'No autorizado: Token administrativo requerido para subir archivos'
+      });
+    }
+
     ensureDirs();
     const contentType = req.headers['content-type'] || '';
     if (!contentType.includes('multipart/form-data')) {
@@ -206,12 +294,13 @@ const server = http.createServer(async (req, res) => {
       const bb = busboy({
         headers: req.headers,
         limits: {
-          fileSize: 1024 * 1024 * 1024, // Límite de 1 GB por archivo
-          files: 50 // Hasta 50 archivos simultáneos
+          fileSize: 150 * 1024 * 1024, // 150 MB límite por video publicitario
+          files: 5 // Máximo 5 archivos por solicitud
         }
       });
 
       const uploadedFiles = [];
+      const uploadErrors = [];
       const filePromises = [];
 
       bb.on('file', (name, fileStream, info) => {
@@ -221,25 +310,43 @@ const server = http.createServer(async (req, res) => {
           return;
         }
 
-        const ext = path.extname(filename).toLowerCase();
-        const isVideo = ['.mp4', '.webm', '.mov', '.m4v', '.mkv', '.avi'].includes(ext) || mimeType.startsWith('video/');
+        const validation = isValidMediaFile(filename, mimeType);
+        if (!validation.valid) {
+          fileStream.resume();
+          uploadErrors.push(`${filename}: ${validation.reason}`);
+          return;
+        }
+
+        const isVideo = validation.isVideo;
+        const ext = validation.ext;
         const targetDir = isVideo ? VIDEOS_DIR : IMAGES_DIR;
         const relPrefix = isVideo ? 'assets/videos' : 'assets/images';
 
-        const safeFilename = sanitizeFilename(filename);
+        const safeFilename = sanitizeFilename(filename, ext);
         const targetFilePath = path.join(targetDir, safeFilename);
         const relUrl = `${relPrefix}/${safeFilename}`;
 
         const writeStream = fs.createWriteStream(targetFilePath);
         let bytesWritten = 0;
+        let fileLimitExceeded = false;
 
         fileStream.on('data', chunk => {
           bytesWritten += chunk.length;
         });
 
-        const p = new Promise((resolve, reject) => {
+        fileStream.on('limit', () => {
+          fileLimitExceeded = true;
+          writeStream.destroy();
+          if (fs.existsSync(targetFilePath)) fs.unlinkSync(targetFilePath);
+          uploadErrors.push(`${filename}: El archivo excede el tamaño máximo permitido (150 MB)`);
+        });
+
+        const p = new Promise((resolve) => {
           fileStream.pipe(writeStream);
           writeStream.on('finish', () => {
+            if (fileLimitExceeded) {
+              return resolve();
+            }
             // Sincronizar al espejo de producción si corresponde
             mirrorToProduction(relUrl, targetFilePath);
 
@@ -255,7 +362,10 @@ const server = http.createServer(async (req, res) => {
             });
             resolve();
           });
-          writeStream.on('error', err => reject(err));
+          writeStream.on('error', err => {
+            uploadErrors.push(`${filename}: Error escribiendo en disco (${err.message})`);
+            resolve();
+          });
         });
 
         filePromises.push(p);
@@ -264,23 +374,32 @@ const server = http.createServer(async (req, res) => {
       bb.on('close', async () => {
         try {
           await Promise.all(filePromises);
+
+          if (uploadedFiles.length === 0 && uploadErrors.length > 0) {
+            return sendJson(res, 415, {
+              success: false,
+              error: uploadErrors.join(' | ')
+            });
+          }
+
           return sendJson(res, 200, {
             success: true,
             message: uploadedFiles.length > 1
               ? `${uploadedFiles.length} archivos subidos exitosamente`
               : 'Archivo subido exitosamente',
             files: uploadedFiles,
-            file: uploadedFiles[0] || null
+            file: uploadedFiles[0] || null,
+            warnings: uploadErrors.length > 0 ? uploadErrors : undefined
           });
         } catch (err) {
           console.error('[UPLOAD ERROR]', err);
-          return sendJson(res, 500, { success: false, error: 'Error guardando archivo en disco' });
+          return sendJson(res, 500, { success: false, error: 'Error procesando la subida de archivos' });
         }
       });
 
       bb.on('error', err => {
         console.error('[BUSBOY ERROR]', err);
-        return sendJson(res, 500, { success: false, error: 'Error procesando la subida' });
+        return sendJson(res, 500, { success: false, error: 'Error en el procesamiento del flujo multipart' });
       });
 
       req.pipe(bb);
@@ -291,27 +410,45 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // 4. Eliminar archivo de medios
+  // 4. Eliminar archivo de medios (Protegido por Token + Anti Path Traversal Canónico)
   if ((pathname === '/api/media' || pathname === '/media') && req.method === 'DELETE') {
+    if (!verifyAuthToken(req)) {
+      return sendJson(res, 401, {
+        success: false,
+        error: 'No autorizado: Token administrativo requerido'
+      });
+    }
+
     const body = await parseJsonBody(req);
-    const targetPath = body.path || urlObj.searchParams.get('path') || urlObj.searchParams.get('url');
+    const targetPath = (body.path || urlObj.searchParams.get('path') || urlObj.searchParams.get('url') || '').trim();
 
     if (!targetPath) {
       return sendJson(res, 400, { success: false, error: 'Parámetro path es requerido' });
     }
 
-    // Prevención de path traversal
-    const normalized = path.normalize(targetPath).replace(/^(\.\.[\/\\])+/, '');
-    if (!normalized.startsWith('assets/videos') && !normalized.startsWith('assets/images')) {
-      return sendJson(res, 403, { success: false, error: 'Ruta no permitida' });
+    // Prevención canónica de Path Traversal
+    const resolvedPath = path.resolve(BASE_DIR, targetPath);
+    const canonicalVideos = path.resolve(VIDEOS_DIR);
+    const canonicalImages = path.resolve(IMAGES_DIR);
+
+    const isInsideVideos = resolvedPath.startsWith(canonicalVideos + path.sep);
+    const isInsideImages = resolvedPath.startsWith(canonicalImages + path.sep);
+
+    if (!isInsideVideos && !isInsideImages) {
+      return sendJson(res, 403, { success: false, error: 'Acceso denegado: Ruta de archivo no autorizada' });
     }
 
-    const fullLocalPath = path.join(BASE_DIR, normalized);
-    if (fs.existsSync(fullLocalPath)) {
+    const relPath = path.relative(BASE_DIR, resolvedPath);
+
+    if (fs.existsSync(resolvedPath)) {
       try {
-        fs.unlinkSync(fullLocalPath);
-        deleteFromProduction(normalized);
-        return sendJson(res, 200, { success: true, message: 'Archivo eliminado correctamente' });
+        fs.unlinkSync(resolvedPath);
+        deleteFromProduction(relPath);
+        return sendJson(res, 200, {
+          success: true,
+          message: 'Archivo eliminado correctamente',
+          path: relPath
+        });
       } catch (err) {
         return sendJson(res, 500, { success: false, error: 'No se pudo eliminar el archivo' });
       }
@@ -324,12 +461,13 @@ const server = http.createServer(async (req, res) => {
   return sendJson(res, 404, { success: false, error: 'Endpoint no encontrado' });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, BIND_HOST, () => {
   console.log(`====================================================`);
-  console.log(`🚀 Copilot Media & Ads API Server activo`);
-  console.log(`📡 Puerto: ${PORT} (0.0.0.0:${PORT})`);
+  console.log(`🔒 Copilot Media & Ads API Server Seguro`);
+  console.log(`📡 Escuchando en: ${BIND_HOST}:${PORT}`);
   console.log(`📂 Directorio base: ${BASE_DIR}`);
   console.log(`🎬 Videos: ${VIDEOS_DIR}`);
   console.log(`🖼️  Imágenes: ${IMAGES_DIR}`);
+  console.log(`🛡️  Protección: Whitelist estricta & Auth Token activos`);
   console.log(`====================================================`);
 });
