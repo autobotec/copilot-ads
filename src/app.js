@@ -438,6 +438,7 @@ const DOM = {
 function init() {
   loadDriverConfig();
   setupClock();
+  setupDayNightTheme();
   setupEventListeners();
   applyLanguage(state.currentLang, false);
   renderLeaderboard();
@@ -2154,6 +2155,39 @@ function exitFullscreenSafely() {
   }
 }
 
+/* ==========================================================================
+   DAY / NIGHT AUTO-THEME SYSTEM
+   ========================================================================== */
+function setupDayNightTheme() {
+  updateDayNightTheme();
+  // Check every 30 seconds for automatic time change
+  setInterval(updateDayNightTheme, 30000);
+}
+
+function updateDayNightTheme() {
+  const manualTheme = localStorage.getItem('copilot_manual_theme') || 'auto';
+  const currentHour = new Date().getHours();
+  // Daytime is considered 6:00 AM to 6:59 PM (18:59)
+  const isDayTime = currentHour >= 6 && currentHour < 19;
+  const isDay = (manualTheme === 'day') || (manualTheme === 'auto' && isDayTime);
+
+  if (isDay) {
+    document.documentElement.classList.add('theme-day');
+    document.documentElement.classList.remove('theme-night');
+    if (document.body) {
+      document.body.classList.add('theme-day');
+      document.body.classList.remove('theme-night');
+    }
+  } else {
+    document.documentElement.classList.remove('theme-day');
+    document.documentElement.classList.add('theme-night');
+    if (document.body) {
+      document.body.classList.remove('theme-day');
+      document.body.classList.add('theme-night');
+    }
+  }
+}
+
 let adminTapCount = 0;
 let adminTapTimer = null;
 let isAdminUnlocked = false;
@@ -2201,22 +2235,36 @@ function setupKioskMode() {
   const btnLockKiosk = document.getElementById('btnLockKioskFullscreen');
   const btnExitKioskBar = document.getElementById('btnExitKioskBar');
   const adminHotspot = document.getElementById('adminSecretHotspot');
-  const headerLogo = document.getElementById('brandLogoWrap');
+  const headerBadge = document.getElementById('btnBrandBadge');
+  const dockBrand = document.getElementById('dockBrandLogo');
 
-  // First user interaction anywhere on screen auto-enters fullscreen seamlessly
-  const autoFullscreenGesture = () => {
-    if (!document.fullscreenElement && !document.webkitFullscreenElement && !isAdminUnlocked) {
+  // Enforce fullscreen on ANY user interaction when not unlocked by admin
+  const ensureFullscreenOnInteraction = () => {
+    if (!isAdminUnlocked && !document.fullscreenElement && !document.webkitFullscreenElement) {
       requestFullscreenSafely();
     }
   };
-  window.addEventListener('pointerdown', autoFullscreenGesture, { once: true });
-  window.addEventListener('click', autoFullscreenGesture, { once: true });
-  window.addEventListener('touchstart', autoFullscreenGesture, { once: true, passive: true });
+  window.addEventListener('pointerdown', ensureFullscreenOnInteraction);
+  window.addEventListener('click', ensureFullscreenOnInteraction);
+  window.addEventListener('touchstart', ensureFullscreenOnInteraction, { passive: true });
+
+  // Listen to fullscreen changes: if browser exited fullscreen unexpectedly while locked
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && !isAdminUnlocked) {
+      requestFullscreenSafely();
+    }
+  });
 
   // Bind 7-tap admin mode listeners on secret hotspots
   if (adminHotspot) adminHotspot.addEventListener('pointerdown', triggerAdminTap);
+  if (dockBrand) dockBrand.addEventListener('pointerdown', triggerAdminTap);
+  if (headerBadge) headerBadge.addEventListener('pointerdown', triggerAdminTap);
   if (DOM.dockBrandLogo) DOM.dockBrandLogo.addEventListener('pointerdown', triggerAdminTap);
-  if (headerLogo) headerLogo.addEventListener('pointerdown', triggerAdminTap);
+
+  // Fallback for any .smb3-brand-badge
+  document.querySelectorAll('.smb3-brand-badge, .brand-badge').forEach(el => {
+    el.addEventListener('pointerdown', triggerAdminTap);
+  });
 
   // Admin Modal: Lock Kiosk in Fullscreen
   if (btnLockKiosk) {
@@ -2273,7 +2321,6 @@ function setupAdmin() {
 }
 
 function openAdminModal() {
-  sound.playTap();
   DOM.adminModal.classList.remove('hidden');
   DOM.adminPinScreen.classList.remove('hidden');
   DOM.adminSettingsScreen.classList.add('hidden');
@@ -2282,6 +2329,13 @@ function openAdminModal() {
 
 function closeAdminModal() {
   DOM.adminModal.classList.add('hidden');
+  // When closing admin modal, lock back to kiosk fullscreen if not intentionally staying in browser mode
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    isAdminUnlocked = false;
+    requestFullscreenSafely();
+    if (DOM.btnAdminQuick) DOM.btnAdminQuick.classList.add('hidden');
+    if (DOM.btnFullscreen) DOM.btnFullscreen.classList.add('hidden');
+  }
 }
 
 function verifyAdminPin() {
@@ -2306,6 +2360,11 @@ function populateAdminSettings() {
   DOM.cfgDriverPlaylist.value = state.driverConfig.playlist;
   DOM.cfgDriverBio.value = state.driverConfig.bio;
 
+  const selTheme = document.getElementById('cfgThemeMode');
+  if (selTheme) {
+    selTheme.value = localStorage.getItem('copilot_manual_theme') || 'auto';
+  }
+
   DOM.statTripsToday.textContent = state.driverConfig.tripsToday;
   DOM.statTriviaPlays.textContent = state.driverConfig.triviaPlays;
   DOM.statPointsEarned.textContent = (state.driverConfig.triviaPlays * 100).toLocaleString();
@@ -2319,6 +2378,12 @@ function saveAdminSettings() {
   state.driverConfig.tipHandle = DOM.cfgDriverTipHandle.value.trim() || state.driverConfig.tipHandle;
   state.driverConfig.playlist = DOM.cfgDriverPlaylist.value.trim() || state.driverConfig.playlist;
   state.driverConfig.bio = DOM.cfgDriverBio.value.trim() || state.driverConfig.bio;
+
+  const selTheme = document.getElementById('cfgThemeMode');
+  if (selTheme) {
+    localStorage.setItem('copilot_manual_theme', selTheme.value);
+    updateDayNightTheme();
+  }
 
   localStorage.setItem('copilot_driver_config', JSON.stringify(state.driverConfig));
   applyDriverConfigToUI();

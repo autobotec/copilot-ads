@@ -5104,3 +5104,901 @@ body.theme-smb3 {
 }
 
 
+/* ==========================================================================
+   DAY / NIGHT AUTO-THEME SYSTEM
+   Body gets class .theme-day (6AM-6PM) or .theme-night (6PM-6AM)
+   Night theme = current default dark mode. Day theme overrides below.
+   ========================================================================== */
+
+/* === TRANSITION FOR SMOOTH THEME SWITCHING === */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: background-color 0.6s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease !important;
+}
+
+/* ==========================================================================
+   DAY THEME OVERRIDES (.theme-day on <html>)
+   ========================================================================== */
+html.theme-day {
+  --bg-kiosk: #f0f2f5;
+  --bg-surface: rgba(255, 255, 255, 0.92);
+  --bg-surface-elevated: rgba(255, 255, 255, 0.96);
+  --bg-glass: rgba(0, 0, 0, 0.04);
+  --bg-glass-hover: rgba(0, 0, 0, 0.07);
+  --border-glass: rgba(0, 0, 0, 0.1);
+  --border-glass-bright: rgba(0, 0, 0, 0.2);
+  --text-main: #1a1a2e;
+  --text-muted: #555e6e;
+  --text-dim: #7a8494;
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+html.theme-day body {
+  background-color: #f0f2f5 !important;
+  color: #1a1a2e !important;
+}
+
+/* Background blobs: reduce intensity in day mode */
+html.theme-day .splash-background {
+  opacity: 0.15;
+}
+
+html.theme-day .splash-spot {
+  opacity: 0.12;
+  filter: blur(150px) saturate(0.6);
+}
+
+/* SMB3 curtains: soften in day mode */
+html.theme-day .smb3-stage-curtains {
+  opacity: 0.35;
+}
+
+html.theme-day .smb3-cloud {
+  opacity: 0.25;
+}
+
+/* TOP HEADER BAR */
+html.theme-day .top-header,
+html.theme-day .smb3-marquee-header {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+html.theme-day .brand-title,
+html.theme-day .brand-subtitle,
+html.theme-day .brand-text {
+  color: #1a1a2e !important;
+}
+
+html.theme-day .brand-badge,
+html.theme-day .smb3-brand-badge {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+html.theme-day .smb3-block-logo {
+  background: linear-gradient(135deg, #f8b800, #d87800) !important;
+}
+
+/* MIX MODE PILL (DAY) */
+html.theme-day button.mix-mode-pill {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  color: #1a1a2e !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.theme-day .mix-status-text {
+  color: #b87800 !important;
+}
+
+html.theme-day .mix-next-tag,
+html.theme-day .mix-mini-timer {
+  color: #555e6e !important;
+}
+
+/* QUICK PILL BANNER */
+html.theme-day .quick-pill-banner,
+html.theme-day .smb3-bonus-banner {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7) !important;
+  border-color: #d4a200 !important;
+  color: #5a3e00 !important;
+}
+
+html.theme-day .pill-text {
+  color: #5a3e00 !important;
+}
+
+/* LANG SELECTOR */
+html.theme-day .lang-selector-pill,
+html.theme-day .smb3-lang-pill {
+  background: rgba(0, 0, 0, 0.06) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+html.theme-day .lang-btn {
+  color: #333 !important;
+  background: transparent !important;
+}
+
+html.theme-day .lang-btn.active {
+  background: #1a1a2e !important;
+  color: #fff !important;
+}
+
+/* SCORE PILL / COIN COUNTER */
+html.theme-day .score-pill,
+html.theme-day .smb3-coin-counter {
+  background: rgba(0, 0, 0, 0.06) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+html.theme-day .score-label {
+  color: #555e6e !important;
+}
+
+html.theme-day .score-val {
+  color: #1a1a2e !important;
+}
+
+/* CONTROL BUTTONS (SOUND, FULLSCREEN, ADMIN) */
+html.theme-day .control-btn,
+html.theme-day .smb3-btn {
+  background: rgba(0, 0, 0, 0.06) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: #1a1a2e !important;
+}
+
+html.theme-day .control-btn:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ========== MAIN CONTENT AREA ========== */
+html.theme-day .main-layout {
+  background: transparent !important;
+}
+
+/* KIOSK CONTAINER */
+html.theme-day .kiosk-container {
+  background: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* GAMES HUB */
+html.theme-day .games-hub-screen {
+  background: transparent !important;
+}
+
+html.theme-day .hub-tag {
+  color: #1a1a2e !important;
+}
+
+html.theme-day .hub-main-title,
+html.theme-day .hub-main-title span {
+  color: #1a1a2e !important;
+}
+
+html.theme-day .hub-subtitle {
+  color: #555e6e !important;
+}
+
+/* AUTOSTART CARD */
+html.theme-day .autostart-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06) !important;
+}
+
+html.theme-day .autostart-text {
+  color: #333 !important;
+}
+
+html.theme-day .autostart-pause-btn {
+  color: #1a1a2e !important;
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* GAME LAUNCH CARDS (DAY MODE) */
+html.theme-day .game-launch-card {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.theme-day .game-name {
+  color: #1a1a2e !important;
+}
+
+html.theme-day .game-desc {
+  color: #555e6e !important;
+}
+
+html.theme-day .game-players {
+  color: #555e6e !important;
+}
+
+html.theme-day .game-card-glow {
+  opacity: 0.08 !important;
+}
+
+/* PLAY BUTTONS (ALWAYS HIGH CONTRAST) */
+html.theme-day .btn-play-game {
+  color: #fff !important;
+  font-weight: 900 !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* GAME ARENA */
+html.theme-day .game-arena-screen {
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+html.theme-day .arena-top-nav {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+html.theme-day .arena-back-btn {
+  color: #1a1a2e !important;
+  background: rgba(0, 0, 0, 0.06) !important;
+}
+
+html.theme-day .arena-game-tag {
+  color: #1a1a2e !important;
+}
+
+html.theme-day .arena-score-badge {
+  color: #1a1a2e !important;
+}
+
+/* TRIVIA QUESTION AREA */
+html.theme-day .trivia-arena-container {
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+html.theme-day .question-card,
+html.theme-day .trivia-question-text {
+  color: #1a1a2e !important;
+}
+
+html.theme-day .answer-btn {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: #1a1a2e !important;
+  font-weight: 700 !important;
+}
+
+html.theme-day .answer-btn:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+html.theme-day .category-tag {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: #1a1a2e !important;
+}
+
+html.theme-day .streak-badge {
+  background: rgba(255, 106, 0, 0.12) !important;
+  color: #c04000 !important;
+}
+
+html.theme-day .question-progress {
+  color: #555e6e !important;
+}
+
+/* ========== WEATHER & NEWS SECTION ========== */
+html.theme-day .weather-news-layout {
+  background: transparent !important;
+}
+
+html.theme-day .weather-panel-compact {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.theme-day .weather-temp-big {
+  color: #1a1a2e !important;
+}
+
+html.theme-day .weather-desc-label {
+  color: #555e6e !important;
+}
+
+html.theme-day .weather-detail-value {
+  color: #1a1a2e !important;
+}
+
+html.theme-day .weather-detail-label {
+  color: #7a8494 !important;
+}
+
+/* NEWS SECTION */
+html.theme-day .news-display-panel {
+  background: transparent !important;
+}
+
+html.theme-day .news-location-header-banner {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.theme-day .news-city-title {
+  color: #1a1a2e !important;
+}
+
+html.theme-day .news-location-badge {
+  color: #c04000 !important;
+}
+
+html.theme-day .news-curated-subtitle {
+  color: #555e6e !important;
+}
+
+/* NEWS SPOTLIGHT (DAY) */
+html.theme-day .news-spotlight-frame {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(245, 247, 250, 0.99)) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+html.theme-day .spotlight-title {
+  color: #1a1a2e !important;
+  text-shadow: none !important;
+}
+
+html.theme-day .spotlight-summary {
+  color: #444 !important;
+}
+
+html.theme-day .spotlight-keypoints {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.theme-day .spotlight-kp-title {
+  color: #b87800 !important;
+}
+
+html.theme-day .spotlight-kp-list li {
+  color: #333 !important;
+}
+
+html.theme-day .spotlight-footer {
+  border-top-color: rgba(0, 0, 0, 0.08) !important;
+  color: #555e6e !important;
+}
+
+html.theme-day .spotlight-source {
+  color: #b87800 !important;
+}
+
+html.theme-day .spotlight-score {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: #b87800 !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.theme-day .spotlight-time {
+  color: #555e6e !important;
+}
+
+html.theme-day .spotlight-hero-bar {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* SPOTLIGHT NAV BAR */
+html.theme-day .news-spotlight-nav-bar {
+  background: rgba(245, 247, 250, 0.95) !important;
+  border-top-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+html.theme-day .news-nav-btn {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: #1a1a2e !important;
+}
+
+html.theme-day .news-nav-btn:hover {
+  background: #f8b800 !important;
+  color: #000 !important;
+}
+
+html.theme-day .news-cat-pill {
+  background: rgba(0, 0, 0, 0.1) !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+html.theme-day .news-spotlight-timer-badge {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #b87800 !important;
+}
+
+/* NEWS BREAKING BAR */
+html.theme-day .breaking-news-bar {
+  background: linear-gradient(90deg, #dc2626, #b91c1c) !important;
+  color: #fff !important;
+}
+
+/* WEATHER/NEWS SUBTAB BUTTONS */
+html.theme-day .wn-subtab-btn {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #1a1a2e !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.theme-day .wn-subtab-btn.active {
+  background: #1a1a2e !important;
+  color: #fff !important;
+}
+
+/* ========== MEDIA/ADS SECTION ========== */
+html.theme-day .media-ads-layout {
+  background: transparent !important;
+}
+
+html.theme-day .media-sidebar {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.theme-day .media-tab-btn {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: #1a1a2e !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+html.theme-day .media-tab-btn.active {
+  background: #1a1a2e !important;
+  color: #fff !important;
+}
+
+html.theme-day .media-tab-btn span {
+  color: inherit !important;
+}
+
+/* ========== RIDE INFO ========== */
+html.theme-day .ride-info-layout {
+  background: transparent !important;
+}
+
+html.theme-day .ride-info-card {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #1a1a2e !important;
+}
+
+html.theme-day .ride-info-label {
+  color: #555e6e !important;
+}
+
+html.theme-day .ride-info-value {
+  color: #1a1a2e !important;
+}
+
+/* ========== GIVEAWAY ========== */
+html.theme-day .giveaway-section {
+  background: transparent !important;
+}
+
+html.theme-day .giveaway-card {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.theme-day .giveaway-card h2,
+html.theme-day .giveaway-card h3 {
+  color: #1a1a2e !important;
+}
+
+html.theme-day .giveaway-card p {
+  color: #555e6e !important;
+}
+
+/* ========== LEADERBOARD ========== */
+html.theme-day .leaderboard-layout {
+  background: transparent !important;
+}
+
+html.theme-day .leaderboard-table th {
+  background: #f0f2f5 !important;
+  color: #1a1a2e !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.theme-day .leaderboard-table td {
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #1a1a2e !important;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ========== BOTTOM DOCK (DAY) ========== */
+html.theme-day .bottom-dock,
+html.theme-day .smb3-dock-stage {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.06) !important;
+}
+
+html.theme-day .dock-logo-name {
+  color: #b87800 !important;
+}
+
+/* DOCK PILLS (BUTTONS) — MAXIMUM READABILITY */
+html.theme-day .dock-pill {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: #1a1a2e !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+html.theme-day .dock-pill .dock-label {
+  color: #1a1a2e !important;
+  font-weight: 700 !important;
+}
+
+html.theme-day .dock-pill:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+html.theme-day .smb3-nav-pills .dock-pill.active {
+  background: linear-gradient(135deg, #f8b800, #d87800) !important;
+  color: #000 !important;
+  border-color: #c07800 !important;
+}
+
+html.theme-day .smb3-nav-pills .dock-pill.active .dock-label {
+  color: #000 !important;
+  font-weight: 900 !important;
+}
+
+/* P-METER (DAY) */
+html.theme-day .smb3-dock-pmeter {
+  background: rgba(0, 0, 0, 0.06) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.theme-day .pmeter-txt {
+  color: #555e6e !important;
+}
+
+/* DOCK WEATHER & CLOCK */
+html.theme-day .smb3-weather-badge,
+html.theme-day .smb3-clock-badge {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: none !important;
+}
+
+html.theme-day .smb3-clock-badge .clock-time {
+  color: #1a1a2e !important;
+}
+
+html.theme-day .dock-weather strong {
+  color: #1a1a2e !important;
+}
+
+/* ========== MODALS (DAY) ========== */
+html.theme-day .modal-content,
+html.theme-day .admin-modal-content,
+html.theme-day .news-detail-modal-content {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: #1a1a2e !important;
+}
+
+html.theme-day .modal-content h2,
+html.theme-day .modal-content h3,
+html.theme-day .modal-content p,
+html.theme-day .modal-content label {
+  color: #1a1a2e !important;
+}
+
+html.theme-day .modal-content input,
+html.theme-day .modal-content select {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: #1a1a2e !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+/* ========== SMB3 CARD OVERRIDES (DAY) ========== */
+html.theme-day .smb3-card,
+html.theme-day .smb3-block-card {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* ========== TOASTS (DAY) ========== */
+html.theme-day .kiosk-toast {
+  background: rgba(26, 26, 46, 0.95) !important;
+  color: #fff !important;
+}
+
+/* ========== UNIVERSAL BUTTON READABILITY (DAY & NIGHT) ========== */
+/* Ensure ALL buttons across the entire kiosk have crystal-clear, readable text */
+button, 
+[role="button"],
+.dock-pill,
+.btn-play-game,
+.option-btn,
+.wn-subnav-btn,
+.news-nav-btn,
+.spotlight-read-btn,
+.news-read-btn,
+.tip-preset-btn,
+.btn-send-tip-splash,
+.btn-primary-modal,
+.btn-lock-kiosk,
+.btn-exit-kiosk-bar,
+.ad-btn,
+.lang-btn,
+.control-btn,
+.wh-gps-btn {
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-weight: 800 !important;
+  letter-spacing: 0.3px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- NIGHT THEME BUTTONS (DEFAULT DARK SMB3) --- */
+.dock-pill {
+  color: #f1f5f9 !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+.dock-pill .dock-label {
+  color: #f8fafc !important;
+  font-weight: 800 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.dock-pill:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(248, 184, 0, 0.6) !important;
+  color: #ffffff !important;
+}
+
+.dock-pill.active {
+  background: linear-gradient(135deg, #f8b800 0%, #d87800 100%) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(248, 184, 0, 0.6), 2px 2px 0 rgba(0, 0, 0, 0.8) !important;
+}
+
+.dock-pill.active .dock-label {
+  color: #000000 !important;
+  font-weight: 900 !important;
+  text-shadow: none !important;
+}
+
+.option-btn {
+  background: #1e293b !important;
+  border: 2px solid rgba(255, 255, 255, 0.22) !important;
+  color: #f8fafc !important;
+  font-weight: 700 !important;
+}
+
+.option-btn .option-letter {
+  background: #0f172a !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  font-weight: 900 !important;
+}
+
+.wn-subnav-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+  color: #f1f5f9 !important;
+  font-weight: 800 !important;
+}
+
+.wn-subnav-btn.active {
+  background: linear-gradient(135deg, #f8b800, #d87800) !important;
+  color: #000000 !important;
+  border-color: #ffffff !important;
+  font-weight: 900 !important;
+  box-shadow: 0 0 14px rgba(248, 184, 0, 0.5) !important;
+}
+
+.spotlight-read-btn {
+  background: linear-gradient(135deg, #f8b800, #d87800) !important;
+  color: #000000 !important;
+  font-weight: 900 !important;
+  border: 2px solid #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+.wh-gps-btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+/* --- DAY THEME BUTTONS & WHITE CARD OVERRIDES (.theme-day) --- */
+html.theme-day body {
+  background-color: #ffffff !important;
+  background-image: radial-gradient(#e5e7eb 1px, transparent 1px) !important;
+  background-size: 24px 24px !important;
+  color: #0f172a !important;
+}
+
+html.theme-day .top-header,
+html.theme-day .smb3-marquee-header {
+  background: #ffffff !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.theme-day .dock-pill {
+  background: #f1f5f9 !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html.theme-day .dock-pill .dock-label {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  text-shadow: none !important;
+}
+
+html.theme-day .dock-pill:hover {
+  background: #e2e8f0 !important;
+  border-color: #94a3b8 !important;
+  color: #000000 !important;
+}
+
+html.theme-day .dock-pill.active {
+  background: linear-gradient(135deg, #f8b800 0%, #d87800 100%) !important;
+  border-color: #b45309 !important;
+  box-shadow: 0 3px 12px rgba(245, 158, 11, 0.35) !important;
+}
+
+html.theme-day .dock-pill.active .dock-label {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+html.theme-day .option-btn {
+  background: #ffffff !important;
+  border: 2px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+  font-weight: 800 !important;
+}
+
+html.theme-day .option-btn:hover {
+  background: #fef3c7 !important;
+  border-color: #f59e0b !important;
+  color: #000000 !important;
+}
+
+html.theme-day .option-btn .option-letter {
+  background: #f1f5f9 !important;
+  color: #0284c7 !important;
+  border: 1.5px solid #cbd5e1 !important;
+  font-weight: 900 !important;
+}
+
+html.theme-day .option-btn:hover .option-letter {
+  background: #f59e0b !important;
+  color: #000000 !important;
+  border-color: #b45309 !important;
+}
+
+html.theme-day .wn-subnav-btn {
+  background: #f1f5f9 !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html.theme-day .wn-subnav-btn.active {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25) !important;
+}
+
+html.theme-day .wh-gps-btn {
+  background: #f1f5f9 !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html.theme-day .weather-hero-card,
+html.theme-day .weather-hourly-card,
+html.theme-day .weather-radar-card,
+html.theme-day .news-spotlight-frame,
+html.theme-day .news-headline-card,
+html.theme-day .game-launch-card,
+html.theme-day .trivia-card,
+html.theme-day .ride-driver-main-card,
+html.theme-day .ride-car-features-card,
+html.theme-day .giveaway-hero-card,
+html.theme-day .leaderboard-card {
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  color: #0f172a !important;
+}
+
+html.theme-day h1,
+html.theme-day h2,
+html.theme-day h3,
+html.theme-day h4,
+html.theme-day strong,
+html.theme-day .wh-city-name,
+html.theme-day .spotlight-title,
+html.theme-day .game-name,
+html.theme-day .driver-fullname,
+html.theme-day .trivia-question {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+html.theme-day p,
+html.theme-day span:not(.btn-play-game):not(.dock-icon):not(.badge-vip-driver),
+html.theme-day .weathernews-subtitle,
+html.theme-day .game-desc,
+html.theme-day .spotlight-summary {
+  color: #334155;
+}
+
+/* SMB3-themed cards rivets: hide in day mode for cleaner look */
+html.theme-day .smb3-card-rivet,
+html.theme-day .smb3-rivet {
+  opacity: 0.2;
+}
+
+/* ========== GPS STATUS (DAY) ========== */
+html.theme-day .gps-status-badge {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.theme-day .gps-status-text {
+  color: #1a1a2e !important;
+}
+
+/* ========== FONT PIXEL (DAY) — ENSURE READABILITY ========== */
+html.theme-day .smb3-world-pill {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: #1a1a2e !important;
+}
+
+html.theme-day .smb3-stage-tag {
+  color: #b87800 !important;
+}
+
+/* ========== PROMO VIDEO / AD VIEW (DAY) ========== */
+html.theme-day .video-promo-content,
+html.theme-day .ad-video-container {
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+/* ========== SCROLLBARS (DAY) ========== */
+html.theme-day ::-webkit-scrollbar-track {
+  background: #f0f2f5 !important;
+}
+
+html.theme-day ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15) !important;
+}
+
+/* ========== THEME INDICATOR BADGE ========== */
+.theme-indicator {
+  position: fixed;
+  top: 6px;
+  right: 6px;
+  z-index: 99999;
+  font-size: 16px;
+  opacity: 0.6;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
