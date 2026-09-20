@@ -445,7 +445,7 @@ const DOM = {
   giveawayTitleSpan: document.getElementById('giveawayTitleSpan'),
   giveawayTitleAfter: document.getElementById('giveawayTitleAfter'),
   giveawaySubtitle: document.getElementById('giveawaySubtitle'),
-  btnClaimTicket: document.getElementById('btnClaimTicket'),
+  btnClaimTicket: document.getElementById('btnClaimTicket') || document.getElementById('btnClaimTicketMain'),
   btnClaimTicketMain: document.getElementById('btnClaimTicketMain'),
   btnClaimTicketText: document.getElementById('btnClaimTicketText'),
   giveawayClaimPanel: document.getElementById('giveawayClaimPanel'),
@@ -823,6 +823,7 @@ function switchTab(targetTab) {
     switchMediaSubtab('videoPromo');
     syncCurrentVideoSpotlight();
     startPromoVideoPlayback();
+  }
   if (targetTab === 'giveaway' && DOM.viewGiveaway) {
     DOM.viewGiveaway.classList.add('active');
     updateGiveawayUI();
