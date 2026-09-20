@@ -1305,6 +1305,13 @@ export class GeoLocationService {
     const code = (customCountryCode || this.currentLocation.countryCode || 'US').toUpperCase();
     const isEn = lang === 'en';
 
+    // Note: YouTube live_stream?channel= embed uses the channel's live tab.
+    // Use standard youtube.com/embed (not nocookie) for better compatibility.
+    // CNN: UCupvZG-5ko_eiXAupbDfxWw | FOX LiveNOW: UCvPtGg3Z0qXj1eZ5C9-u7SQ
+    // ABC News: UCBi2mrWuNuyYy4gbM6fU18Q | Sky News: UCoMdktPbSTixAyNGwb-UYkQ
+    const BASE = 'https://www.youtube.com/embed/live_stream?channel=';
+    const PARAMS = '&autoplay=1&mute=0&playsinline=1&rel=0&modestbranding=1';
+
     const ALL_CHANNELS = {
       fox: {
         id: 'fox-livenow',
@@ -1313,25 +1320,34 @@ export class GeoLocationService {
         logo: '🦊',
         country: 'US',
         tagline: isEn ? 'Real-time breaking news, press briefings & live U.S. events' : 'Última hora, eventos en vivo y noticias continuas de EE.UU.',
-        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCvPtGg3Z0qXj1eZ5C9-u7SQ&autoplay=1&mute=1&playsinline=1'
+        streamUrl: BASE + 'UCvPtGg3Z0qXj1eZ5C9-u7SQ' + PARAMS
+      },
+      cnn: {
+        id: 'cnn-international',
+        name: 'CNN International',
+        badge: '🌐 CNN LIVE',
+        logo: '📡',
+        country: 'US',
+        tagline: isEn ? 'CNN International 24/7 live breaking news worldwide' : 'CNN Internacional, noticias de última hora las 24 horas',
+        streamUrl: BASE + 'UCupvZG-5ko_eiXAupbDfxWw' + PARAMS
       },
       abc: {
         id: 'abc-news',
         name: 'ABC News Live',
         badge: '🇺🇸 ABC NEWS 24/7',
-        logo: '📡',
+        logo: '🔵',
         country: 'US',
         tagline: isEn ? '24/7 live news coverage from ABC News America' : 'Transmisión continua de noticias de la cadena ABC News',
-        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCBi2mrWuNuyYy4gbM6fU18Q&autoplay=1&mute=1&playsinline=1'
+        streamUrl: BASE + 'UCBi2mrWuNuyYy4gbM6fU18Q' + PARAMS
       },
       sky: {
         id: 'sky-news',
-        name: 'Sky News World Live',
+        name: 'Sky News World',
         badge: '🌐 SKY NEWS WORLD',
         logo: '🌍',
         country: 'GB',
         tagline: isEn ? 'Global breaking headlines, world geopolitics and live updates' : 'Titulares mundiales, geopolítica y noticias en directo 24 horas',
-        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCoMdktPbSTixAyNGwb-UYkQ&autoplay=1&mute=1&playsinline=1'
+        streamUrl: BASE + 'UCoMdktPbSTixAyNGwb-UYkQ' + PARAMS
       },
       euronews: {
         id: 'euronews-es',
@@ -1340,7 +1356,7 @@ export class GeoLocationService {
         logo: '🇪🇺',
         country: 'ES',
         tagline: isEn ? 'European and global international news 24/7 in Spanish' : 'Noticias de Europa y el mundo en directo 24 horas en español',
-        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCW2QcKZiU8aUGg4yxCIditg&autoplay=1&mute=1&playsinline=1'
+        streamUrl: BASE + 'UCW2QcKZiU8aUGg4yxCIditg' + PARAMS
       },
       rtve: {
         id: 'rtve-24h',
@@ -1349,7 +1365,7 @@ export class GeoLocationService {
         logo: '🇪🇸',
         country: 'ES',
         tagline: isEn ? 'Canal 24 Horas from Spanish National Television' : 'Señal continua del Canal 24 Horas de Radio Televisión Española',
-        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UC7QZIf0dta-XPXsp9Ev4d2Q&autoplay=1&mute=1&playsinline=1'
+        streamUrl: BASE + 'UC7QZIf0dta-XPXsp9Ev4d2Q' + PARAMS
       },
       milenio: {
         id: 'milenio-tv',
@@ -1358,7 +1374,7 @@ export class GeoLocationService {
         logo: '🇲🇽',
         country: 'MX',
         tagline: isEn ? 'Mexican national live news, politics and analysis' : 'Noticias de México, política nacional y análisis en directo',
-        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCredwzWvtiyU5wS1i3c_fOA&autoplay=1&mute=1&playsinline=1'
+        streamUrl: BASE + 'UCredwzWvtiyU5wS1i3c_fOA' + PARAMS
       },
       caracol: {
         id: 'noticias-caracol',
@@ -1367,7 +1383,7 @@ export class GeoLocationService {
         logo: '🇨🇴',
         country: 'CO',
         tagline: isEn ? 'Leading Colombian news network live broadcasts' : 'Emisiones en vivo de la principal cadena informativa de Colombia',
-        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCvpeXpL_kU0Yp29mXfL7b9Q&autoplay=1&mute=1&playsinline=1'
+        streamUrl: BASE + 'UCvpeXpL_kU0Yp29mXfL7b9Q' + PARAMS
       },
       tn: {
         id: 'tn-noticias',
@@ -1376,7 +1392,7 @@ export class GeoLocationService {
         logo: '🇦🇷',
         country: 'AR',
         tagline: isEn ? '24/7 live news network from Argentina' : 'Periodismo las 24 horas y actualidad en vivo desde Argentina',
-        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCj6PcyLvpnIRT_2W_EGly9g&autoplay=1&mute=1&playsinline=1'
+        streamUrl: BASE + 'UCj6PcyLvpnIRT_2W_EGly9g' + PARAMS
       },
       tvn: {
         id: 'tvn-chile',
@@ -1385,27 +1401,27 @@ export class GeoLocationService {
         logo: '🇨🇱',
         country: 'CL',
         tagline: isEn ? 'Chilean 24-hour live news channel' : 'Canal de noticias 24 Horas de Televisión Nacional de Chile',
-        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCuNZdwhq7o6U-VqZz6hS-7w&autoplay=1&mute=1&playsinline=1'
+        streamUrl: BASE + 'UCuNZdwhq7o6U-VqZz6hS-7w' + PARAMS
       }
     };
 
     if (code === 'ES') {
-      return [ALL_CHANNELS.rtve, ALL_CHANNELS.euronews, ALL_CHANNELS.fox, ALL_CHANNELS.sky];
+      return [ALL_CHANNELS.rtve, ALL_CHANNELS.euronews, ALL_CHANNELS.cnn, ALL_CHANNELS.sky];
     } else if (code === 'MX') {
-      return [ALL_CHANNELS.milenio, ALL_CHANNELS.euronews, ALL_CHANNELS.fox, ALL_CHANNELS.abc];
+      return [ALL_CHANNELS.milenio, ALL_CHANNELS.euronews, ALL_CHANNELS.cnn, ALL_CHANNELS.fox];
     } else if (code === 'CO') {
-      return [ALL_CHANNELS.caracol, ALL_CHANNELS.euronews, ALL_CHANNELS.fox, ALL_CHANNELS.sky];
+      return [ALL_CHANNELS.caracol, ALL_CHANNELS.euronews, ALL_CHANNELS.cnn, ALL_CHANNELS.sky];
     } else if (code === 'AR') {
-      return [ALL_CHANNELS.tn, ALL_CHANNELS.euronews, ALL_CHANNELS.fox, ALL_CHANNELS.sky];
+      return [ALL_CHANNELS.tn, ALL_CHANNELS.euronews, ALL_CHANNELS.cnn, ALL_CHANNELS.sky];
     } else if (code === 'CL') {
-      return [ALL_CHANNELS.tvn, ALL_CHANNELS.euronews, ALL_CHANNELS.fox, ALL_CHANNELS.sky];
+      return [ALL_CHANNELS.tvn, ALL_CHANNELS.euronews, ALL_CHANNELS.cnn, ALL_CHANNELS.sky];
     } else if (code === 'US') {
-      return [ALL_CHANNELS.fox, ALL_CHANNELS.abc, ALL_CHANNELS.sky, ALL_CHANNELS.euronews];
+      return [ALL_CHANNELS.fox, ALL_CHANNELS.cnn, ALL_CHANNELS.abc, ALL_CHANNELS.sky];
     } else {
-      return [ALL_CHANNELS.fox, ALL_CHANNELS.euronews, ALL_CHANNELS.abc, ALL_CHANNELS.sky];
+      return [ALL_CHANNELS.cnn, ALL_CHANNELS.fox, ALL_CHANNELS.euronews, ALL_CHANNELS.sky];
     }
   }
+
 }
 
 export const geoService = new GeoLocationService();
-

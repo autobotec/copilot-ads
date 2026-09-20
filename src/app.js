@@ -14,6 +14,8 @@ import { geoService } from './geoService.js';
 // Mix Segment Duration Constants
 export const MIX_SEGMENT_DURATION = 30;
 export const MIX_WEATHER_DURATION = 5;
+export const MIX_RIDE_DURATION = 18;   // seconds to show driver tip slide
+export const MIX_NEWS_DURATION = 30;   // seconds for fullscreen news overlay
 
 /* ==========================================================================
    STATE MANAGEMENT
@@ -38,7 +40,7 @@ const state = {
     enabled: true,
     isPaused: false,
     manualUserPause: false,
-    currentStep: 'trivia', // 'trivia' | 'weather' | 'news' | 'promoVideo'
+    currentStep: 'trivia', // 'trivia' | 'weather' | 'news' | 'rideInfo' | 'promoVideo'
     secondsLeft: MIX_SEGMENT_DURATION,
     duration: MIX_SEGMENT_DURATION,
     videoTotalDuration: null,
@@ -46,6 +48,9 @@ const state = {
     interactionCooldown: null,
     promoVideoIndex: 0
   },
+
+  // Fullscreen news overlay state
+  fnsCurrentChannelId: null,
 
   // Active Player state: protects human players from being interrupted by rotation
   isUserActivelyPlaying: false,
@@ -229,6 +234,7 @@ const DOM = {
   newsCurrentChannelBadge: document.getElementById('newsCurrentChannelBadge'),
   newsCurrentChannelTagline: document.getElementById('newsCurrentChannelTagline'),
   btnNewsUnmuteTip: document.getElementById('btnNewsUnmuteTip'),
+  btnNewsFullscreen: document.getElementById('btnNewsFullscreen'),
 
   // Video Promo Showcase
   btnMediaVideoPromo: document.getElementById('btnMediaVideoPromo'),
@@ -266,7 +272,26 @@ const DOM = {
   fsaQrContainer: document.getElementById('fsaQrContainer'),
   fsaProgressFill: document.getElementById('fsaProgressFill'),
 
-  // Games Hub Screen & Autostart
+  // Fullscreen Live News Overlay
+  fullscreenNewsOverlay: document.getElementById('fullscreenNewsOverlay'),
+  fullscreenNewsIframe: document.getElementById('fullscreenNewsIframe'),
+  fnsChannelsPills: document.getElementById('fnsChannelsPills'),
+  fnsTimerBadge: document.getElementById('fnsTimerBadge'),
+  btnFnsClose: document.getElementById('btnFnsClose'),
+  fnsChannelBadge: document.getElementById('fnsChannelBadge'),
+  fnsChannelTagline: document.getElementById('fnsChannelTagline'),
+
+  // Fullscreen Ride Info + Tip Slide (MIX step)
+  fullscreenRideInfoSlide: document.getElementById('fullscreenRideInfoSlide'),
+  mrcDriverName: document.getElementById('mrcDriverName'),
+  mrcDriverCar: document.getElementById('mrcDriverCar'),
+  mrcRatingVal: document.getElementById('mrcRatingVal'),
+  mrcQrBox: document.getElementById('mrcQrBox'),
+  mrcHandle: document.getElementById('mrcHandle'),
+  btnMrcOpenTipModal: document.getElementById('btnMrcOpenTipModal'),
+  btnMrcClose: document.getElementById('btnMrcClose'),
+
+
   gamesHubScreen: document.getElementById('gamesHubScreen'),
   gameArenaScreen: document.getElementById('gameArenaScreen'),
   hubTag: document.getElementById('hubTag'),
@@ -1053,6 +1078,10 @@ function loadClassicQuestion(index) {
   DOM.triviaQuestion.textContent = question;
   DOM.triviaFeedback.classList.add('hidden');
   if (DOM.pictureClueCard) DOM.pictureClueCard.classList.add('hidden');
+  const classicCard = DOM.triviaArenaContainer?.querySelector('.trivia-card') || document.querySelector('.trivia-card');
+  if (classicCard) {
+    classicCard.classList.remove('pic-contrast-light', 'pic-contrast-dark');
+  }
   updateTriviaStrikesUI();
 
   // Shuffle the 4 options so the correct answer is randomized
@@ -1102,6 +1131,14 @@ function loadPictureQuestion(index) {
   const question = lang === 'en' ? q.question_en : q.question_es;
   const rawOptions = lang === 'en' ? q.options_en : q.options_es;
   const imageTitle = lang === 'en' ? q.imageTitle_en : q.imageTitle_es;
+
+  // Apply adaptive contrast for bright / dark picture backdrops
+  const triviaCard = DOM.triviaArenaContainer?.querySelector('.trivia-card') || document.querySelector('.trivia-card');
+  if (triviaCard) {
+    triviaCard.classList.remove('pic-contrast-light', 'pic-contrast-dark');
+    const contrastClass = q.textContrast === 'light' ? 'pic-contrast-light' : 'pic-contrast-dark';
+    triviaCard.classList.add(contrastClass);
+  }
 
   DOM.triviaCatIcon.textContent = q.categoryIcon;
   DOM.triviaCatName.textContent = category;
@@ -1726,6 +1763,12 @@ function setupNewsViewModeControls() {
       showToast(state.currentLang === 'en' ? '🔊 Tap video player icon for audio' : '🔊 Toca el reproductor de video para activar sonido');
     });
   }
+  if (DOM.btnNewsFullscreen) {
+    DOM.btnNewsFullscreen.addEventListener('click', () => {
+      sound.playTap();
+      openFullscreenNews(state.currentNewsChannelId || state.fnsCurrentChannelId);
+    });
+  }
 }
 
 function setNewsViewMode(mode) {
@@ -2327,12 +2370,28 @@ function startMixTicker() {
     } else if (state.mixMode.currentStep === 'weather') {
       state.mixMode.secondsLeft--;
       if (state.mixMode.secondsLeft <= 0) {
-        advanceMixSegment('news');
+        advanceMixSegment('liveNews');
       }
-    } else if (state.mixMode.currentStep === 'news') {
+    } else if (state.mixMode.currentStep === 'liveNews') {
+      state.mixMode.secondsLeft--;
+      if (DOM.fnsTimerBadge) {
+        DOM.fnsTimerBadge.textContent = `${Math.max(0, state.mixMode.secondsLeft)}s`;
+      }
+      if (state.mixMode.secondsLeft <= 0) {
+        closeFullscreenNews();
+        advanceMixSegment('rideInfo');
+      }
+    } else if (state.mixMode.currentStep === 'rideInfo') {
       state.mixMode.secondsLeft--;
       if (state.mixMode.secondsLeft <= 0) {
+        closeRideInfoSlide();
         advanceMixSegment('promoVideo');
+      }
+    } else if (state.mixMode.currentStep === 'news') {
+      // Legacy fallback
+      state.mixMode.secondsLeft--;
+      if (state.mixMode.secondsLeft <= 0) {
+        advanceMixSegment('rideInfo');
       }
     } else if (state.mixMode.currentStep === 'promoVideo') {
       const vid = DOM.fsaVideoPlayer;
@@ -2374,7 +2433,7 @@ function startMixTicker() {
 }
 
 function advanceMixSegment(forceNextStep = null) {
-  const steps = ['trivia', 'weather', 'news', 'promoVideo'];
+  const steps = ['trivia', 'weather', 'liveNews', 'rideInfo', 'promoVideo'];
   let nextStep = forceNextStep;
   if (!nextStep) {
     const currentIndex = steps.indexOf(state.mixMode.currentStep);
@@ -2386,19 +2445,37 @@ function advanceMixSegment(forceNextStep = null) {
   if (nextStep === 'trivia') {
     state.mixMode.secondsLeft = MIX_SEGMENT_DURATION;
     closeFullscreenAd();
+    closeFullscreenNews();
+    closeRideInfoSlide();
     switchTab('games');
     const nextGame = getNextRotatedGame();
     launchGame(nextGame, false);
   } else if (nextStep === 'weather') {
     state.mixMode.secondsLeft = MIX_WEATHER_DURATION;
     closeFullscreenAd();
+    closeFullscreenNews();
+    closeRideInfoSlide();
     switchTab('weatherNews');
     switchWeatherNewsSubtab('weather');
   } else if (nextStep === 'news') {
+    // Legacy: keep for direct news tab navigate (weather & news subtab)
     state.mixMode.secondsLeft = MIX_SEGMENT_DURATION;
     closeFullscreenAd();
+    closeFullscreenNews();
+    closeRideInfoSlide();
     switchTab('weatherNews');
     switchWeatherNewsSubtab('news');
+  } else if (nextStep === 'liveNews') {
+    // New: fullscreen live news overlay (like video ads)
+    state.mixMode.secondsLeft = MIX_NEWS_DURATION;
+    closeFullscreenAd();
+    closeRideInfoSlide();
+    openFullscreenNews();
+  } else if (nextStep === 'rideInfo') {
+    state.mixMode.secondsLeft = MIX_RIDE_DURATION;
+    closeFullscreenAd();
+    closeFullscreenNews();
+    openRideInfoSlide();
   } else if (nextStep === 'promoVideo') {
     let estimatedDuration = 30;
     if (window.CampaignManager) {
@@ -2412,6 +2489,8 @@ function advanceMixSegment(forceNextStep = null) {
     }
     state.mixMode.videoTotalDuration = estimatedDuration;
     state.mixMode.secondsLeft = estimatedDuration;
+    closeFullscreenNews();
+    closeRideInfoSlide();
     switchTab('mediaAds');
     switchMediaSubtab('videoPromo');
     openFullscreenAd();
@@ -2754,6 +2833,185 @@ function setupFullscreenAdControls() {
 }
 
 /* ==========================================================================
+   FULLSCREEN LIVE NEWS OVERLAY (MIX STEP & DIRECT TRIGGER)
+   ========================================================================== */
+function openFullscreenNews(channelId = null) {
+  closeFullscreenAd();
+  closeRideInfoSlide();
+
+  const lang = state.currentLang;
+  const loc = (state.liveWeather && state.liveWeather.countryCode) ? state.liveWeather : geoService.currentLocation;
+  const channels = geoService.getLiveNewsChannels(loc.countryCode, lang);
+
+  if (!channels || channels.length === 0) {
+    advanceMixSegment('rideInfo');
+    return;
+  }
+
+  let selectedChannel = null;
+  if (channelId) {
+    selectedChannel = channels.find(c => c.id === channelId);
+  }
+  if (!selectedChannel && state.fnsCurrentChannelId) {
+    selectedChannel = channels.find(c => c.id === state.fnsCurrentChannelId);
+  }
+  if (!selectedChannel) {
+    selectedChannel = channels[0];
+  }
+
+  selectFnsChannel(selectedChannel, channels);
+
+  if (DOM.fullscreenNewsOverlay) {
+    DOM.fullscreenNewsOverlay.classList.remove('hidden');
+    DOM.fullscreenNewsOverlay.setAttribute('aria-hidden', 'false');
+  }
+
+  if (DOM.fnsTimerBadge) {
+    DOM.fnsTimerBadge.textContent = `${Math.max(0, state.mixMode.secondsLeft || MIX_NEWS_DURATION)}s`;
+  }
+}
+
+function selectFnsChannel(channel, channelList = null) {
+  if (!channel) return;
+  state.fnsCurrentChannelId = channel.id;
+
+  if (DOM.fnsChannelBadge) {
+    DOM.fnsChannelBadge.textContent = channel.badge || channel.name;
+  }
+  if (DOM.fnsChannelTagline) {
+    DOM.fnsChannelTagline.textContent = channel.tagline || '';
+  }
+  if (DOM.fullscreenNewsIframe) {
+    if (DOM.fullscreenNewsIframe.src !== channel.streamUrl) {
+      DOM.fullscreenNewsIframe.src = channel.streamUrl;
+    }
+  }
+
+  const lang = state.currentLang;
+  const loc = (state.liveWeather && state.liveWeather.countryCode) ? state.liveWeather : geoService.currentLocation;
+  const list = channelList || geoService.getLiveNewsChannels(loc.countryCode, lang);
+  renderFnsChannelPills(list, channel.id);
+}
+
+function renderFnsChannelPills(channels, activeId) {
+  if (!DOM.fnsChannelsPills) return;
+  DOM.fnsChannelsPills.innerHTML = '';
+
+  channels.forEach(ch => {
+    const pill = document.createElement('button');
+    pill.className = `fns-channel-pill ${ch.id === activeId ? 'active' : ''}`;
+    pill.setAttribute('type', 'button');
+    pill.innerHTML = `<span>${ch.logo || '📺'}</span><span>${ch.name}</span>`;
+    pill.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sound.playTap();
+      selectFnsChannel(ch, channels);
+    });
+    DOM.fnsChannelsPills.appendChild(pill);
+  });
+}
+
+function closeFullscreenNews(andAdvance = false) {
+  if (DOM.fullscreenNewsOverlay) {
+    DOM.fullscreenNewsOverlay.classList.add('hidden');
+    DOM.fullscreenNewsOverlay.setAttribute('aria-hidden', 'true');
+  }
+  if (DOM.fullscreenNewsIframe) {
+    DOM.fullscreenNewsIframe.src = 'about:blank';
+  }
+  if (andAdvance) {
+    advanceMixSegment('rideInfo');
+  }
+}
+
+/* ==========================================================================
+   FULLSCREEN RIDE INFO & TIP SLIDE (MIX CYCLE STEP)
+   ========================================================================== */
+function openRideInfoSlide() {
+  closeFullscreenAd();
+  closeFullscreenNews();
+
+  const cfg = state.driverConfig || {};
+  const driverName = cfg.name || 'Alex Morgan';
+  const driverCar = cfg.car || 'Tesla Model Y · Blanco Perlado';
+  const driverRating = cfg.rating || '4.99';
+  const driverHandle = cfg.tipHandle || '$AlexDriverCopilot';
+  const trips = cfg.trips || 1243;
+
+  if (DOM.mrcDriverName) DOM.mrcDriverName.textContent = driverName;
+  if (DOM.mrcDriverCar) DOM.mrcDriverCar.textContent = driverCar;
+  if (DOM.mrcRatingVal) DOM.mrcRatingVal.textContent = `${driverRating} / 5.0`;
+  const tripEl = document.getElementById('mrcTripCount');
+  if (tripEl) tripEl.textContent = `· ${trips} viajes`;
+  if (DOM.mrcHandle) DOM.mrcHandle.textContent = `CashApp: ${driverHandle} · Venmo: @${driverHandle.replace('$', '')}`;
+
+  if (DOM.mrcQrBox) {
+    DOM.mrcQrBox.innerHTML = '';
+    generateQrCode(DOM.mrcQrBox, `https://cash.app/${driverHandle}/${state.selectedTipAmount || 2}`);
+  }
+
+  if (DOM.fullscreenRideInfoSlide) {
+    DOM.fullscreenRideInfoSlide.classList.remove('hidden');
+    DOM.fullscreenRideInfoSlide.setAttribute('aria-hidden', 'false');
+  }
+}
+
+function closeRideInfoSlide(andAdvance = false) {
+  if (DOM.fullscreenRideInfoSlide) {
+    DOM.fullscreenRideInfoSlide.classList.add('hidden');
+    DOM.fullscreenRideInfoSlide.setAttribute('aria-hidden', 'true');
+  }
+  if (andAdvance) {
+    advanceMixSegment('promoVideo');
+  }
+}
+
+function setupFullscreenNewsAndRideControls() {
+  if (DOM.btnFnsClose) {
+    DOM.btnFnsClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sound.playTap();
+      closeFullscreenNews(true);
+    });
+  }
+
+  if (DOM.btnMrcClose) {
+    DOM.btnMrcClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sound.playTap();
+      closeRideInfoSlide(true);
+    });
+  }
+
+  if (DOM.btnMrcOpenTipModal) {
+    DOM.btnMrcOpenTipModal.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sound.playTap();
+      closeRideInfoSlide(false);
+      openTipModal();
+    });
+  }
+
+  // Tip buttons on Ride Info slide
+  const tipButtons = document.querySelectorAll('.mrc-tip-btn');
+  tipButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sound.playTap();
+      tipButtons.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      const amt = btn.dataset.amt || '2';
+      state.selectedTipAmount = parseInt(amt, 10) || 2;
+      const handle = (state.driverConfig && state.driverConfig.tipHandle) ? state.driverConfig.tipHandle : '$AlexDriverCopilot';
+      if (DOM.mrcQrBox) {
+        DOM.mrcQrBox.innerHTML = '';
+        generateQrCode(DOM.mrcQrBox, `https://cash.app/${handle}/${amt}`);
+      }
+    });
+  });
+}
+
+/* ==========================================================================
    DEVICE & SCREEN ADAPTER (RESPONSIVE AUTO-DETECTION)
    ========================================================================== */
 function initDeviceScreenAdapter() {
@@ -2895,14 +3153,30 @@ function notifyUserInteraction(event) {
 
 function setupUserActivityListener() {
   const events = ['pointerdown', 'touchstart', 'click', 'keydown'];
+  let hasUnlockedAudio = false;
+
   events.forEach(evt => {
     document.addEventListener(evt, (e) => {
-      sound.init(); // Resuelve el desbloqueo de AudioContext por política de autoplay
-      if (e.target && (e.target.closest('#btnToggleMix') || e.target.closest('.dock-pill') || e.target.closest('.bottom-dock') || e.target.closest('.dock-weather'))) return;
-      notifyUserInteraction(e);
-      if (state.isFullscreenAdActive && DOM.fsaVideoPlayer && DOM.fsaVideoPlayer.muted) {
+      // Unlock audio unconditionally on first user touch/click anywhere
+      try {
+        sound.init();
+        sound.setMuted(false);
+      } catch (err) {}
+
+      // Immediately unmute any active fullscreen or promo videos
+      if (DOM.fsaVideoPlayer && DOM.fsaVideoPlayer.muted) {
+        unmuteActiveVideos(false);
+      } else if (DOM.promoVideoMainPlayer && DOM.promoVideoMainPlayer.muted) {
         unmuteActiveVideos(false);
       }
+
+      if (!hasUnlockedAudio) {
+        hasUnlockedAudio = true;
+        console.log('🔊 User interaction detected: Sound context unlocked.');
+      }
+
+      if (e.target && (e.target.closest('#btnToggleMix') || e.target.closest('.dock-pill') || e.target.closest('.bottom-dock') || e.target.closest('.dock-weather'))) return;
+      notifyUserInteraction(e);
     }, { passive: true });
   });
 }
@@ -2912,6 +3186,7 @@ function updateMixPillUI() {
   if (!btn) return;
   const t = getT();
   const isPaused = !!state.mixMode.isPaused;
+  const isEn = state.currentLang === 'en';
 
   btn.classList.toggle('paused', isPaused);
   btn.setAttribute('aria-pressed', isPaused ? 'true' : 'false');
@@ -2926,12 +3201,14 @@ function updateMixPillUI() {
   if (nextTagEl) {
     const nextMap = {
       trivia: t.mixSegmentWeather || 'Clima',
-      weather: t.mixSegmentNews || 'Noticias',
-      news: t.mixSegmentPromo || 'Video',
+      weather: isEn ? 'Live News' : 'Noticias En Vivo',
+      liveNews: isEn ? 'Driver Tip & Info' : 'Info Conductor',
+      news: isEn ? 'Driver Tip & Info' : 'Info Conductor',
+      rideInfo: t.mixSegmentPromo || (isEn ? 'Promo Video' : 'Spot Video'),
       promoVideo: t.mixSegmentTrivia || 'Trivia'
     };
     const prefix = t.mixNextIn || 'Próx:';
-    nextTagEl.textContent = isPaused ? 'En Pausa' : `${prefix} ${nextMap[state.mixMode.currentStep] || ''}`;
+    nextTagEl.textContent = isPaused ? (isEn ? 'Paused' : 'En Pausa') : `${prefix} ${nextMap[state.mixMode.currentStep] || ''}`;
   }
 
   const timerEl = DOM.mixMiniTimer || document.getElementById('mixMiniTimer');
@@ -3588,9 +3865,10 @@ function setupEventListeners() {
     });
   }
 
-  // Device Screen Adaptive Analyzer & Fullscreen Ads
+  // Device Screen Adaptive Analyzer & Fullscreen Ads & News & Driver Mix Slide
   initDeviceScreenAdapter();
   setupFullscreenAdControls();
+  setupFullscreenNewsAndRideControls();
 
   // Giveaway, Admin & Kiosk Mode
   setupGiveaway();

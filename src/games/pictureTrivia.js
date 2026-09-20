@@ -4,6 +4,7 @@ export const PICTURE_TRIVIA_QUESTIONS = [
     category_es: "Geografía & Maravillas",
     category_en: "Geography & Wonders",
     categoryIcon: "🗼",
+    textContrast: "dark",   // imagen nocturna, cielo oscuro → texto blanco
     question_es: "¿En qué famosa capital del mundo se encuentra esta colosal torre de hierro?",
     question_en: "In which famous world capital is this colossal iron tower located?",
     imageUrl: "assets/images/trivia/eiffel_tower.webp",
@@ -22,6 +23,7 @@ export const PICTURE_TRIVIA_QUESTIONS = [
     category_es: "Cine & Animación",
     category_en: "Animation & Film",
     categoryIcon: "🦁",
+    textContrast: "dark",   // sabana contraluz, horizonte oscuro → texto blanco
     question_es: "¿Qué clásico de Disney nos mostró por primera vez la icónica 'Roca del Rey'?",
     question_en: "Which Disney classic first featured the iconic 'Pride Rock'?",
     imageUrl: "assets/images/trivia/pride_rock_lion.webp",
@@ -40,6 +42,7 @@ export const PICTURE_TRIVIA_QUESTIONS = [
     category_es: "Arte & Pintura",
     category_en: "Art & Masterpieces",
     categoryIcon: "🎨",
+    textContrast: "dark",   // cielo azul profundo y negro → texto blanco
     question_es: "¿Qué genial pintor holandés pintó la célebre obra 'La Noche Estrellada'?",
     question_en: "Which brilliant Dutch artist painted the famous masterpiece 'The Starry Night'?",
     imageUrl: "assets/images/trivia/starry_night.webp",
@@ -58,6 +61,7 @@ export const PICTURE_TRIVIA_QUESTIONS = [
     category_es: "Música & Leyendas",
     category_en: "Music & Legends",
     categoryIcon: "🎸",
+    textContrast: "light",  // día soleado, asfalto gris claro → texto oscuro
     question_es: "¿Qué legendario cuarteto británico cruzó el paso peatonal de 'Abbey Road'?",
     question_en: "Which legendary British band walked across the famous 'Abbey Road' crosswalk?",
     imageUrl: "assets/images/trivia/abbey_road.webp",
@@ -76,6 +80,7 @@ export const PICTURE_TRIVIA_QUESTIONS = [
     category_es: "Exploración Espacial",
     category_en: "Space Exploration",
     categoryIcon: "🚀",
+    textContrast: "dark",   // espacio exterior negro → texto blanco
     question_es: "¿En qué año alunizó por primera vez el ser humano en la misión Apolo 11?",
     question_en: "In what year did humans first set foot on the Moon during Apollo 11?",
     imageUrl: "assets/images/trivia/apollo11_moon.webp",
@@ -94,6 +99,7 @@ export const PICTURE_TRIVIA_QUESTIONS = [
     category_es: "Arqueología & Historia",
     category_en: "Archaeology & History",
     categoryIcon: "⛰️",
+    textContrast: "dark",   // montañas verdes oscuras, nubes → texto blanco
     question_es: "¿En qué país de Sudamérica se ubica la imponente ciudadela inca de Machu Picchu?",
     question_en: "In which South American country is the breathtaking Inca citadel of Machu Picchu located?",
     imageUrl: "assets/images/trivia/machu_picchu.webp",
@@ -112,6 +118,7 @@ export const PICTURE_TRIVIA_QUESTIONS = [
     category_es: "Imperios de la Antigüedad",
     category_en: "Ancient Empires",
     categoryIcon: "🏛️",
+    textContrast: "dark",   // cielo nocturno oscuro detrás del Coliseo → texto blanco
     question_es: "¿Cómo se llama este monumental anfiteatro romano inaugurado en el año 80 d.C.?",
     question_en: "What is the name of this monumental Roman amphitheater inaugurated in 80 AD?",
     imageUrl: "assets/images/trivia/colosseum_rome.webp",
@@ -130,6 +137,7 @@ export const PICTURE_TRIVIA_QUESTIONS = [
     category_es: "Arquitectura & Amor",
     category_en: "Architecture & Wonders",
     categoryIcon: "🕌",
+    textContrast: "light",  // cielo despejado claro, mármol blanco brillante → texto oscuro
     question_es: "¿En qué país asiático se levanta el majestuoso mausoleo de mármol blanco Taj Mahal?",
     question_en: "In which Asian country stands the majestic white marble mausoleum Taj Mahal?",
     imageUrl: "assets/images/trivia/taj_mahal.webp",
