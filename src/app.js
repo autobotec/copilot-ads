@@ -15,7 +15,18 @@ import { geoService } from './geoService.js';
 export const MIX_SEGMENT_DURATION = 30;
 export const MIX_WEATHER_DURATION = 5;
 export const MIX_RIDE_DURATION = 18;   // seconds to show driver tip slide
-export const MIX_NEWS_DURATION = 30;   // seconds for fullscreen news overlay
+export const MIX_NEWS_DURATION = 60;   // 1 minuto (60s) para noticias según requerimiento del usuario
+
+// Force pure dark theme immediately
+try {
+  localStorage.removeItem('copilot_manual_theme');
+} catch (e) {}
+document.documentElement.classList.remove('theme-day');
+document.documentElement.classList.add('theme-night');
+if (document.body) {
+  document.body.classList.remove('theme-day');
+  document.body.classList.add('theme-night');
+}
 
 /* ==========================================================================
    STATE MANAGEMENT
@@ -2486,7 +2497,8 @@ function advanceMixSegment(forceNextStep = null) {
     switchWeatherNewsSubtab('weather');
   } else if (nextStep === 'news') {
     // Legacy: keep for direct news tab navigate (weather & news subtab)
-    state.mixMode.secondsLeft = MIX_SEGMENT_DURATION;
+    state.mixMode.secondsLeft = MIX_NEWS_DURATION;
+    state.mixMode.duration = MIX_NEWS_DURATION;
     closeFullscreenAd();
     closeFullscreenNews();
     closeRideInfoSlide();
@@ -2495,6 +2507,7 @@ function advanceMixSegment(forceNextStep = null) {
   } else if (nextStep === 'liveNews') {
     // New: fullscreen live news overlay (like video ads)
     state.mixMode.secondsLeft = MIX_NEWS_DURATION;
+    state.mixMode.duration = MIX_NEWS_DURATION;
     closeFullscreenAd();
     closeRideInfoSlide();
     openFullscreenNews();
@@ -3437,26 +3450,16 @@ function setupDayNightTheme() {
 }
 
 function updateDayNightTheme() {
-  const manualTheme = localStorage.getItem('copilot_manual_theme') || 'auto';
-  const currentHour = new Date().getHours();
-  // Daytime is considered 6:00 AM to 6:59 PM (18:59)
-  const isDayTime = currentHour >= 6 && currentHour < 19;
-  const isDay = (manualTheme === 'day') || (manualTheme === 'auto' && isDayTime);
+  // Always enforce premium dark theme (theme-night) — no blinding white background
+  try {
+    localStorage.removeItem('copilot_manual_theme');
+  } catch (e) {}
 
-  if (isDay) {
-    document.documentElement.classList.add('theme-day');
-    document.documentElement.classList.remove('theme-night');
-    if (document.body) {
-      document.body.classList.add('theme-day');
-      document.body.classList.remove('theme-night');
-    }
-  } else {
-    document.documentElement.classList.remove('theme-day');
-    document.documentElement.classList.add('theme-night');
-    if (document.body) {
-      document.body.classList.remove('theme-day');
-      document.body.classList.add('theme-night');
-    }
+  document.documentElement.classList.remove('theme-day');
+  document.documentElement.classList.add('theme-night');
+  if (document.body) {
+    document.body.classList.remove('theme-day');
+    document.body.classList.add('theme-night');
   }
 }
 
@@ -3846,11 +3849,15 @@ function setupEventListeners() {
     });
   }
 
-  // Games Hub Cards
+  // Games Hub Cards & Launch Buttons
   if (DOM.cardLaunchClassic) DOM.cardLaunchClassic.addEventListener('click', () => launchGame('classic', true));
   if (DOM.cardLaunchPicture) DOM.cardLaunchPicture.addEventListener('click', () => launchGame('picture', true));
   if (DOM.cardLaunchSimon) DOM.cardLaunchSimon.addEventListener('click', () => launchGame('simon', true));
   if (DOM.cardLaunchMatch) DOM.cardLaunchMatch.addEventListener('click', () => launchGame('match', true));
+  if (DOM.btnPlayClassic) DOM.btnPlayClassic.addEventListener('click', (e) => { e.stopPropagation(); launchGame('classic', true); });
+  if (DOM.btnPlayPic) DOM.btnPlayPic.addEventListener('click', (e) => { e.stopPropagation(); launchGame('picture', true); });
+  if (DOM.btnPlaySimon) DOM.btnPlaySimon.addEventListener('click', (e) => { e.stopPropagation(); launchGame('simon', true); });
+  if (DOM.btnPlayMatch) DOM.btnPlayMatch.addEventListener('click', (e) => { e.stopPropagation(); launchGame('match', true); });
 
   // Back from Game Arena
   if (DOM.btnBackToGamesHub) DOM.btnBackToGamesHub.addEventListener('click', returnToGamesHub);

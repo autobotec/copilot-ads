@@ -1349,6 +1349,24 @@ export class GeoLocationService {
         tagline: isEn ? 'Global breaking headlines, world geopolitics and live updates' : 'Titulares mundiales, geopolítica y noticias en directo 24 horas',
         streamUrl: BASE + 'UCoMdktPbSTixAyNGwb-UYkQ' + PARAMS
       },
+      nbc: {
+        id: 'nbc-news-now',
+        name: 'NBC News NOW',
+        badge: '🇺🇸 NBC NEWS NOW',
+        logo: '🦚',
+        country: 'US',
+        tagline: isEn ? 'Live breaking news & top headlines from NBC News NOW' : 'Noticias de última hora y cobertura continua de NBC News',
+        streamUrl: BASE + 'UCeY0bbntWzzVIaj2z3QigXg' + PARAMS
+      },
+      cbs: {
+        id: 'cbs-news',
+        name: 'CBS News 24/7',
+        badge: '🇺🇸 CBS NEWS 24/7',
+        logo: '👁️',
+        country: 'US',
+        tagline: isEn ? 'Live streaming news from CBS News America' : 'Transmisión en vivo 24/7 de la cadena estadounidense CBS News',
+        streamUrl: BASE + 'UC8p1vwvWtl6T73JiExfWs1g' + PARAMS
+      },
       euronews: {
         id: 'euronews-es',
         name: 'Euronews en Español',
@@ -1416,7 +1434,7 @@ export class GeoLocationService {
     } else if (code === 'CL') {
       return [ALL_CHANNELS.tvn, ALL_CHANNELS.euronews, ALL_CHANNELS.cnn, ALL_CHANNELS.sky];
     } else if (code === 'US') {
-      return [ALL_CHANNELS.fox, ALL_CHANNELS.cnn, ALL_CHANNELS.abc, ALL_CHANNELS.sky];
+      return [ALL_CHANNELS.fox, ALL_CHANNELS.abc, ALL_CHANNELS.nbc, ALL_CHANNELS.cbs, ALL_CHANNELS.sky];
     } else {
       return [ALL_CHANNELS.cnn, ALL_CHANNELS.fox, ALL_CHANNELS.euronews, ALL_CHANNELS.sky];
     }

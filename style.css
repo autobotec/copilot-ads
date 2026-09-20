@@ -5244,23 +5244,23 @@ html.theme-transitioning *::after {
    DAY THEME OVERRIDES (.theme-day on <html>)
    ========================================================================== */
 html.theme-day {
-  --bg-kiosk: #f0f2f5;
-  --bg-surface: rgba(255, 255, 255, 0.92);
-  --bg-surface-elevated: rgba(255, 255, 255, 0.96);
-  --bg-glass: rgba(0, 0, 0, 0.04);
-  --bg-glass-hover: rgba(0, 0, 0, 0.07);
-  --border-glass: rgba(0, 0, 0, 0.1);
-  --border-glass-bright: rgba(0, 0, 0, 0.2);
-  --text-main: #1a1a2e;
-  --text-muted: #555e6e;
-  --text-dim: #7a8494;
-  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
-  --shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+  --bg-kiosk: #060913 !important;
+  --bg-surface: rgba(12, 18, 38, 0.9) !important;
+  --bg-surface-elevated: rgba(16, 24, 48, 0.94) !important;
+  --bg-glass: rgba(255, 255, 255, 0.05) !important;
+  --bg-glass-hover: rgba(255, 255, 255, 0.08) !important;
+  --border-glass: rgba(255, 255, 255, 0.14) !important;
+  --border-glass-bright: rgba(0, 210, 255, 0.45) !important;
+  --text-main: #ffffff !important;
+  --text-muted: #94a3b8 !important;
+  --text-dim: #64748b !important;
+  --shadow-card: 0 6px 24px rgba(0, 0, 0, 0.5);
+  --shadow-elevated: 0 10px 35px rgba(0, 0, 0, 0.7);
 }
 
 html.theme-day body {
-  background-color: #f0f2f5 !important;
-  color: #1a1a2e !important;
+  background-color: #060913 !important;
+  color: #ffffff !important;
 }
 
 /* Background blobs: reduce intensity in day mode */
@@ -7566,6 +7566,12 @@ html[data-aspect-ratio="portrait"] .fullscreen-ad-overlay.fsa-clean-mode .fsa-qr
   -webkit-backdrop-filter: blur(25px) !important;
   border-top: 1.5px solid var(--border-glass) !important;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6) !important;
+  pointer-events: auto !important;
+}
+
+.dock-pill {
+  cursor: pointer !important;
+  pointer-events: auto !important;
 }
 
 .kiosk-container {
