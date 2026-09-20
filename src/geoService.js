@@ -1301,6 +1301,111 @@ export class GeoLocationService {
       }
     ];
   }
+  getLiveNewsChannels(customCountryCode = null, lang = 'es') {
+    const code = (customCountryCode || this.currentLocation.countryCode || 'US').toUpperCase();
+    const isEn = lang === 'en';
+
+    const ALL_CHANNELS = {
+      fox: {
+        id: 'fox-livenow',
+        name: 'LiveNOW from FOX',
+        badge: '🇺🇸 FOX NEWS 24/7',
+        logo: '🦊',
+        country: 'US',
+        tagline: isEn ? 'Real-time breaking news, press briefings & live U.S. events' : 'Última hora, eventos en vivo y noticias continuas de EE.UU.',
+        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCvPtGg3Z0qXj1eZ5C9-u7SQ&autoplay=1&mute=1&playsinline=1'
+      },
+      abc: {
+        id: 'abc-news',
+        name: 'ABC News Live',
+        badge: '🇺🇸 ABC NEWS 24/7',
+        logo: '📡',
+        country: 'US',
+        tagline: isEn ? '24/7 live news coverage from ABC News America' : 'Transmisión continua de noticias de la cadena ABC News',
+        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCBi2mrWuNuyYy4gbM6fU18Q&autoplay=1&mute=1&playsinline=1'
+      },
+      sky: {
+        id: 'sky-news',
+        name: 'Sky News World Live',
+        badge: '🌐 SKY NEWS WORLD',
+        logo: '🌍',
+        country: 'GB',
+        tagline: isEn ? 'Global breaking headlines, world geopolitics and live updates' : 'Titulares mundiales, geopolítica y noticias en directo 24 horas',
+        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCoMdktPbSTixAyNGwb-UYkQ&autoplay=1&mute=1&playsinline=1'
+      },
+      euronews: {
+        id: 'euronews-es',
+        name: 'Euronews en Español',
+        badge: '🇪🇺 EURONEWS 24H',
+        logo: '🇪🇺',
+        country: 'ES',
+        tagline: isEn ? 'European and global international news 24/7 in Spanish' : 'Noticias de Europa y el mundo en directo 24 horas en español',
+        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCW2QcKZiU8aUGg4yxCIditg&autoplay=1&mute=1&playsinline=1'
+      },
+      rtve: {
+        id: 'rtve-24h',
+        name: 'RTVE Noticias 24h',
+        badge: '🇪🇸 RTVE ESPAÑA',
+        logo: '🇪🇸',
+        country: 'ES',
+        tagline: isEn ? 'Canal 24 Horas from Spanish National Television' : 'Señal continua del Canal 24 Horas de Radio Televisión Española',
+        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UC7QZIf0dta-XPXsp9Ev4d2Q&autoplay=1&mute=1&playsinline=1'
+      },
+      milenio: {
+        id: 'milenio-tv',
+        name: 'Milenio Televisión',
+        badge: '🇲🇽 MILENIO MÉXICO',
+        logo: '🇲🇽',
+        country: 'MX',
+        tagline: isEn ? 'Mexican national live news, politics and analysis' : 'Noticias de México, política nacional y análisis en directo',
+        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCredwzWvtiyU5wS1i3c_fOA&autoplay=1&mute=1&playsinline=1'
+      },
+      caracol: {
+        id: 'noticias-caracol',
+        name: 'Noticias Caracol',
+        badge: '🇨🇴 CARACOL COLOMBIA',
+        logo: '🇨🇴',
+        country: 'CO',
+        tagline: isEn ? 'Leading Colombian news network live broadcasts' : 'Emisiones en vivo de la principal cadena informativa de Colombia',
+        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCvpeXpL_kU0Yp29mXfL7b9Q&autoplay=1&mute=1&playsinline=1'
+      },
+      tn: {
+        id: 'tn-noticias',
+        name: 'TN Todo Noticias',
+        badge: '🇦🇷 TN ARGENTINA',
+        logo: '🇦🇷',
+        country: 'AR',
+        tagline: isEn ? '24/7 live news network from Argentina' : 'Periodismo las 24 horas y actualidad en vivo desde Argentina',
+        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCj6PcyLvpnIRT_2W_EGly9g&autoplay=1&mute=1&playsinline=1'
+      },
+      tvn: {
+        id: 'tvn-chile',
+        name: '24 Horas TVN Chile',
+        badge: '🇨🇱 24 HORAS CHILE',
+        logo: '🇨🇱',
+        country: 'CL',
+        tagline: isEn ? 'Chilean 24-hour live news channel' : 'Canal de noticias 24 Horas de Televisión Nacional de Chile',
+        streamUrl: 'https://www.youtube-nocookie.com/embed/live_stream?channel=UCuNZdwhq7o6U-VqZz6hS-7w&autoplay=1&mute=1&playsinline=1'
+      }
+    };
+
+    if (code === 'ES') {
+      return [ALL_CHANNELS.rtve, ALL_CHANNELS.euronews, ALL_CHANNELS.fox, ALL_CHANNELS.sky];
+    } else if (code === 'MX') {
+      return [ALL_CHANNELS.milenio, ALL_CHANNELS.euronews, ALL_CHANNELS.fox, ALL_CHANNELS.abc];
+    } else if (code === 'CO') {
+      return [ALL_CHANNELS.caracol, ALL_CHANNELS.euronews, ALL_CHANNELS.fox, ALL_CHANNELS.sky];
+    } else if (code === 'AR') {
+      return [ALL_CHANNELS.tn, ALL_CHANNELS.euronews, ALL_CHANNELS.fox, ALL_CHANNELS.sky];
+    } else if (code === 'CL') {
+      return [ALL_CHANNELS.tvn, ALL_CHANNELS.euronews, ALL_CHANNELS.fox, ALL_CHANNELS.sky];
+    } else if (code === 'US') {
+      return [ALL_CHANNELS.fox, ALL_CHANNELS.abc, ALL_CHANNELS.sky, ALL_CHANNELS.euronews];
+    } else {
+      return [ALL_CHANNELS.fox, ALL_CHANNELS.euronews, ALL_CHANNELS.abc, ALL_CHANNELS.sky];
+    }
+  }
 }
 
 export const geoService = new GeoLocationService();
+

@@ -938,27 +938,79 @@ html, body {
   color: #fff;
 }
 
-/* PICTURE CLUE CARD */
+/* PICTURE CLUE CARD - REAL HD PHOTOGRAPHY */
 .picture-clue-card {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 14px;
-  background: linear-gradient(135deg, rgba(255, 0, 127, 0.15), rgba(168, 85, 247, 0.15));
-  border: 1px solid rgba(255, 0, 127, 0.3);
+  flex-direction: column;
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto 6px auto;
   border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 0, 127, 0.45);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 0, 127, 0.25);
   flex-shrink: 0;
+  position: relative;
+  background: #000;
+  animation: picFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.picture-clue-visual {
-  font-size: 28px;
-  filter: drop-shadow(0 0 10px rgba(255, 0, 127, 0.4));
+@keyframes picFadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-.picture-clue-caption {
+.picture-clue-image-wrap {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a14;
+}
+
+.picture-clue-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.picture-clue-card:hover .picture-clue-img {
+  transform: scale(1.03);
+}
+
+.picture-clue-gradient-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.85) 100%);
+  pointer-events: none;
+}
+
+.picture-clue-badge-pill {
+  position: absolute;
+  bottom: 8px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(10, 15, 29, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 20px;
+  padding: 4px 12px;
   font-size: 12px;
   font-weight: 700;
   color: #fff;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  pointer-events: none;
 }
 
 /* TRIVIA CARD */
@@ -7188,5 +7240,263 @@ html[data-aspect-ratio="portrait"] .fullscreen-ad-overlay.fsa-clean-mode .fsa-bo
 html[data-aspect-ratio="portrait"] .fullscreen-ad-overlay.fsa-clean-mode .fsa-qr-col {
   align-self: flex-end !important;
 }
+
+/* ==========================================================================
+   FLOATING UNMUTE PILL (INSTANT AUDIO ACTIVATION FOR VIDEOS)
+   ========================================================================== */
+.fsa-floating-unmute {
+  position: absolute;
+  top: 75px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 22px;
+  background: linear-gradient(135deg, rgba(248, 184, 0, 0.95), rgba(255, 0, 127, 0.95));
+  color: #000;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border: 2px solid #ffffff;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(248, 184, 0, 0.6);
+  animation: fsaPulseAudio 1.6s infinite ease-in-out;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+}
+
+.fsa-floating-unmute:hover {
+  transform: translateX(-50%) scale(1.05);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 0, 127, 0.8);
+}
+
+.fsa-unmute-pulse-dot {
+  font-size: 18px;
+  animation: fsaIconBounce 0.8s infinite alternate ease-in-out;
+}
+
+@keyframes fsaPulseAudio {
+  0% { transform: translateX(-50%) scale(1); box-shadow: 0 4px 15px rgba(248, 184, 0, 0.4); }
+  50% { transform: translateX(-50%) scale(1.06); box-shadow: 0 8px 25px rgba(255, 0, 127, 0.8); }
+  100% { transform: translateX(-50%) scale(1); box-shadow: 0 4px 15px rgba(248, 184, 0, 0.4); }
+}
+
+@keyframes fsaIconBounce {
+  from { transform: scale(0.9); }
+  to { transform: scale(1.2); }
+}
+
+/* ==========================================================================
+   LIVE TV NEWS STREAMING & CHANNELS SYSTEM
+   ========================================================================== */
+.news-view-mode-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  margin-bottom: 8px;
+  background: #111b2d;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.news-mode-tab-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.news-mode-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.news-mode-tab-btn.active {
+  background: linear-gradient(135deg, rgba(255, 0, 127, 0.25), rgba(0, 210, 255, 0.25));
+  border-color: #00d2ff;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.3);
+}
+
+.live-blink-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ff0055;
+  box-shadow: 0 0 8px #ff0055;
+  animation: liveBlink 1s infinite alternate;
+}
+
+@keyframes liveBlink {
+  0% { opacity: 0.3; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1.15); }
+}
+
+/* LIVE TV WRAPPER & CHANNELS */
+.news-live-wrapper {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.news-live-frame {
+  position: relative;
+  background: #090e18;
+  border: 2px solid #00d2ff;
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 210, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.news-channels-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.news-channels-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: #00d2ff;
+  text-transform: uppercase;
+}
+
+.live-dot-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00f5a0;
+  box-shadow: 0 0 8px #00f5a0;
+}
+
+.news-channels-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.news-channel-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.news-channel-pill:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-color: #00d2ff;
+}
+
+.news-channel-pill.active {
+  background: linear-gradient(135deg, #00d2ff, #0066ff);
+  border-color: #ffffff;
+  color: #000;
+  font-weight: 900;
+  box-shadow: 0 0 14px rgba(0, 210, 255, 0.5);
+}
+
+/* STREAM CONTAINER & IFRAME */
+.news-stream-container {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  background: #000;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.news-live-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #000;
+}
+
+.news-stream-overlay-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.88) 100%);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.nsob-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nsob-badge {
+  padding: 3px 8px;
+  background: #ff0055;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.nsob-tagline {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e2e8f0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.news-unmute-tip-btn {
+  pointer-events: auto;
+  padding: 4px 12px;
+  background: rgba(248, 184, 0, 0.9);
+  color: #000;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+}
+
 
 

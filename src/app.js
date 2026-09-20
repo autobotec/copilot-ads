@@ -61,9 +61,14 @@ const state = {
   autostartInterval: null,
   isAutostartPaused: false,
 
-  // Active game mode: 'none' | 'classic' | 'picture' | 'simon' | 'match'
+  // Active game mode & rotation: 'classic' | 'picture' | 'simon' | 'match'
   activeGameMode: 'none',
   activeGameInstance: null,
+  nextGameRotationIndex: 0,
+
+  // Live TV News state
+  newsViewMode: 'live', // 'live' | 'report'
+  currentLiveChannelId: null,
 
   // Ad rotation
   adCountdownInterval: null,
@@ -214,6 +219,17 @@ const DOM = {
   btnNextNews: document.getElementById('btnNextNews'),
   btnPauseNewsRotation: document.getElementById('btnPauseNewsRotation'),
 
+  // Live TV News
+  btnNewsModeLive: document.getElementById('btnNewsModeLive'),
+  btnNewsModeReport: document.getElementById('btnNewsModeReport'),
+  newsLiveWrapper: document.getElementById('newsLiveWrapper'),
+  newsSpotlightWrapper: document.getElementById('newsSpotlightWrapper'),
+  newsChannelsPills: document.getElementById('newsChannelsPills'),
+  newsLiveIframe: document.getElementById('newsLiveIframe'),
+  newsCurrentChannelBadge: document.getElementById('newsCurrentChannelBadge'),
+  newsCurrentChannelTagline: document.getElementById('newsCurrentChannelTagline'),
+  btnNewsUnmuteTip: document.getElementById('btnNewsUnmuteTip'),
+
   // Video Promo Showcase
   btnMediaVideoPromo: document.getElementById('btnMediaVideoPromo'),
   tabVideoPromoText: document.getElementById('tabVideoPromoText'),
@@ -241,6 +257,8 @@ const DOM = {
   fsaCountdownCircle: document.getElementById('fsaCountdownCircle'),
   btnFsaSound: document.getElementById('btnFsaSound'),
   btnFsaClose: document.getElementById('btnFsaClose'),
+  fsaFloatingUnmute: document.getElementById('fsaFloatingUnmute'),
+  fsaFloatingUnmuteText: document.getElementById('fsaFloatingUnmuteText'),
   fsaSponsorTagline: document.getElementById('fsaSponsorTagline'),
   fsaSponsorTitle: document.getElementById('fsaSponsorTitle'),
   fsaSponsorDesc: document.getElementById('fsaSponsorDesc'),
@@ -299,7 +317,7 @@ const DOM = {
   timerCircle: document.getElementById('timerCircle'),
   timerNumber: document.getElementById('timerNumber'),
   pictureClueCard: document.getElementById('pictureClueCard'),
-  picClueVisual: document.getElementById('picClueVisual'),
+  picClueImg: document.getElementById('picClueImg'),
   picClueCaption: document.getElementById('picClueCaption'),
   triviaQuestion: document.getElementById('triviaQuestion'),
   triviaOptions: document.getElementById('triviaOptions'),
@@ -757,8 +775,36 @@ window.__appSwitchTab = switchTab;
 window.switchTabGlobal = switchTab;
 
 /* ==========================================================================
-   AUTOSTART COUNTDOWN (GAMES HUB)
+   GAME ROTATION & AUTOSTART COUNTDOWN (GAMES HUB)
+   Cycles smoothly between:
+   1. Trivia Clásica ('classic')
+   2. Trivia con Fotos / Reto Visual ('picture')
+   3. Desafío de Memoria y Colores ('simon')
+   4. Parejas Rápidas Contrarreloj ('match')
    ========================================================================== */
+const GAME_ROTATION = ['classic', 'picture', 'simon', 'match'];
+
+function getNextRotatedGame() {
+  const mode = GAME_ROTATION[state.nextGameRotationIndex % GAME_ROTATION.length];
+  state.nextGameRotationIndex++;
+  return mode;
+}
+
+function getGameDisplayName(gameType) {
+  const isEn = state.currentLang === 'en';
+  switch (gameType) {
+    case 'picture':
+      return isEn ? '🖼️ Photo Challenge' : '🖼️ Reto Visual';
+    case 'simon':
+      return isEn ? '🎮 Color Memory' : '🎮 Memoria Copilot';
+    case 'match':
+      return isEn ? '⚡ Speed Match' : '⚡ Parejas Rápidas';
+    case 'classic':
+    default:
+      return isEn ? '🧠 Classic Trivia' : '🧠 Trivia Clásica';
+  }
+}
+
 function startAutostartCountdown() {
   clearInterval(state.autostartInterval);
   state.autostartSeconds = 8;
@@ -773,13 +819,20 @@ function startAutostartCountdown() {
 
     if (state.autostartSeconds <= 0) {
       clearInterval(state.autostartInterval);
-      launchGame('classic', false);
+      const nextGame = getNextRotatedGame();
+      launchGame(nextGame, false);
     }
   }, 1000);
 }
 
 function updateAutostartUI() {
+  const upcomingGame = GAME_ROTATION[state.nextGameRotationIndex % GAME_ROTATION.length];
+  const upcomingName = getGameDisplayName(upcomingGame);
+
   if (DOM.autostartCounter) DOM.autostartCounter.textContent = `${state.autostartSeconds}s`;
+  if (DOM.autostartLabelText) {
+    DOM.autostartLabelText.innerHTML = `${getT().autostartText || 'Inicio automático en'} <span style="color:var(--splash-cyan); font-weight:800;">${upcomingName}</span>:`;
+  }
   if (DOM.autostartProgressFill) {
     const fraction = (state.autostartSeconds / 8) * 100;
     DOM.autostartProgressFill.style.width = `${Math.max(0, fraction)}%`;
@@ -1056,8 +1109,12 @@ function loadPictureQuestion(index) {
   DOM.triviaFeedback.classList.add('hidden');
   updateTriviaStrikesUI();
 
-  DOM.picClueVisual.textContent = q.imageEmoji;
-  DOM.picClueCaption.textContent = imageTitle;
+  if (DOM.pictureClueCard) DOM.pictureClueCard.classList.remove('hidden');
+  if (DOM.picClueImg) {
+    DOM.picClueImg.src = q.imageUrl || 'assets/images/trivia/eiffel_tower.webp';
+    DOM.picClueImg.alt = q.imageAlt || imageTitle;
+  }
+  if (DOM.picClueCaption) DOM.picClueCaption.textContent = imageTitle;
 
   // Shuffle options for picture trivia as well
   const preparedOptions = rawOptions.map((optText, optIdx) => ({
@@ -1641,6 +1698,106 @@ function updateRideWeather(w) {
 }
 
 /* ==========================================================================
+   LIVE TV NEWS STREAMING & CHANNELS SYSTEM
+   Displays 24/7 live video news from Fox News, CNN, ABC, Sky News, or Local Country
+   ========================================================================== */
+let isNewsViewControlsSetup = false;
+
+function setupNewsViewModeControls() {
+  if (isNewsViewControlsSetup) return;
+  isNewsViewControlsSetup = true;
+
+  if (DOM.btnNewsModeLive) {
+    DOM.btnNewsModeLive.addEventListener('click', () => {
+      sound.playTap();
+      setNewsViewMode('live');
+    });
+  }
+  if (DOM.btnNewsModeReport) {
+    DOM.btnNewsModeReport.addEventListener('click', () => {
+      sound.playTap();
+      setNewsViewMode('report');
+    });
+  }
+  if (DOM.btnNewsUnmuteTip) {
+    DOM.btnNewsUnmuteTip.addEventListener('click', () => {
+      sound.playTap();
+      showToast(state.currentLang === 'en' ? '🔊 Tap video player icon for audio' : '🔊 Toca el reproductor de video para activar sonido');
+    });
+  }
+}
+
+function setNewsViewMode(mode) {
+  state.newsViewMode = mode;
+  if (DOM.btnNewsModeLive) DOM.btnNewsModeLive.classList.toggle('active', mode === 'live');
+  if (DOM.btnNewsModeReport) DOM.btnNewsModeReport.classList.toggle('active', mode === 'report');
+
+  if (DOM.newsLiveWrapper) {
+    DOM.newsLiveWrapper.classList.toggle('hidden', mode !== 'live');
+  }
+  if (DOM.newsSpotlightWrapper) {
+    DOM.newsSpotlightWrapper.classList.toggle('hidden', mode !== 'report');
+  }
+
+  if (mode === 'live') {
+    initLiveNewsStreaming();
+  }
+}
+
+function initLiveNewsStreaming() {
+  const lang = state.currentLang;
+  const loc = (state.liveWeather && state.liveWeather.countryCode)
+    ? state.liveWeather
+    : geoService.currentLocation;
+
+  const channels = geoService.getLiveNewsChannels(loc.countryCode, lang);
+  if (!channels || channels.length === 0) return;
+
+  if (!state.currentLiveChannelId || !channels.some(c => c.id === state.currentLiveChannelId)) {
+    state.currentLiveChannelId = channels[0].id;
+  }
+
+  renderLiveNewsChannelsBar(channels);
+  loadLiveNewsChannel(channels.find(c => c.id === state.currentLiveChannelId) || channels[0]);
+}
+
+function renderLiveNewsChannelsBar(channels) {
+  if (!DOM.newsChannelsPills) return;
+  DOM.newsChannelsPills.innerHTML = '';
+  channels.forEach(ch => {
+    const btn = document.createElement('button');
+    btn.className = `news-channel-pill ${ch.id === state.currentLiveChannelId ? 'active' : ''}`;
+    btn.innerHTML = `<span>${ch.logo || '📡'}</span> <span>${ch.name}</span>`;
+    btn.title = ch.tagline || ch.name;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sound.playTap();
+      state.currentLiveChannelId = ch.id;
+      document.querySelectorAll('.news-channel-pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      loadLiveNewsChannel(ch);
+    });
+    DOM.newsChannelsPills.appendChild(btn);
+  });
+}
+
+function loadLiveNewsChannel(channel) {
+  if (!channel) return;
+  if (DOM.newsLiveIframe) {
+    const currentSrc = DOM.newsLiveIframe.getAttribute('src') || '';
+    if (!currentSrc.includes(channel.streamUrl)) {
+      DOM.newsLiveIframe.src = channel.streamUrl;
+    }
+  }
+  if (DOM.newsCurrentChannelBadge) {
+    DOM.newsCurrentChannelBadge.textContent = channel.badge || channel.name;
+  }
+  if (DOM.newsCurrentChannelTagline) {
+    DOM.newsCurrentChannelTagline.textContent = channel.tagline || channel.name;
+  }
+}
+
+/* ==========================================================================
    NEWS SPOTLIGHT ROTATION ENGINE (1 CUADRO POR PANTALLA, ROTACIÓN AUTO)
    ========================================================================== */
 let newsSpotlightState = {
@@ -1653,6 +1810,11 @@ let newsSpotlightState = {
 };
 
 function renderNewsFeed() {
+  setupNewsViewModeControls();
+  if (state.newsViewMode === 'live') {
+    initLiveNewsStreaming();
+  }
+
   const lang = state.currentLang;
   const loc = (state.liveWeather && state.liveWeather.city) 
     ? state.liveWeather 
@@ -2224,12 +2386,8 @@ function advanceMixSegment(forceNextStep = null) {
     state.mixMode.secondsLeft = MIX_SEGMENT_DURATION;
     closeFullscreenAd();
     switchTab('games');
-    if (state.activeGameMode !== 'classic') {
-      launchGame('classic', false);
-    } else {
-      state.isUserActivelyPlaying = false;
-      state.mixMode.isPaused = false;
-    }
+    const nextGame = getNextRotatedGame();
+    launchGame(nextGame, false);
   } else if (nextStep === 'weather') {
     state.mixMode.secondsLeft = MIX_WEATHER_DURATION;
     closeFullscreenAd();
@@ -2378,6 +2536,7 @@ function openFullscreenAd(customAd = null) {
       applyVideoDuration(DOM.fsaVideoPlayer.duration);
     };
 
+    DOM.fsaVideoPlayer.volume = 1.0;
     const shouldMute = sound.isMuted();
     DOM.fsaVideoPlayer.muted = shouldMute;
 
@@ -2387,17 +2546,20 @@ function openFullscreenAd(customAd = null) {
         .then(() => {
           if (!shouldMute) {
             DOM.fsaVideoPlayer.muted = false;
+            hideFsaUnmutePill();
           }
           if (DOM.btnFsaSound) {
             DOM.btnFsaSound.textContent = DOM.fsaVideoPlayer.muted ? '🔇' : '🔊';
           }
         })
         .catch(() => {
+          // Autoplay silenciado forzado por el navegador si no hubo interacción previa
           DOM.fsaVideoPlayer.muted = true;
           DOM.fsaVideoPlayer.play().catch(() => {});
           if (DOM.btnFsaSound) {
             DOM.btnFsaSound.textContent = '🔇';
           }
+          showFsaUnmutePill();
         });
     }
 
@@ -2409,9 +2571,47 @@ function openFullscreenAd(customAd = null) {
   updateFullscreenAdProgress(state.mixMode.secondsLeft, state.mixMode.videoTotalDuration || MIX_SEGMENT_DURATION);
 }
 
+function showFsaUnmutePill() {
+  if (DOM.fsaFloatingUnmute) {
+    DOM.fsaFloatingUnmute.classList.remove('hidden');
+    if (DOM.fsaFloatingUnmuteText) {
+      DOM.fsaFloatingUnmuteText.textContent = state.currentLang === 'en' ? 'TAP FOR SOUND 🔊' : 'TOCAR PARA ACTIVAR SONIDO 🔊';
+    }
+  }
+}
+
+function hideFsaUnmutePill() {
+  if (DOM.fsaFloatingUnmute) {
+    DOM.fsaFloatingUnmute.classList.add('hidden');
+  }
+}
+
+function unmuteActiveVideos(fromUserGesture = true) {
+  sound.setMuted(false);
+  sound.init();
+
+  if (DOM.fsaVideoPlayer) {
+    DOM.fsaVideoPlayer.muted = false;
+    DOM.fsaVideoPlayer.volume = 1.0;
+  }
+  if (DOM.promoVideoMainPlayer) {
+    DOM.promoVideoMainPlayer.muted = false;
+    DOM.promoVideoMainPlayer.volume = 1.0;
+  }
+  if (DOM.btnFsaSound) DOM.btnFsaSound.textContent = '🔊';
+  if (DOM.btnPvmSound) DOM.btnPvmSound.textContent = '🔊';
+  if (DOM.soundIcon) DOM.soundIcon.textContent = '🔊';
+  hideFsaUnmutePill();
+
+  if (fromUserGesture && state.isFullscreenAdActive) {
+    showToast(state.currentLang === 'en' ? '🔊 Sound Enabled' : '🔊 Sonido Activado');
+  }
+}
+
 function closeFullscreenAd(andAdvance = false) {
   if (!state.isFullscreenAdActive) return;
   state.isFullscreenAdActive = false;
+  hideFsaUnmutePill();
 
   if (DOM.fullscreenAdOverlay) {
     DOM.fullscreenAdOverlay.classList.remove('active');
@@ -2452,16 +2652,34 @@ function updateFullscreenAdProgress(secondsLeft, totalDuration) {
 }
 
 function setupFullscreenAdControls() {
+  if (DOM.fsaFloatingUnmute) {
+    DOM.fsaFloatingUnmute.addEventListener('click', (e) => {
+      e.stopPropagation();
+      unmuteActiveVideos(true);
+    });
+  }
+
+  if (DOM.fullscreenAdOverlay) {
+    DOM.fullscreenAdOverlay.addEventListener('click', (e) => {
+      if (e.target && (e.target.closest('#btnFsaClose') || e.target.closest('.fsa-qr-col') || e.target.closest('.fsa-coupon-pill'))) return;
+      if (DOM.fsaVideoPlayer && DOM.fsaVideoPlayer.muted) {
+        unmuteActiveVideos(true);
+      }
+    });
+  }
+
   if (DOM.btnFsaSound) {
     DOM.btnFsaSound.addEventListener('click', (e) => {
       e.stopPropagation();
       sound.playTap();
       if (DOM.fsaVideoPlayer) {
-        DOM.fsaVideoPlayer.muted = !DOM.fsaVideoPlayer.muted;
-        DOM.btnFsaSound.textContent = DOM.fsaVideoPlayer.muted ? '🔇' : '🔊';
-        showToast(DOM.fsaVideoPlayer.muted
-          ? (state.lang === 'en' ? '🔇 Video Muted' : '🔇 Video Silenciado')
-          : (state.lang === 'en' ? '🔊 Sound Enabled' : '🔊 Sonido Activado'));
+        if (DOM.fsaVideoPlayer.muted) {
+          unmuteActiveVideos(true);
+        } else {
+          DOM.fsaVideoPlayer.muted = true;
+          DOM.btnFsaSound.textContent = '🔇';
+          showToast(state.currentLang === 'en' ? '🔇 Video Muted' : '🔇 Video Silenciado');
+        }
       }
     });
   }
@@ -2514,10 +2732,7 @@ function setupFullscreenAdControls() {
 
     DOM.fsaVideoPlayer.addEventListener('click', () => {
       if (DOM.fsaVideoPlayer.muted) {
-        DOM.fsaVideoPlayer.muted = false;
-        if (DOM.btnFsaSound) DOM.btnFsaSound.textContent = '🔊';
-        sound.setMuted(false);
-        showToast(state.lang === 'en' ? '🔊 Sound Enabled' : '🔊 Sonido Activado');
+        unmuteActiveVideos(true);
       }
     });
   }
@@ -2678,11 +2893,15 @@ function notifyUserInteraction(event) {
 }
 
 function setupUserActivityListener() {
-  const events = ['pointerdown', 'touchstart', 'keydown'];
+  const events = ['pointerdown', 'touchstart', 'click', 'keydown'];
   events.forEach(evt => {
     document.addEventListener(evt, (e) => {
+      sound.init(); // Resuelve el desbloqueo de AudioContext por política de autoplay
       if (e.target && (e.target.closest('#btnToggleMix') || e.target.closest('.dock-pill') || e.target.closest('.bottom-dock') || e.target.closest('.dock-weather'))) return;
       notifyUserInteraction(e);
+      if (state.isFullscreenAdActive && DOM.fsaVideoPlayer && DOM.fsaVideoPlayer.muted) {
+        unmuteActiveVideos(false);
+      }
     }, { passive: true });
   });
 }
@@ -3322,11 +3541,21 @@ function setupEventListeners() {
   if (DOM.btnNextAd) DOM.btnNextAd.addEventListener('click', nextAd);
   if (DOM.btnClaimAd) DOM.btnClaimAd.addEventListener('click', claimCurrentAd);
 
-  // Sound Toggle
+  // Sound Toggle (Syncs across Web Audio Engine & Video Players)
   if (DOM.btnSound) {
     DOM.btnSound.addEventListener('click', () => {
       const isMuted = sound.toggleMute();
       if (DOM.soundIcon) DOM.soundIcon.textContent = isMuted ? '🔇' : '🔊';
+      if (DOM.btnFsaSound) DOM.btnFsaSound.textContent = isMuted ? '🔇' : '🔊';
+      if (DOM.btnPvmSound) DOM.btnPvmSound.textContent = isMuted ? '🔇' : '🔊';
+      if (DOM.fsaVideoPlayer) {
+        DOM.fsaVideoPlayer.muted = isMuted;
+        if (!isMuted) DOM.fsaVideoPlayer.volume = 1.0;
+      }
+      if (DOM.promoVideoMainPlayer) {
+        DOM.promoVideoMainPlayer.muted = isMuted;
+        if (!isMuted) DOM.promoVideoMainPlayer.volume = 1.0;
+      }
       showToast(isMuted ? getT().toastSoundMuted : getT().toastSoundActive);
     });
   }

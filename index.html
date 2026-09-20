@@ -372,8 +372,11 @@
 
               <!-- Picture clue card (for picture trivia mode) -->
               <div class="picture-clue-card hidden" id="pictureClueCard">
-                <div class="picture-clue-visual" id="picClueVisual">🗼</div>
-                <div class="picture-clue-caption" id="picClueCaption">Pista visual</div>
+                <div class="picture-clue-image-wrap">
+                  <img class="picture-clue-img" id="picClueImg" src="assets/images/trivia/eiffel_tower.webp" alt="Pista visual" loading="eager" />
+                  <div class="picture-clue-gradient-shade"></div>
+                  <div class="picture-clue-badge-pill" id="picClueCaption">Torre Eiffel · París</div>
+                </div>
               </div>
 
               <div class="trivia-card">
@@ -723,8 +726,52 @@
                 </div>
               </div>
 
+              <!-- NEWS VIEW MODE SWITCHER (LIVE STREAM VS CURATED REPORT) -->
+              <div class="news-view-mode-bar smb3-wood-card">
+                <button class="news-mode-tab-btn active" id="btnNewsModeLive">
+                  <span class="live-blink-dot"></span>
+                  <span id="txtNewsModeLive">📺 NOTICIERO EN VIVO</span>
+                </button>
+                <button class="news-mode-tab-btn" id="btnNewsModeReport">
+                  <span>📰</span>
+                  <span id="txtNewsModeReport">TITULARES & REPORTE LOCAL</span>
+                </button>
+              </div>
+
+              <!-- LIVE TV NEWS STREAMING CONTAINER -->
+              <div class="news-live-wrapper" id="newsLiveWrapper">
+                <div class="news-live-frame smb3-block-card">
+                  <span class="smb3-card-rivet c-tl"></span><span class="smb3-card-rivet c-tr"></span><span class="smb3-card-rivet c-bl"></span><span class="smb3-card-rivet c-br"></span>
+                  
+                  <!-- Channels selector bar -->
+                  <div class="news-channels-bar">
+                    <div class="news-channels-label">
+                      <span class="live-dot-pulse"></span>
+                      <span id="newsChannelsLabelText">CANALES EN VIVO:</span>
+                    </div>
+                    <div class="news-channels-pills" id="newsChannelsPills">
+                      <!-- Populated dynamically based on GPS country -->
+                    </div>
+                  </div>
+
+                  <!-- Live Stream Video Embed / Iframe Container -->
+                  <div class="news-stream-container" id="newsStreamContainer">
+                    <iframe id="newsLiveIframe" class="news-live-iframe" src="about:blank" title="Noticias en Vivo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    <div class="news-stream-overlay-bar">
+                      <div class="nsob-left">
+                        <span class="nsob-badge" id="newsCurrentChannelBadge">FOX NEWS 24/7</span>
+                        <span class="nsob-tagline" id="newsCurrentChannelTagline">Transmisión de Noticias en Vivo</span>
+                      </div>
+                      <div class="nsob-right">
+                        <button class="news-unmute-tip-btn" id="btnNewsUnmuteTip" title="Sonido del video">🔊 Activar Audio</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- ROTATING SPOTLIGHT NEWS DISPLAY (UN CUADRO POR PANTALLA) -->
-              <div class="news-spotlight-wrapper" id="newsSpotlightWrapper">
+              <div class="news-spotlight-wrapper hidden" id="newsSpotlightWrapper">
                 <div class="news-spotlight-frame smb3-block-card" id="newsSpotlightFrame">
                   <span class="smb3-card-rivet c-tl"></span><span class="smb3-card-rivet c-tr"></span><span class="smb3-card-rivet c-bl"></span><span class="smb3-card-rivet c-br"></span>
 
@@ -1332,6 +1379,12 @@
           <button class="fsa-icon-btn fsa-close-btn" id="btnFsaClose" title="Continuar">✕</button>
         </div>
       </div>
+
+      <!-- Floating Unmute Pill for Instant Audio Activation (Bypasses Browser Autoplay Restrictions) -->
+      <button class="fsa-floating-unmute hidden" id="fsaFloatingUnmute" title="Toca para activar sonido">
+        <span class="fsa-unmute-pulse-dot">🔊</span>
+        <span id="fsaFloatingUnmuteText">TOCAR PARA ACTIVAR SONIDO</span>
+      </button>
 
       <!-- Bottom Content Panel: Headline, Brand, Description, Promo Code, QR -->
       <div class="fsa-bottom-panel">
