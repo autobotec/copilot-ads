@@ -49,6 +49,10 @@ const state = {
   lastUserInteraction: 0,
   isFullscreenAdActive: false,
 
+  // Trivia lives / strikes (5 errors restarts trivia)
+  triviaWrongCount: 0,
+  triviaTransitionTimeout: null,
+
   // Autostart timer on Games Hub
   autostartSeconds: 8,
   autostartInterval: null,
@@ -286,6 +290,8 @@ const DOM = {
   triviaCatName: document.getElementById('triviaCatName'),
   streakBadge: document.getElementById('streakBadge'),
   streakCount: document.getElementById('streakCount'),
+  triviaLivesBadge: document.getElementById('triviaLivesBadge'),
+  strikesIcons: document.getElementById('strikesIcons'),
   questionCounter: document.getElementById('questionCounter'),
   timerCircle: document.getElementById('timerCircle'),
   timerNumber: document.getElementById('timerNumber'),
@@ -723,6 +729,15 @@ function switchTab(targetTab) {
   if (targetTab === 'giveaway' && DOM.viewGiveaway) DOM.viewGiveaway.classList.add('active');
   if (targetTab === 'leaderboard' && DOM.viewLeaderboard) DOM.viewLeaderboard.classList.add('active');
 
+  // Clean up trivia and game instances when navigating away from games
+  if (targetTab !== 'games') {
+    stopTrivia();
+    if (state.activeGameInstance && state.activeGameInstance.destroy) {
+      state.activeGameInstance.destroy();
+    }
+    state.isUserActivelyPlaying = false;
+  }
+
   // Pause promo video if leaving mediaAds
   if (targetTab !== 'mediaAds' && DOM.promoVideoMainPlayer) {
     DOM.promoVideoMainPlayer.pause();
@@ -779,6 +794,12 @@ function togglePauseAutostart() {
 function launchGame(gameType) {
   const t = getT();
   clearInterval(state.autostartInterval);
+  stopTrivia();
+  if (state.activeGameInstance && state.activeGameInstance.destroy) {
+    state.activeGameInstance.destroy();
+  }
+  state.activeGameInstance = null;
+
   sound.playSplashPop();
   state.activeGameMode = gameType;
   state.isUserActivelyPlaying = true;
@@ -796,11 +817,15 @@ function launchGame(gameType) {
   DOM.arenaContentMount.innerHTML = '';
 
   if (gameType === 'classic') {
+    state.triviaWrongCount = 0;
+    updateTriviaStrikesUI();
     if (DOM.arenaGameTag) DOM.arenaGameTag.textContent = `❓ ${t.classicBadge}`;
     DOM.arenaContentMount.appendChild(DOM.triviaArenaContainer);
     DOM.pictureClueCard.classList.add('hidden');
     loadClassicQuestion(0);
   } else if (gameType === 'picture') {
+    state.triviaWrongCount = 0;
+    updateTriviaStrikesUI();
     if (DOM.arenaGameTag) DOM.arenaGameTag.textContent = `📸 ${t.pictureBadge}`;
     DOM.arenaContentMount.appendChild(DOM.triviaArenaContainer);
     DOM.pictureClueCard.classList.remove('hidden');
@@ -842,7 +867,10 @@ function launchGame(gameType) {
 
 function returnToGamesHub() {
   sound.playTap();
-  clearInterval(state.timerInterval);
+  stopTrivia();
+  if (state.activeGameInstance && state.activeGameInstance.destroy) {
+    state.activeGameInstance.destroy();
+  }
   state.activeGameMode = 'none';
   state.activeGameInstance = null;
   state.isUserActivelyPlaying = false;
@@ -868,10 +896,73 @@ function shuffleTriviaQuestions() {
   }
 }
 
+function stopTrivia() {
+  if (state.timerInterval) {
+    clearInterval(state.timerInterval);
+    state.timerInterval = null;
+  }
+  if (state.triviaTransitionTimeout) {
+    clearTimeout(state.triviaTransitionTimeout);
+    state.triviaTransitionTimeout = null;
+  }
+}
+
+function updateTriviaStrikesUI() {
+  const el = DOM.strikesIcons || document.getElementById('strikesIcons');
+  if (!el) return;
+  const maxLives = 5;
+  const wrong = Math.min(maxLives, state.triviaWrongCount || 0);
+  const remaining = Math.max(0, maxLives - wrong);
+  let hearts = '';
+  for (let i = 0; i < maxLives; i++) {
+    hearts += (i < remaining) ? '❤️' : '🖤';
+  }
+  el.textContent = hearts;
+}
+
+function triggerTriviaGameOver(isPicTrivia) {
+  stopTrivia();
+  sound.playWrong();
+  const t = getT();
+  const isEn = state.currentLang === 'en';
+  const msg = isEn ? '💥 5 MISTAKES! RESETTING TRIVIA...' : '💥 ¡5 ERRORES! REINICIANDO TRIVIA...';
+  const factMsg = isEn
+    ? 'You reached 5 incorrect answers. Starting again from question 1.'
+    : 'Has acumulado 5 preguntas incorrectas. La partida comenzará de nuevo desde la pregunta 1.';
+
+  DOM.feedbackBadge.className = 'feedback-badge wrong';
+  DOM.feedbackBadge.textContent = msg;
+  DOM.feedbackFact.textContent = factMsg;
+  DOM.triviaFeedback.classList.remove('hidden');
+  showToast(msg);
+
+  state.triviaWrongCount = 0;
+  state.streak = 0;
+  if (DOM.streakCount) DOM.streakCount.textContent = `${t.streak} x1`;
+  updateTriviaStrikesUI();
+
+  state.triviaTransitionTimeout = setTimeout(() => {
+    if (state.activeTab !== 'games') return;
+    if ((isPicTrivia && state.activeGameMode !== 'picture') || (!isPicTrivia && state.activeGameMode !== 'classic')) return;
+
+    if (isPicTrivia) {
+      loadPictureQuestion(0);
+    } else {
+      shuffleTriviaQuestions();
+      loadClassicQuestion(0);
+    }
+  }, 3200);
+}
+
 /* ==========================================================================
    CLASSIC TRIVIA ENGINE (500 RANDOMIZED QUESTIONS)
    ========================================================================== */
 function loadClassicQuestion(index) {
+  if (state.activeTab !== 'games' || state.activeGameMode !== 'classic') {
+    stopTrivia();
+    return;
+  }
+
   if (!state.shuffledTrivia || state.shuffledTrivia.length === 0) {
     shuffleTriviaQuestions();
   }
@@ -890,6 +981,7 @@ function loadClassicQuestion(index) {
   DOM.questionCounter.textContent = `${t.questionOf} ${state.currentQuestionIndex + 1} ${t.ofWord} ${state.shuffledTrivia.length}`;
   DOM.triviaQuestion.textContent = question;
   DOM.triviaFeedback.classList.add('hidden');
+  updateTriviaStrikesUI();
 
   // Shuffle the 4 options so the correct answer is randomized
   const preparedOptions = rawOptions.map((optText, optIdx) => ({
@@ -923,6 +1015,11 @@ function loadClassicQuestion(index) {
    PICTURE TRIVIA ENGINE
    ========================================================================== */
 function loadPictureQuestion(index) {
+  if (state.activeTab !== 'games' || state.activeGameMode !== 'picture') {
+    stopTrivia();
+    return;
+  }
+
   const t = getT();
   const lang = state.currentLang;
   state.currentPicIndex = index % PICTURE_TRIVIA_QUESTIONS.length;
@@ -939,6 +1036,7 @@ function loadPictureQuestion(index) {
   DOM.questionCounter.textContent = `${t.visualChallengeOf} ${state.currentPicIndex + 1} ${t.ofWord} ${PICTURE_TRIVIA_QUESTIONS.length}`;
   DOM.triviaQuestion.textContent = question;
   DOM.triviaFeedback.classList.add('hidden');
+  updateTriviaStrikesUI();
 
   DOM.picClueVisual.textContent = q.imageEmoji;
   DOM.picClueCaption.textContent = imageTitle;
@@ -972,13 +1070,23 @@ function loadPictureQuestion(index) {
 }
 
 function startTriviaTimer(isPicTrivia) {
-  clearInterval(state.timerInterval);
+  stopTrivia();
+  if (state.activeTab !== 'games') return;
+  if (isPicTrivia && state.activeGameMode !== 'picture') return;
+  if (!isPicTrivia && state.activeGameMode !== 'classic') return;
+
   state.timerSeconds = 12;
   updateTriviaTimerUI();
 
   if (DOM.timerCircle) DOM.timerCircle.classList.remove('warning');
 
   state.timerInterval = setInterval(() => {
+    // Background guard: If player left games tab or switched game mode, halt timer immediately
+    if (state.activeTab !== 'games' || (isPicTrivia && state.activeGameMode !== 'picture') || (!isPicTrivia && state.activeGameMode !== 'classic')) {
+      stopTrivia();
+      return;
+    }
+
     state.timerSeconds--;
     updateTriviaTimerUI();
 
@@ -988,7 +1096,7 @@ function startTriviaTimer(isPicTrivia) {
     }
 
     if (state.timerSeconds <= 0) {
-      clearInterval(state.timerInterval);
+      stopTrivia();
       handleTriviaTimeout(isPicTrivia);
     }
   }, 1000);
@@ -1003,9 +1111,14 @@ function updateTriviaTimerUI() {
 }
 
 function handleTriviaAnswer(isCorrect, selectedBtn, questionData, isPicTrivia) {
+  if (state.activeTab !== 'games' || (isPicTrivia && state.activeGameMode !== 'picture') || (!isPicTrivia && state.activeGameMode !== 'classic')) {
+    stopTrivia();
+    return;
+  }
+
   if (state.isAnswerLocked) return;
   state.isAnswerLocked = true;
-  clearInterval(state.timerInterval);
+  stopTrivia();
 
   const t = getT();
   const lang = state.currentLang;
@@ -1037,6 +1150,14 @@ function handleTriviaAnswer(isCorrect, selectedBtn, questionData, isPicTrivia) {
 
     DOM.feedbackBadge.className = 'feedback-badge wrong';
     DOM.feedbackBadge.textContent = t.wrongFeedback;
+
+    state.triviaWrongCount = (state.triviaWrongCount || 0) + 1;
+    updateTriviaStrikesUI();
+
+    if (state.triviaWrongCount >= 5) {
+      triggerTriviaGameOver(isPicTrivia);
+      return;
+    }
   }
 
   if (DOM.streakCount) DOM.streakCount.textContent = `${t.streak} x${Math.max(1, state.streak)}`;
@@ -1049,8 +1170,11 @@ function handleTriviaAnswer(isCorrect, selectedBtn, questionData, isPicTrivia) {
   state.mixMode.isPaused = true;
   updateMixPillUI();
 
-  setTimeout(() => {
-    // Continue directly to the next question in the 500-question pool
+  state.triviaTransitionTimeout = setTimeout(() => {
+    if (state.activeTab !== 'games') return;
+    if ((isPicTrivia && state.activeGameMode !== 'picture') || (!isPicTrivia && state.activeGameMode !== 'classic')) return;
+
+    // Continue directly to the next question
     if (isPicTrivia) {
       loadPictureQuestion(state.currentPicIndex + 1);
     } else {
@@ -1060,6 +1184,11 @@ function handleTriviaAnswer(isCorrect, selectedBtn, questionData, isPicTrivia) {
 }
 
 function handleTriviaTimeout(isPicTrivia) {
+  if (state.activeTab !== 'games' || (isPicTrivia && state.activeGameMode !== 'picture') || (!isPicTrivia && state.activeGameMode !== 'classic')) {
+    stopTrivia();
+    return;
+  }
+
   const t = getT();
   const lang = state.currentLang;
   sound.playWrong();
@@ -1081,7 +1210,18 @@ function handleTriviaTimeout(isPicTrivia) {
   DOM.feedbackFact.textContent = fact;
   DOM.triviaFeedback.classList.remove('hidden');
 
-  setTimeout(() => {
+  state.triviaWrongCount = (state.triviaWrongCount || 0) + 1;
+  updateTriviaStrikesUI();
+
+  if (state.triviaWrongCount >= 5) {
+    triggerTriviaGameOver(isPicTrivia);
+    return;
+  }
+
+  state.triviaTransitionTimeout = setTimeout(() => {
+    if (state.activeTab !== 'games') return;
+    if ((isPicTrivia && state.activeGameMode !== 'picture') || (!isPicTrivia && state.activeGameMode !== 'classic')) return;
+
     // Continue directly to the next question without interrupting
     if (isPicTrivia) {
       loadPictureQuestion(state.currentPicIndex + 1);

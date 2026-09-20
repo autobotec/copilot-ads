@@ -211,4 +211,10 @@ export class SpeedMatchGame {
       }, 850);
     }
   }
+
+  destroy() {
+    clearInterval(this.timerInterval);
+    this.timerInterval = null;
+    this.isLocked = false;
+  }
 }

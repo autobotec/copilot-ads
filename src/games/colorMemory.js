@@ -218,4 +218,9 @@ export class ColorMemoryGame {
       }, 1500);
     }
   }
+
+  destroy() {
+    this.isInputAllowed = false;
+    this.isPlayingSequence = false;
+  }
 }
