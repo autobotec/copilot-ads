@@ -1052,6 +1052,7 @@ function loadClassicQuestion(index) {
   DOM.questionCounter.textContent = `${t.questionOf} ${state.currentQuestionIndex + 1} ${t.ofWord} ${state.shuffledTrivia.length}`;
   DOM.triviaQuestion.textContent = question;
   DOM.triviaFeedback.classList.add('hidden');
+  if (DOM.pictureClueCard) DOM.pictureClueCard.classList.add('hidden');
   updateTriviaStrikesUI();
 
   // Shuffle the 4 options so the correct answer is randomized

@@ -370,22 +370,25 @@
                 </div>
               </div>
 
-              <!-- Picture clue card (for picture trivia mode) -->
-              <div class="picture-clue-card hidden" id="pictureClueCard">
-                <div class="picture-clue-image-wrap">
-                  <img class="picture-clue-img" id="picClueImg" src="assets/images/trivia/eiffel_tower.webp" alt="Pista visual" loading="eager" />
-                  <div class="picture-clue-gradient-shade"></div>
-                  <div class="picture-clue-badge-pill" id="picClueCaption">Torre Eiffel · París</div>
-                </div>
-              </div>
-
               <div class="trivia-card">
-                <h2 class="trivia-question" id="triviaQuestion">
-                  Cargando pregunta interactiva de Copilot Driver...
-                </h2>
+                <!-- Picture clue card (for picture trivia mode) - HD real photograph backdrop -->
+                <div class="picture-clue-card hidden" id="pictureClueCard">
+                  <div class="picture-clue-image-wrap">
+                    <img class="picture-clue-img" id="picClueImg" src="assets/images/trivia/eiffel_tower.webp" alt="Pista visual" loading="eager" />
+                    <div class="picture-clue-gradient-shade"></div>
+                    <div class="picture-clue-badge-pill" id="picClueCaption">Torre Eiffel · París</div>
+                  </div>
+                </div>
 
-                <div class="trivia-options-grid" id="triviaOptions">
-                  <!-- Dynamically populated buttons -->
+                <!-- Foreground interactive content: question and answers displayed right in front of the image -->
+                <div class="trivia-foreground-content">
+                  <h2 class="trivia-question" id="triviaQuestion">
+                    Cargando pregunta interactiva de Copilot Driver...
+                  </h2>
+
+                  <div class="trivia-options-grid" id="triviaOptions">
+                    <!-- Dynamically populated buttons -->
+                  </div>
                 </div>
 
                 <!-- FEEDBACK OVERLAY AFTER ANSWER -->
