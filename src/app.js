@@ -11,8 +11,9 @@ import { NEWS_ARTICLES } from './newsData.js';
 import { WEATHER_INFO } from './weatherData.js';
 import { geoService } from './geoService.js';
 
-// Mix Segment Duration Constant (30 seconds per content rotation)
+// Mix Segment Duration Constants
 export const MIX_SEGMENT_DURATION = 30;
+export const MIX_WEATHER_DURATION = 5;
 
 /* ==========================================================================
    STATE MANAGEMENT
@@ -2219,7 +2220,7 @@ function advanceMixSegment(forceNextStep = null) {
       state.mixMode.isPaused = false;
     }
   } else if (nextStep === 'weather') {
-    state.mixMode.secondsLeft = MIX_SEGMENT_DURATION;
+    state.mixMode.secondsLeft = MIX_WEATHER_DURATION;
     closeFullscreenAd();
     switchTab('weatherNews');
     switchWeatherNewsSubtab('weather');
