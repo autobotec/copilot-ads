@@ -2519,7 +2519,11 @@ function advanceMixSegment(forceNextStep = null) {
     closeFullscreenNews();
     closeRideInfoSlide();
     switchTab('mediaAds');
-    switchMediaSubtab('videoPromo');
+    // Ensure background player is stopped to avoid dual-playback audio echo
+    if (DOM.promoVideoMainPlayer) {
+      DOM.promoVideoMainPlayer.pause();
+      DOM.promoVideoMainPlayer.muted = true;
+    }
     openFullscreenAd();
   }
 
@@ -2531,6 +2535,13 @@ function advanceMixSegment(forceNextStep = null) {
    ========================================================================== */
 function openFullscreenAd(customAd = null) {
   state.isFullscreenAdActive = true;
+
+  // Prevent audio echo: pause and mute background mediaAds player
+  if (DOM.promoVideoMainPlayer) {
+    DOM.promoVideoMainPlayer.pause();
+    DOM.promoVideoMainPlayer.muted = true;
+    DOM.promoVideoMainPlayer.currentTime = 0;
+  }
 
   // Priorizar campaña de video activa desde CampaignManager
   let ad = customAd;
@@ -2697,13 +2708,25 @@ function unmuteActiveVideos(fromUserGesture = true) {
   sound.setMuted(false);
   sound.init();
 
-  if (DOM.fsaVideoPlayer) {
-    DOM.fsaVideoPlayer.muted = false;
-    DOM.fsaVideoPlayer.volume = 1.0;
-  }
-  if (DOM.promoVideoMainPlayer) {
-    DOM.promoVideoMainPlayer.muted = false;
-    DOM.promoVideoMainPlayer.volume = 1.0;
+  if (state.isFullscreenAdActive) {
+    // If fullscreen overlay is open, only unmute FSA player and silence background player
+    if (DOM.fsaVideoPlayer) {
+      DOM.fsaVideoPlayer.muted = false;
+      DOM.fsaVideoPlayer.volume = 1.0;
+    }
+    if (DOM.promoVideoMainPlayer) {
+      DOM.promoVideoMainPlayer.pause();
+      DOM.promoVideoMainPlayer.muted = true;
+    }
+  } else {
+    // Otherwise only unmute background player if visible
+    if (DOM.promoVideoMainPlayer && state.activeTab === 'mediaAds') {
+      DOM.promoVideoMainPlayer.muted = false;
+      DOM.promoVideoMainPlayer.volume = 1.0;
+    }
+    if (DOM.fsaVideoPlayer) {
+      DOM.fsaVideoPlayer.muted = true;
+    }
   }
   if (DOM.btnFsaSound) DOM.btnFsaSound.textContent = '🔊';
   if (DOM.btnPvmSound) DOM.btnPvmSound.textContent = '🔊';

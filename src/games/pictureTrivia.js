@@ -2854,7 +2854,7 @@ export const PICTURE_TRIVIA_QUESTIONS = [
     "textContrast": "dark",
     "question_es": "¿Qué legendario buque de vela zarpó de Inglaterra en 1831 llevando al joven naturalista Charles Darwin alrededor del mundo?",
     "question_en": "Which historic sailing vessel carried young naturalist Charles Darwin on his 5-year global expedition in 1831?",
-    "imageUrl": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=900&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=85",
     "imageAlt": "Barco Velero Histórico en el Océano",
     "imageTitle_es": "Barco Velero Histórico en el Océano",
     "imageTitle_en": "Historic Sailing Ship on Ocean",
