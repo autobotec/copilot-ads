@@ -2051,17 +2051,22 @@ function startPromoVideoPlayback() {
   syncCurrentVideoSpotlight();
   if (!DOM.promoVideoMainPlayer) return;
   DOM.promoVideoMainPlayer.currentTime = 0;
-  DOM.promoVideoMainPlayer.muted = true;
+
+  const shouldMute = sound.isMuted();
+  DOM.promoVideoMainPlayer.muted = shouldMute;
+
   const playPromise = DOM.promoVideoMainPlayer.play();
   if (playPromise !== undefined) {
-    playPromise.then(() => {
-      if (!sound.isMuted()) {
-        DOM.promoVideoMainPlayer.muted = false;
-      }
-    }).catch(() => {
-      DOM.promoVideoMainPlayer.muted = true;
-      DOM.promoVideoMainPlayer.play().catch(() => {});
-    });
+    playPromise
+      .then(() => {
+        if (!shouldMute) {
+          DOM.promoVideoMainPlayer.muted = false;
+        }
+      })
+      .catch(() => {
+        DOM.promoVideoMainPlayer.muted = true;
+        DOM.promoVideoMainPlayer.play().catch(() => {});
+      });
   }
 }
 
@@ -2262,17 +2267,32 @@ function openFullscreenAd(customAd = null) {
       DOM.fsaVideoPlayer.load();
     }
     DOM.fsaVideoPlayer.currentTime = 0;
-    DOM.fsaVideoPlayer.muted = true; // Iniciar muteado para cumplir política de autoplay
+
+    const shouldMute = sound.isMuted();
+    DOM.fsaVideoPlayer.muted = shouldMute;
+
     const playPromise = DOM.fsaVideoPlayer.play();
     if (playPromise !== undefined) {
-      playPromise.then(() => {
-        if (!sound.isMuted()) {
-          DOM.fsaVideoPlayer.muted = false;
-        }
-      }).catch(() => {
-        DOM.fsaVideoPlayer.muted = true;
-        DOM.fsaVideoPlayer.play().catch(() => {});
-      });
+      playPromise
+        .then(() => {
+          if (!shouldMute) {
+            DOM.fsaVideoPlayer.muted = false;
+          }
+          if (DOM.btnFsaSound) {
+            DOM.btnFsaSound.textContent = DOM.fsaVideoPlayer.muted ? '🔇' : '🔊';
+          }
+        })
+        .catch(() => {
+          DOM.fsaVideoPlayer.muted = true;
+          DOM.fsaVideoPlayer.play().catch(() => {});
+          if (DOM.btnFsaSound) {
+            DOM.btnFsaSound.textContent = '🔇';
+          }
+        });
+    }
+
+    if (DOM.btnFsaSound) {
+      DOM.btnFsaSound.textContent = DOM.fsaVideoPlayer.muted ? '🔇' : '🔊';
     }
   }
 
@@ -2316,11 +2336,26 @@ function updateFullscreenAdProgress(secondsLeft, totalDuration) {
 
 function setupFullscreenAdControls() {
   if (DOM.btnFsaSound) {
-    DOM.btnFsaSound.addEventListener('click', () => {
+    DOM.btnFsaSound.addEventListener('click', (e) => {
+      e.stopPropagation();
       sound.playTap();
       if (DOM.fsaVideoPlayer) {
         DOM.fsaVideoPlayer.muted = !DOM.fsaVideoPlayer.muted;
         DOM.btnFsaSound.textContent = DOM.fsaVideoPlayer.muted ? '🔇' : '🔊';
+        showToast(DOM.fsaVideoPlayer.muted
+          ? (state.lang === 'en' ? '🔇 Video Muted' : '🔇 Video Silenciado')
+          : (state.lang === 'en' ? '🔊 Sound Enabled' : '🔊 Sonido Activado'));
+      }
+    });
+  }
+
+  if (DOM.fsaVideoPlayer) {
+    DOM.fsaVideoPlayer.addEventListener('click', () => {
+      if (DOM.fsaVideoPlayer.muted) {
+        DOM.fsaVideoPlayer.muted = false;
+        if (DOM.btnFsaSound) DOM.btnFsaSound.textContent = '🔊';
+        sound.setMuted(false);
+        showToast(state.lang === 'en' ? '🔊 Sound Enabled' : '🔊 Sonido Activado');
       }
     });
   }
@@ -2437,8 +2472,20 @@ window.__appToggleMixMode = toggleMixMode;
 window.toggleMixModeGlobal = toggleMixMode;
 window.advanceMixSegmentGlobal = advanceMixSegment;
 
+function tryUnmuteActiveVideos() {
+  if (sound.isMuted()) return;
+  if (DOM.fsaVideoPlayer && state.isFullscreenAdActive && DOM.fsaVideoPlayer.muted) {
+    DOM.fsaVideoPlayer.muted = false;
+    if (DOM.btnFsaSound) DOM.btnFsaSound.textContent = '🔊';
+  }
+  if (DOM.promoVideoMainPlayer && state.activeTab === 'mediaAds' && DOM.promoVideoMainPlayer.muted) {
+    DOM.promoVideoMainPlayer.muted = false;
+  }
+}
+
 function notifyUserInteraction(event) {
   state.lastUserInteraction = Date.now();
+  tryUnmuteActiveVideos();
 
   const target = event && event.target;
   const isGameInteraction = target && (

@@ -19,7 +19,11 @@ class SoundEngine {
   }
 
   setMuted(muteState) {
-    this.muted = muteState;
+    this.muted = !!muteState;
+  }
+
+  isMuted() {
+    return !!this.muted;
   }
 
   toggleMute() {
