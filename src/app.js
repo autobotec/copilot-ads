@@ -440,11 +440,36 @@ const DOM = {
 
   // Giveaway & Leaderboard
   jackpotBadgeText: document.getElementById('jackpotBadgeText'),
+  drawingBadge: document.getElementById('drawingBadge'),
   giveawayTitleBefore: document.getElementById('giveawayTitleBefore'),
   giveawayTitleSpan: document.getElementById('giveawayTitleSpan'),
   giveawayTitleAfter: document.getElementById('giveawayTitleAfter'),
   giveawaySubtitle: document.getElementById('giveawaySubtitle'),
   btnClaimTicket: document.getElementById('btnClaimTicket'),
+  btnClaimTicketMain: document.getElementById('btnClaimTicketMain'),
+  btnClaimTicketText: document.getElementById('btnClaimTicketText'),
+  giveawayClaimPanel: document.getElementById('giveawayClaimPanel'),
+  giveawayTicketResult: document.getElementById('giveawayTicketResult'),
+  giveawaySessionPoints: document.getElementById('giveawaySessionPoints'),
+  giveawayEntriesTag: document.getElementById('giveawayEntriesTag'),
+  gpcPointsLabel: document.getElementById('gpcPointsLabel'),
+  gpcMultiplierTag: document.getElementById('gpcMultiplierTag'),
+  giveawayQuickForm: document.getElementById('giveawayQuickForm'),
+  gqfContact: document.getElementById('gqfContact'),
+  gqfNickname: document.getElementById('gqfNickname'),
+  labelGqfContact: document.getElementById('labelGqfContact'),
+  labelGqfNickname: document.getElementById('labelGqfNickname'),
+  giveawayPolicyNote: document.getElementById('giveawayPolicyNote'),
+  ticketConfirmedRibbon: document.getElementById('ticketConfirmedRibbon'),
+  gtcTicketId: document.getElementById('gtcTicketId'),
+  gtcPassengerName: document.getElementById('gtcPassengerName'),
+  gtcSavedPoints: document.getElementById('gtcSavedPoints'),
+  gtcTotalEntries: document.getElementById('gtcTotalEntries'),
+  gtcStatusText: document.getElementById('gtcStatusText'),
+  gtcQrCode: document.getElementById('gtcQrCode'),
+  ticketQrHint: document.getElementById('ticketQrHint'),
+  btnNewTicket: document.getElementById('btnNewTicket'),
+  btnNewTicketText: document.getElementById('btnNewTicketText'),
   yourTicketsLabel: document.getElementById('yourTicketsLabel'),
   myTicketsCount: document.getElementById('myTicketsCount'),
   recentWinnersTitle: document.getElementById('recentWinnersTitle'),
@@ -672,11 +697,21 @@ function applyLanguage(lang, showToastNotification = true) {
 
   // Giveaway & Leaderboard
   if (DOM.jackpotBadgeText) DOM.jackpotBadgeText.textContent = t.jackpotBadge;
+  if (DOM.drawingBadge) DOM.drawingBadge.textContent = t.drawingBadge;
   if (DOM.giveawayTitleBefore) DOM.giveawayTitleBefore.textContent = t.giveawayTitleBefore;
   if (DOM.giveawayTitleSpan) DOM.giveawayTitleSpan.textContent = t.giveawayTitleSpan;
   if (DOM.giveawayTitleAfter) DOM.giveawayTitleAfter.textContent = t.giveawayTitleAfter;
   if (DOM.giveawaySubtitle) DOM.giveawaySubtitle.textContent = t.giveawaySub;
   if (DOM.btnClaimTicket) DOM.btnClaimTicket.innerHTML = `<span>🎟️</span> ${(t.btnGenerateTicket || 'Generar Boleto').replace('🎟️ ', '')}`;
+  if (DOM.btnClaimTicketText) DOM.btnClaimTicketText.textContent = t.btnClaimTicketWithPts || 'Reclamar y Guardar Boleto con mis Puntos';
+  if (DOM.btnNewTicketText) DOM.btnNewTicketText.textContent = t.btnNewTicket || 'Registrar Otro Boleto';
+  if (DOM.gpcPointsLabel) DOM.gpcPointsLabel.textContent = t.gpcPointsLabel || 'Tus Puntos Acumulados:';
+  if (DOM.labelGqfContact) DOM.labelGqfContact.textContent = t.labelGqfContact || 'Teléfono Móvil o Correo (Para reclamar premio):';
+  if (DOM.labelGqfNickname) DOM.labelGqfNickname.textContent = t.labelGqfNickname || 'Tu Nombre o Apodo:';
+  if (DOM.giveawayPolicyNote) DOM.giveawayPolicyNote.textContent = t.giveawayPolicyNote || 'ℹ️ Al guardar tu boleto, tus puntos quedan asegurados en el sorteo y tu marcador se reinicia para el siguiente juego o pasajero.';
+  if (DOM.ticketConfirmedRibbon) DOM.ticketConfirmedRibbon.textContent = t.ticketConfirmedRibbon || '⭐ BOLETO OFICIAL REGISTRADO ⭐';
+  if (DOM.gtcStatusText) DOM.gtcStatusText.textContent = t.ticketStatusConfirmed || 'Participación Activa · Sorteo 9:00 PM';
+  if (DOM.ticketQrHint) DOM.ticketQrHint.textContent = t.ticketQrHint || '📱 Escanea o toma foto';
   if (DOM.yourTicketsLabel) DOM.yourTicketsLabel.textContent = t.yourTicketsToday;
   if (DOM.recentWinnersTitle) DOM.recentWinnersTitle.textContent = t.recentWinnersTitle;
   if (DOM.lbTitleText) DOM.lbTitleText.textContent = t.leaderboardTitle;
@@ -788,8 +823,10 @@ function switchTab(targetTab) {
     switchMediaSubtab('videoPromo');
     syncCurrentVideoSpotlight();
     startPromoVideoPlayback();
+  if (targetTab === 'giveaway' && DOM.viewGiveaway) {
+    DOM.viewGiveaway.classList.add('active');
+    updateGiveawayUI();
   }
-  if (targetTab === 'giveaway' && DOM.viewGiveaway) DOM.viewGiveaway.classList.add('active');
   if (targetTab === 'leaderboard' && DOM.viewLeaderboard) DOM.viewLeaderboard.classList.add('active');
 
   // Clean up trivia and game instances when navigating away from games
@@ -943,7 +980,11 @@ function launchGame(gameType, fromUserAction = false) {
         addPoints(deltaPts);
       },
       (finalScore, isVoluntary) => {
-        if (!isVoluntary) showToast(`🎮 ${t.simonTitle}: ${finalScore} Pts`);
+        if (!isVoluntary) {
+          resetSessionPoints('game_over');
+        } else {
+          showToast(`🎮 ${t.simonTitle}: ${finalScore} Pts`);
+        }
         returnToGamesHub();
       },
       state.currentLang
@@ -960,7 +1001,7 @@ function launchGame(gameType, fromUserAction = false) {
         if (isWin) {
           showToast(`🏆 ${t.matchTitle}: +${finalScore} Pts!`);
         } else {
-          showToast(`⏱️ ${t.timeoutFeedback} (${finalScore} Pts)`);
+          resetSessionPoints('game_over');
         }
         returnToGamesHub();
       },
@@ -999,6 +1040,44 @@ function addPoints(pts) {
   sound.playCoin();
   if (DOM.userScore) DOM.userScore.textContent = state.score.toLocaleString();
   if (DOM.arenaScoreVal) DOM.arenaScoreVal.textContent = state.score.toLocaleString();
+
+  if (DOM.giveawaySessionPoints) {
+    DOM.giveawaySessionPoints.textContent = `${state.score.toLocaleString()} pts`;
+  }
+  if (DOM.giveawayEntriesTag) {
+    const entries = Math.max(1, 1 + Math.floor(state.score / 500));
+    const t = getT();
+    const entryLabel = entries === 1 ? (t.giveawayEntriesTag || 'Boleto VIP') : (t.giveawayEntriesTagPlural || 'Boletos VIP');
+    DOM.giveawayEntriesTag.textContent = `${entries} ${entryLabel}`;
+  }
+}
+
+function resetSessionPoints(reason = 'game_over') {
+  if (state.score === 0 && state.streak === 0) return;
+  const lostScore = state.score;
+  state.score = 0;
+  state.streak = 0;
+
+  if (DOM.userScore) DOM.userScore.textContent = '0';
+  if (DOM.arenaScoreVal) DOM.arenaScoreVal.textContent = '0';
+  if (DOM.streakCount) DOM.streakCount.textContent = `${getT().streak} x1`;
+
+  if (DOM.giveawaySessionPoints) {
+    DOM.giveawaySessionPoints.textContent = '0 pts';
+  }
+  if (DOM.giveawayEntriesTag) {
+    DOM.giveawayEntriesTag.textContent = `1 ${getT().giveawayEntriesTag || 'Boleto VIP'}`;
+  }
+
+  const isEn = state.currentLang === 'en';
+  if (reason === 'game_over') {
+    sound.playWrong();
+    showToast(isEn ? `💥 Game Over! ${lostScore.toLocaleString()} pts reset to 0.` : `💥 ¡Partida perdida! ${lostScore.toLocaleString()} pts reiniciados a 0.`);
+  } else if (reason === 'claimed') {
+    console.log(`[Copilot Score] ${lostScore} pts guardados exitosamente en el boleto.`);
+  } else if (reason === 'idle_reset') {
+    console.log(`[Copilot Score] Reinicio por inactividad: ${lostScore} pts no guardados se borraron para el siguiente pasajero.`);
+  }
 }
 
 function shuffleTriviaQuestions() {
@@ -1046,16 +1125,17 @@ function triggerTriviaGameOver(isPicTrivia) {
   sound.playWrong();
   const t = getT();
   const isEn = state.currentLang === 'en';
-  const msg = isEn ? '💥 5 MISTAKES! RESETTING TRIVIA...' : '💥 ¡5 ERRORES! REINICIANDO TRIVIA...';
+  const msg = isEn ? '💥 5 MISTAKES! POINTS RESET TO 0' : '💥 ¡5 ERRORES! PUNTOS REINICIADOS A 0';
   const factMsg = isEn
-    ? 'You reached 5 incorrect answers. Starting again from question 1.'
-    : 'Has acumulado 5 preguntas incorrectas. La partida comenzará de nuevo desde la pregunta 1.';
+    ? 'You reached 5 incorrect answers. Your score was wiped and starting from question 1.'
+    : 'Has acumulado 5 preguntas incorrectas. Tus puntos se han reiniciado a 0 y la partida comenzará de nuevo.';
 
   DOM.feedbackBadge.className = 'feedback-badge wrong';
   DOM.feedbackBadge.textContent = msg;
   DOM.feedbackFact.textContent = factMsg;
   DOM.triviaFeedback.classList.remove('hidden');
-  showToast(msg);
+
+  resetSessionPoints('game_over');
 
   state.triviaWrongCount = 0;
   state.streak = 0;
@@ -2394,6 +2474,14 @@ function startMixTicker() {
       }
     }
 
+    // Inactividad del pasajero: si nadie toca la pantalla por más de 60s y no está jugando, reiniciar puntos no guardados para el próximo pasajero
+    if (!state.isUserActivelyPlaying && state.score > 0) {
+      const idleScoreTime = Date.now() - (state.lastUserInteraction || 0);
+      if (idleScoreTime > 60000) {
+        resetSessionPoints('idle_reset');
+      }
+    }
+
     if (state.mixMode.isPaused) {
       updateMixPillUI();
       return;
@@ -2486,6 +2574,14 @@ function advanceMixSegment(forceNextStep = null) {
   state.mixMode.currentStep = nextStep;
 
   if (nextStep === 'trivia') {
+    // Si la rotación completa dio la vuelta y nadie estaba jugando activamente, reiniciar puntos no guardados para el nuevo pasajero
+    if (!state.isUserActivelyPlaying && state.score > 0) {
+      const idleScoreTime = Date.now() - (state.lastUserInteraction || 0);
+      if (idleScoreTime > 40000) {
+        resetSessionPoints('idle_reset');
+      }
+    }
+
     state.mixMode.secondsLeft = MIX_SEGMENT_DURATION;
     closeFullscreenAd();
     closeFullscreenNews();
@@ -3288,35 +3384,150 @@ function updateMixPillUI() {
 /* ==========================================================================
    GIVEAWAY & LEADERBOARD
    ========================================================================== */
+function registerOfficialTicket(contact, nickname = '') {
+  if (!contact) return null;
+  const t = getT();
+  const isEn = state.currentLang === 'en';
+  const savedPoints = state.score || 0;
+  const entriesCount = Math.max(1, 1 + Math.floor(savedPoints / 500));
+  const ticketId = `VIP-${Math.floor(1000 + Math.random() * 9000)}`;
+  const passengerName = nickname.trim() || (isEn ? 'VIP Rider' : 'Pasajero VIP');
+
+  const ticket = {
+    id: ticketId,
+    contact: contact.trim(),
+    nickname: passengerName,
+    savedPoints: savedPoints,
+    entries: entriesCount,
+    claimedAt: new Date().toISOString(),
+    formattedTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  };
+
+  try {
+    const existing = JSON.parse(localStorage.getItem('copilot_claimed_tickets') || '[]');
+    existing.unshift(ticket);
+    localStorage.setItem('copilot_claimed_tickets', JSON.stringify(existing.slice(0, 25)));
+    localStorage.setItem('copilot_last_ticket', JSON.stringify(ticket));
+  } catch (e) {
+    console.error('Error saving ticket to storage:', e);
+  }
+
+  state.userTickets += entriesCount;
+  if (DOM.myTicketsCount) DOM.myTicketsCount.textContent = state.userTickets;
+
+  // Render confirmed Golden Ticket card on screen
+  renderConfirmedTicket(ticket);
+
+  // RESET ACTIVE SCORE - points are now officially locked in the ticket!
+  resetSessionPoints('claimed');
+
+  sound.playFanfare();
+  const toastMsg = isEn
+    ? `🎉 Ticket #${ticketId} registered! ${savedPoints.toLocaleString()} pts saved for drawing.`
+    : `🎉 ¡Boleto #${ticketId} registrado! ${savedPoints.toLocaleString()} pts asegurados en el sorteo.`;
+  showToast(toastMsg);
+
+  return ticket;
+}
+
+function renderConfirmedTicket(ticket) {
+  if (!DOM.giveawayTicketResult || !DOM.giveawayClaimPanel) return;
+
+  if (DOM.gtcTicketId) DOM.gtcTicketId.textContent = ticket.id;
+  if (DOM.gtcPassengerName) DOM.gtcPassengerName.textContent = ticket.nickname;
+  if (DOM.gtcSavedPoints) DOM.gtcSavedPoints.textContent = `${ticket.savedPoints.toLocaleString()} pts`;
+  if (DOM.gtcTotalEntries) {
+    const t = getT();
+    const entryLabel = ticket.entries === 1 ? (t.giveawayEntriesTag || 'Boleto VIP') : (t.giveawayEntriesTagPlural || 'Boletos VIP');
+    DOM.gtcTotalEntries.textContent = `${ticket.entries} ${entryLabel}`;
+  }
+
+  if (DOM.gtcQrCode) {
+    const qrPayload = `https://autobotec.net/raffle/ticket?id=${ticket.id}&pts=${ticket.savedPoints}&time=${encodeURIComponent(ticket.formattedTime)}`;
+    generateQrCode(DOM.gtcQrCode, qrPayload);
+  }
+
+  DOM.giveawayClaimPanel.classList.add('hidden');
+  DOM.giveawayTicketResult.classList.remove('hidden');
+}
+
+function updateGiveawayUI() {
+  const t = getT();
+  const currentPts = state.score || 0;
+  const entries = Math.max(1, 1 + Math.floor(currentPts / 500));
+
+  if (DOM.giveawaySessionPoints) {
+    DOM.giveawaySessionPoints.textContent = `${currentPts.toLocaleString()} pts`;
+  }
+  if (DOM.giveawayEntriesTag) {
+    const entryLabel = entries === 1 ? (t.giveawayEntriesTag || 'Boleto VIP') : (t.giveawayEntriesTagPlural || 'Boletos VIP');
+    DOM.giveawayEntriesTag.textContent = `${entries} ${entryLabel}`;
+  }
+  if (DOM.myTicketsCount) {
+    DOM.myTicketsCount.textContent = state.userTickets;
+  }
+
+  renderRecentWinners();
+}
+
 function setupGiveaway() {
+  // Load saved tickets count from localStorage
+  try {
+    const savedTickets = JSON.parse(localStorage.getItem('copilot_claimed_tickets') || '[]');
+    state.userTickets = savedTickets.length;
+    if (DOM.myTicketsCount) DOM.myTicketsCount.textContent = state.userTickets;
+  } catch (e) {}
+
+  // Fast inline ticket claim form
+  if (DOM.giveawayQuickForm) {
+    DOM.giveawayQuickForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const contact = DOM.gqfContact?.value.trim();
+      const nickname = DOM.gqfNickname?.value.trim();
+      if (!contact) return;
+      registerOfficialTicket(contact, nickname);
+    });
+  }
+
+  // Register another ticket button
+  if (DOM.btnNewTicket) {
+    DOM.btnNewTicket.addEventListener('click', () => {
+      sound.playTap();
+      if (DOM.giveawayTicketResult) DOM.giveawayTicketResult.classList.add('hidden');
+      if (DOM.giveawayClaimPanel) DOM.giveawayClaimPanel.classList.remove('hidden');
+      if (DOM.gqfContact) DOM.gqfContact.value = '';
+      if (DOM.gqfNickname) DOM.gqfNickname.value = '';
+      updateGiveawayUI();
+    });
+  }
+
+  // Modal claim trigger and handlers
   if (DOM.btnClaimTicket) {
     DOM.btnClaimTicket.addEventListener('click', () => {
       sound.playTap();
-      DOM.giveawayModal.classList.remove('hidden');
+      if (DOM.giveawayModal) DOM.giveawayModal.classList.remove('hidden');
     });
   }
 
   if (DOM.btnCloseGiveawayModal) {
     DOM.btnCloseGiveawayModal.addEventListener('click', () => {
-      DOM.giveawayModal.classList.add('hidden');
+      if (DOM.giveawayModal) DOM.giveawayModal.classList.add('hidden');
     });
   }
 
   if (DOM.giveawayForm) {
     DOM.giveawayForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const contact = DOM.riderContact.value.trim();
-      const nickname = DOM.riderNickname.value.trim() || 'VIP Rider';
+      const contact = DOM.riderContact?.value.trim();
+      const nickname = DOM.riderNickname?.value.trim();
       if (!contact) return;
 
-      state.userTickets += 2;
-      if (DOM.myTicketsCount) DOM.myTicketsCount.textContent = state.userTickets;
-      DOM.giveawayModal.classList.add('hidden');
-
-      sound.playFanfare();
-      showToast(`${getT().toastTicketRegistered} (${nickname})`);
+      registerOfficialTicket(contact, nickname);
+      if (DOM.giveawayModal) DOM.giveawayModal.classList.add('hidden');
     });
   }
+
+  updateGiveawayUI();
 }
 
 function renderRecentWinners() {

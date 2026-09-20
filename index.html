@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700;800&family=Fredoka:wght@600;700&family=Pixelify+Sans:wght@400;600;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260920_pwa_simon_fit_v7" />
+  <link rel="stylesheet" href="style.css?v=20260920_raffle_points_v9" />
   <style>
     /* CRITICAL INLINE STYLES FOR MIX MODE PILL & DOCK */
     button.mix-mode-pill {
@@ -1051,37 +1051,129 @@
       </section>
 
       <!-- ====================================================================
-           PILLAR 4: GIVEAWAYS ($50 DAILY JACKPOT)
+           PILLAR 4: GIVEAWAYS ($50 DAILY JACKPOT & TICKET CLAIM STATION)
            ==================================================================== -->
       <section class="view-panel" id="viewGiveaway">
         <div class="giveaway-card">
+          <!-- TOP HEADER WITH JACKPOT BANNER & DRAWING BADGE -->
           <div class="giveaway-header">
-            <div class="jackpot-badge" id="jackpotBadgeText">✨ SORTEO DIARIO OFICIAL COPILOT ✨</div>
-            <h1 class="giveaway-title"><span id="giveawayTitleBefore">¡Gana </span><span class="cash-highlight" id="giveawayTitleSpan">$50 en Efectivo</span><span id="giveawayTitleAfter"> Hoy!</span></h1>
-            <p class="giveaway-subtitle" id="giveawaySubtitle">Participa gratis durante tu viaje. Sorteo automático todos los días a las 9:00 PM.</p>
+            <div class="giveaway-header-top">
+              <div class="jackpot-badge" id="jackpotBadgeText">✨ SORTEO DIARIO OFICIAL COPILOT ✨</div>
+              <div class="giveaway-drawing-badge" id="drawingBadge">⏰ SORTEO HOY 9:00 PM</div>
+            </div>
+            <h1 class="giveaway-title">
+              <span id="giveawayTitleBefore">¡Gana </span><span class="cash-highlight" id="giveawayTitleSpan">$50 en Efectivo</span><span id="giveawayTitleAfter"> Hoy!</span>
+            </h1>
+            <p class="giveaway-subtitle" id="giveawaySubtitle">
+              Participa gratis durante tu viaje. Guarda tus puntos acumulados en tu boleto oficial para multiplicar tus probabilidades.
+            </p>
           </div>
 
+          <!-- FULL-HEIGHT REDISTRIBUTED BODY -->
           <div class="giveaway-split">
-            <!-- WHEEL / LUCK ZONE -->
-            <div class="wheel-box">
-              <div class="roulette-display">
-                <div class="roulette-item">💵 $50 Cash</div>
-                <div class="roulette-item active">🎟️ Boleto VIP #8492</div>
-                <div class="roulette-item">🎁 $25 Card</div>
+            <!-- LEFT PANEL: INTERACTIVE TICKET CLAIM & GOLDEN TICKET STATION -->
+            <div class="wheel-box giveaway-left-station">
+              
+              <!-- STATE 1: ACTIVE CLAIM PANEL -->
+              <div class="giveaway-claim-panel" id="giveawayClaimPanel">
+                <!-- POINTS CALLOUT -->
+                <div class="giveaway-points-callout">
+                  <div class="gpc-icon">⭐</div>
+                  <div class="gpc-info">
+                    <span class="gpc-label" id="gpcPointsLabel">Tus Puntos Acumulados:</span>
+                    <strong class="gpc-val" id="giveawaySessionPoints">0 pts</strong>
+                  </div>
+                  <div class="gpc-multiplier" id="gpcMultiplierTag">
+                    <span>🎟️</span> <span id="giveawayEntriesTag">1 Boleto VIP</span>
+                  </div>
+                </div>
+
+                <!-- FAST CLAIM FORM -->
+                <form id="giveawayQuickForm" class="giveaway-quick-form">
+                  <div class="gqf-row">
+                    <div class="gqf-field">
+                      <label for="gqfContact" id="labelGqfContact">Teléfono Móvil o Correo (Para reclamar premio):</label>
+                      <input type="text" id="gqfContact" placeholder="Ej: (305) 555-0199 o tu@email.com" required autocomplete="off" />
+                    </div>
+                    <div class="gqf-field">
+                      <label for="gqfNickname" id="labelGqfNickname">Tu Nombre o Apodo:</label>
+                      <input type="text" id="gqfNickname" placeholder="Ej: RocketRider" autocomplete="off" />
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn-spin btn-claim-ticket-main" id="btnClaimTicketMain">
+                    <span>🎟️</span> <span id="btnClaimTicketText">Reclamar y Guardar Boleto con mis Puntos</span>
+                  </button>
+                </form>
+
+                <div class="giveaway-policy-note" id="giveawayPolicyNote">
+                  ℹ️ Al guardar tu boleto, tus puntos quedan asegurados en el sorteo y tu marcador se reinicia para el siguiente juego o pasajero.
+                </div>
               </div>
-              <button class="btn-spin" id="btnClaimTicket">
-                <span>🎟️</span> Generar mi Boleto Gratis
-              </button>
+
+              <!-- STATE 2: CONFIRMED GOLDEN VIP TICKET DISPLAY -->
+              <div class="giveaway-ticket-result hidden" id="giveawayTicketResult">
+                <div class="golden-ticket-card">
+                  <div class="gtc-ribbon" id="ticketConfirmedRibbon">⭐ BOLETO OFICIAL REGISTRADO ⭐</div>
+                  <div class="gtc-body">
+                    <div class="gtc-main-info">
+                      <div class="gtc-number-row">
+                        <span class="gtc-label">N° BOLETO:</span>
+                        <span class="gtc-id" id="gtcTicketId">VIP-8492</span>
+                      </div>
+                      <div class="gtc-detail-row">
+                        <span>👤 Pasajero:</span>
+                        <strong id="gtcPassengerName">Alex M.</strong>
+                      </div>
+                      <div class="gtc-detail-row">
+                        <span>⭐ Puntos Guardados:</span>
+                        <strong id="gtcSavedPoints" style="color:var(--splash-lime);">0 pts</strong>
+                      </div>
+                      <div class="gtc-detail-row">
+                        <span>🎟️ Entradas en Sorteo:</span>
+                        <strong id="gtcTotalEntries">1 Boleto VIP</strong>
+                      </div>
+                      <div class="gtc-status-row">
+                        <span class="status-indicator-dot"></span>
+                        <span id="gtcStatusText">Participación Activa · Sorteo 9:00 PM</span>
+                      </div>
+                    </div>
+                    <div class="gtc-qr-wrapper">
+                      <div class="gtc-qr-code" id="gtcQrCode"></div>
+                      <span class="gtc-qr-hint" id="ticketQrHint">📱 Escanea o toma foto</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="gtc-actions">
+                  <button type="button" class="btn-secondary-ticket" id="btnNewTicket">
+                    <span>➕</span> <span id="btnNewTicketText">Registrar Otro Boleto</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- FOOTER COUNTER -->
               <div class="tickets-counter">
-                <span id="yourTicketsLabel">Tus boletos hoy:</span> <strong id="myTicketsCount">0</strong>
+                <span id="yourTicketsLabel">Boletos registrados hoy:</span> <strong id="myTicketsCount">0</strong>
               </div>
             </div>
 
-            <!-- RECENT WINNERS LIST -->
-            <div class="winners-box">
-              <div class="winners-title" id="recentWinnersTitle">🏆 Ganadores Recientes en Rideshare</div>
+            <!-- RIGHT PANEL: RECENT WINNERS LIST & PRIZE POOL -->
+            <div class="winners-box giveaway-right-station">
+              <div class="winners-box-header">
+                <div class="winners-title" id="recentWinnersTitle">🏆 Ganadores Recientes en Rideshare</div>
+                <div class="prize-pill-pool">
+                  <span class="prize-pill">🥇 $50 Cash</span>
+                  <span class="prize-pill">🥈 $25 Card</span>
+                </div>
+              </div>
+
               <div class="winners-list" id="winnersList">
                 <!-- Populated by JS -->
+              </div>
+
+              <div class="winners-footer-note">
+                <span>🛡️ Sorteos auditados y respaldados por Copilot Ads</span>
               </div>
             </div>
           </div>
@@ -1552,6 +1644,6 @@
   </script>
   <script src="src/qrcode.js?v=20260920_qr_autobotec"></script>
   <script src="src/campaignManager.js?v=20260920_v2_futuristic"></script>
-  <script type="module" src="src/app.js?v=20260920_pwa_simon_fit_v7"></script>
+  <script type="module" src="src/app.js?v=20260920_raffle_points_v9"></script>
 </body>
 </html>

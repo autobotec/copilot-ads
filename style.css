@@ -3153,127 +3153,482 @@ html[data-aspect-ratio="portrait"] .trivia-card.is-picture-mode,
 /* --------------------------------------------------------------------------
    13. PILLAR 4 & 5: GIVEAWAYS & LEADERBOARD
    -------------------------------------------------------------------------- */
-.giveaway-card, .leaderboard-card {
+/* --------------------------------------------------------------------------
+   13. PILLAR 4: GIVEAWAYS ($50 DAILY JACKPOT & TICKET CLAIM STATION)
+   -------------------------------------------------------------------------- */
+.giveaway-card {
+  height: 100%;
+  max-height: 100%;
+  box-sizing: border-box;
+  background: var(--bg-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-xl);
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.leaderboard-card {
   height: 100%;
   background: var(--bg-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-xl);
-  padding: 22px 28px;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-shadow: var(--shadow-card);
 }
 
+.giveaway-header {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.giveaway-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .jackpot-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.5px;
   color: var(--splash-yellow);
-  margin-bottom: 4px;
+}
+
+.giveaway-drawing-badge {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--splash-cyan);
+  background: rgba(0, 240, 255, 0.12);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
 }
 
 .giveaway-title {
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 800;
+  line-height: 1.15;
+  margin: 0;
+  color: #fff;
 }
 
 .cash-highlight {
   color: var(--splash-lime);
+  text-shadow: 0 0 14px rgba(0, 255, 136, 0.45);
 }
 
 .giveaway-subtitle {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
+  line-height: 1.3;
+  margin: 0;
 }
 
 .giveaway-split {
+  flex: 1 1 auto;
+  min-height: 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-top: 14px;
+  grid-template-columns: 1.18fr 0.82fr;
+  gap: 14px;
+  align-items: stretch;
+  overflow: hidden;
 }
 
-.wheel-box, .winners-box {
-  background: rgba(255, 255, 255, 0.04);
+.giveaway-left-station,
+.giveaway-right-station {
+  height: 100%;
+  max-height: 100%;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.035);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
-  padding: 18px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
+  overflow: hidden;
+  justify-content: space-between;
 }
 
-.roulette-display {
+/* Giveaway Claim Panel (Left Station) */
+.giveaway-claim-panel {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   gap: 10px;
 }
 
-.roulette-item {
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.06);
+.giveaway-points-callout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.14), rgba(0, 255, 136, 0.08));
+  border: 1.5px solid rgba(255, 215, 0, 0.35);
   border-radius: var(--radius-md);
-  font-size: 13px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.gpc-icon {
+  font-size: 26px;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+}
+
+.gpc-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.gpc-label {
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.5px;
   color: var(--text-muted);
+  text-transform: uppercase;
 }
 
-.roulette-item.active {
-  background: var(--splash-yellow);
-  color: #0b0f19;
-  box-shadow: var(--shadow-splash-yellow);
+.gpc-val {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--splash-lime);
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.45);
 }
 
-.btn-spin {
-  padding: 12px 24px;
+.gpc-multiplier {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--splash-yellow);
+}
+
+.giveaway-quick-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gqf-row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 10px;
+}
+
+.gqf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gqf-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.gqf-field input {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.gqf-field input:focus {
+  border-color: var(--splash-cyan);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+}
+
+.btn-claim-ticket-main {
+  width: 100%;
+  padding: 12px 18px;
   border-radius: var(--radius-pill);
   border: none;
-  background: var(--grad-splash);
+  background: linear-gradient(135deg, #ff007f 0%, #7928ca 50%, #00f0ff 100%);
+  background-size: 200% auto;
   color: #fff;
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.5px;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(255, 0, 127, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 18px rgba(255, 0, 127, 0.45);
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
 }
 
-.tickets-counter {
-  font-size: 13px;
+.btn-claim-ticket-main:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 22px rgba(255, 0, 127, 0.6);
+}
+
+.btn-claim-ticket-main:active {
+  transform: scale(0.98);
+}
+
+.giveaway-policy-note {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.35;
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 3px solid var(--splash-cyan);
+  padding: 5px 10px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* Confirmed Golden VIP Ticket Display */
+.giveaway-ticket-result {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.golden-ticket-card {
+  position: relative;
+  background: linear-gradient(135deg, #1c1809 0%, #291e06 50%, #151b24 100%);
+  border: 1.5px solid #e5b22b;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  box-shadow: 0 0 20px rgba(229, 178, 43, 0.25), inset 0 0 15px rgba(229, 178, 43, 0.08);
+  overflow: hidden;
+}
+
+.gtc-ribbon {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #ffd700;
+  text-align: center;
+  padding-bottom: 5px;
+  border-bottom: 1px dashed rgba(229, 178, 43, 0.35);
+  margin-bottom: 6px;
+}
+
+.gtc-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gtc-main-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gtc-number-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gtc-number-row .gtc-label {
+  font-size: 10px;
   color: var(--text-muted);
 }
+
+.gtc-id {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 900;
+  color: #ffd700;
+  letter-spacing: 1px;
+}
+
+.gtc-detail-row {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gtc-detail-row strong {
+  color: #fff;
+}
+
+.gtc-status-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--splash-lime);
+  margin-top: 2px;
+}
+
+.status-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--splash-lime);
+  box-shadow: 0 0 8px var(--splash-lime);
+}
+
+.gtc-qr-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.gtc-qr-code {
+  width: 72px;
+  height: 72px;
+  background: #fff;
+  border-radius: 6px;
+  padding: 3px;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.gtc-qr-hint {
+  font-size: 9px;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.gtc-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-secondary-ticket {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-glass);
+  color: #fff;
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+
+.btn-secondary-ticket:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Tickets Counter */
+.tickets-counter {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
 .tickets-counter strong {
   color: var(--splash-cyan);
+  font-size: 14px;
+}
+
+/* Right station: Winners List */
+.winners-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .winners-title {
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
   color: #fff;
-  align-self: flex-start;
+}
+
+.prize-pill-pool {
+  display: flex;
+  gap: 6px;
+}
+
+.prize-pill {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--splash-yellow);
+  border: 1px solid rgba(255, 215, 0, 0.25);
 }
 
 .winners-list {
-  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  padding-right: 4px;
 }
 
 .winner-row {
   display: flex;
   justify-content: space-between;
-  padding: 8px 12px;
+  align-items: center;
+  padding: 7px 10px;
   background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-sm);
   font-size: 12px;
+  transition: background 0.15s;
+}
+
+.winner-row:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.winners-footer-note {
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 10px;
+  color: var(--text-dim);
+  text-align: center;
 }
 
 .lb-table-container {
@@ -3419,7 +3774,7 @@ html[data-aspect-ratio="portrait"] .trivia-card.is-picture-mode,
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  z-index: 100;
+  z-index: 10005;
   display: flex;
   align-items: center;
   justify-content: center;
