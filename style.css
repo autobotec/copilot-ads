@@ -6009,138 +6009,262 @@ html.theme-day ::-webkit-scrollbar-thumb {
 }
 
 /* ==========================================================================
-   HIGH-VISIBILITY ACCESSIBILITY & LARGE AESTHETIC ICONS (ALL AUDIENCES)
-   Enlarges touch targets and icons for children and seniors with reduced vision.
+   HIGH-VISIBILITY ACCESSIBILITY & RESPONSIVE ADAPTATION (ALL AUDIENCES)
+   Ensures top header and bottom dock buttons fit all tablet screens without overlapping.
    ========================================================================== */
 .bottom-dock,
 .smb3-dock-stage {
-  height: 68px !important;
-  padding: 0 16px !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  padding: 0 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: clamp(4px, 0.8vw, 10px) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 .dock-left-brand {
-  gap: 10px !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
 }
 
 .dock-logo-icon {
-  font-size: 28px !important;
+  font-size: 24px !important;
 }
 
 .dock-logo-name {
-  font-size: 16px !important;
+  font-size: 13px !important;
   font-weight: 900 !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* SMB3 POWER METER — auto-hide on tablet widths <= 1260px so dock pills have maximum space */
+.smb3-dock-pmeter {
+  flex-shrink: 0 !important;
+  padding: 2px 6px !important;
+}
+
+@media (max-width: 1260px) {
+  .smb3-dock-pmeter {
+    display: none !important;
+  }
 }
 
 .dock-nav-pills {
-  gap: 8px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: clamp(3px, 0.6vw, 6px) !important;
+  padding: 0 2px !important;
 }
 
 .dock-pill {
-  min-height: 52px !important;
-  padding: 6px 16px !important;
-  gap: 8px !important;
-  border-radius: 12px !important;
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  max-width: 142px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  padding: 3px 6px !important;
+  gap: 5px !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 .dock-icon {
-  font-size: 26px !important;
-  min-width: 28px !important;
+  font-size: 22px !important;
+  min-width: 22px !important;
   line-height: 1 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+  flex-shrink: 0 !important;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)) !important;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .dock-pill:hover .dock-icon,
 .dock-pill.active .dock-icon {
-  transform: scale(1.18);
+  transform: scale(1.15);
 }
 
 .dock-pill .dock-label {
-  font-size: 14px !important;
+  font-size: clamp(10.5px, 0.92vw, 12.5px) !important;
   font-weight: 800 !important;
-  letter-spacing: 0.3px !important;
+  letter-spacing: -0.2px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.1 !important;
+  text-align: center !important;
 }
 
 .dock-right-status {
-  gap: 12px !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
 }
 
 .smb3-weather-badge,
 .smb3-clock-badge {
-  padding: 6px 12px !important;
-  border-radius: 8px !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  white-space: nowrap !important;
+}
+
+.smb3-clock-badge {
+  display: flex !important;
+  align-items: center !important;
+  gap: 3px !important;
 }
 
 .smb3-clock-badge .clock-time {
-  font-size: 15px !important;
+  font-size: 13px !important;
   font-weight: 900 !important;
+}
+
+.smb3-clock-badge .clock-period {
+  font-size: 10px !important;
+  font-weight: 800 !important;
 }
 
 .dock-weather {
-  font-size: 14px !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
 }
 
 .dock-weather span {
-  font-size: 22px !important;
+  font-size: 18px !important;
 }
 
 .dock-weather strong {
-  font-size: 15px !important;
+  font-size: 13px !important;
   font-weight: 900 !important;
 }
 
-/* TOP HEADER ICONS & PILLS */
+/* TOP HEADER ICONS & PILLS — CLEAN NO-OVERLAP PROPORTIONS */
 .top-header,
 .smb3-marquee-header {
-  height: 58px !important;
-  padding: 0 16px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  padding: 0 12px !important;
+  gap: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.header-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.brand-badge {
+  flex-shrink: 0 !important;
+  gap: 8px !important;
 }
 
 .brand-splash-logo,
 .smb3-block-logo {
-  width: 36px !important;
-  height: 36px !important;
+  width: 32px !important;
+  height: 32px !important;
+  flex-shrink: 0 !important;
 }
 
 .smb3-q-icon {
-  font-size: 22px !important;
+  font-size: 18px !important;
 }
 
 .brand-title {
-  font-size: 16px !important;
+  font-size: 15px !important;
   font-weight: 900 !important;
+  white-space: nowrap !important;
+}
+
+.quick-pill-banner {
+  padding: 4px 10px !important;
+  font-size: 11.5px !important;
+  max-width: 260px !important;
+  flex-shrink: 1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.mix-mode-pill {
+  flex-shrink: 0 !important;
+  padding: 3px 9px !important;
+  height: 32px !important;
 }
 
 .mix-svg-icon {
-  width: 20px !important;
-  height: 20px !important;
+  width: 15px !important;
+  height: 15px !important;
 }
 
 .mix-status-text {
-  font-size: 11px !important;
+  font-size: 10px !important;
+}
+
+.header-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+}
+
+.lang-selector-pill {
+  padding: 2px !important;
+  flex-shrink: 0 !important;
 }
 
 .lang-btn {
-  font-size: 14px !important;
-  padding: 6px 12px !important;
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+  height: 28px !important;
+  line-height: 1 !important;
+}
+
+.score-pill {
+  padding: 3px 9px !important;
+  height: 32px !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
 }
 
 .score-icon {
-  font-size: 22px !important;
+  font-size: 16px !important;
 }
 
 .score-val {
-  font-size: 16px !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
 }
 
 .control-btn,
 .smb3-btn {
-  width: 42px !important;
-  height: 42px !important;
-  font-size: 20px !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  font-size: 16px !important;
+  flex-shrink: 0 !important;
 }
 
 /* ==========================================================================
@@ -6329,6 +6453,108 @@ html.theme-day ::-webkit-scrollbar-thumb {
 .spotlight-read-btn {
   padding: 6px 16px !important;
   font-size: 12px !important;
+}
+
+/* SUBNAV HEADERS (WEATHER & MEDIA) — CLEAN NON-OVERLAPPING FIT */
+.weathernews-header {
+  padding: 6px 14px !important;
+  min-height: 44px !important;
+  margin-bottom: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
+}
+
+.weathernews-title {
+  font-size: 16px !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+
+.weathernews-subnav {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+}
+
+.wn-subnav-btn {
+  padding: 5px 12px !important;
+  font-size: 12px !important;
+  height: 34px !important;
+  border-radius: 999px !important;
+}
+
+.media-hub-header {
+  padding: 6px 14px !important;
+  min-height: 44px !important;
+  margin-bottom: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
+  gap: 8px !important;
+  flex-wrap: nowrap !important;
+  overflow: hidden !important;
+}
+
+.media-title {
+  font-size: 16px !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+
+.media-badge {
+  font-size: 9.5px !important;
+  letter-spacing: 0.8px !important;
+}
+
+.media-subtitle {
+  display: none !important;
+}
+
+.media-subnav {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  flex-shrink: 0 !important;
+}
+
+.media-subnav-btn {
+  padding: 5px 10px !important;
+  font-size: 11.5px !important;
+  height: 32px !important;
+  white-space: nowrap !important;
+  border-radius: 999px !important;
+}
+
+/* NEWS SPOTLIGHT CATEGORY AND HERO SEPARATION (NO OVERLAYS) */
+.spotlight-top-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 8px !important;
+}
+
+.spotlight-cat-badge {
+  font-size: 11px !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+}
+
+.spotlight-hero-bar {
+  margin-top: 0 !important;
+  margin-bottom: 10px !important;
+  padding: 5px 12px !important;
+  border-radius: 8px !important;
+  font-size: 11.5px !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(0, 0, 0, 0.45) !important;
 }
 
 /* ==========================================================================
