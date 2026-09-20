@@ -71,6 +71,10 @@
         <span class="nav-icon">➕</span>
         <span>Crear / Editar Pauta</span>
       </button>
+      <button class="nav-item" data-tab="tabMediaLibrary">
+        <span class="nav-icon">🎬</span>
+        <span>Biblioteca de Videos</span>
+      </button>
       <button class="nav-item" data-tab="tabFleet">
         <span class="nav-icon">🚕</span>
         <span>Flota de Tablets</span>
@@ -249,14 +253,48 @@
                 <input type="text" id="campSubtitle" class="form-control" placeholder="Ej: Disfruta el mejor ambiente en South Beach">
               </div>
 
-              <!-- URL o Archivo del Creativo -->
+              <!-- URL o Archivo del Creativo con Carga Directa -->
               <div class="form-group full-width">
-                <label class="form-label" for="campMediaUrl">URL o Ruta del Creativo (Video MP4 o Imagen) *</label>
+                <label class="form-label" for="campMediaUrl">Creativo del Anuncio (Video MP4 o Imagen) *</label>
+                
+                <!-- Dropzone integrado para el formulario -->
+                <div id="formUploadDropzone" class="upload-dropzone" style="margin-bottom: 12px; padding: 18px;">
+                  <input type="file" id="formFileInput" accept="video/mp4,video/webm,video/quicktime,video/x-m4v,image/*" style="display: none;">
+                  <div class="dropzone-icon">🎬</div>
+                  <div class="dropzone-title">Arrastra tu Video MP4 o Imagen aquí</div>
+                  <div class="dropzone-subtitle">o elige una opción para cargarlo automáticamente:</div>
+                  <div class="dropzone-actions">
+                    <button type="button" class="btn-primary" id="btnBrowseFile" style="padding: 7px 16px; font-size: 0.85rem;">📁 Subir Archivo desde PC</button>
+                    <button type="button" class="btn-outline" id="btnOpenMediaPicker" style="padding: 7px 16px; font-size: 0.85rem;">📂 Elegir de la Biblioteca</button>
+                  </div>
+                </div>
+
+                <!-- Barra de Progreso de Subida Individual -->
+                <div id="formUploadProgressContainer" style="display: none; margin-bottom: 12px;" class="upload-queue-item">
+                  <div class="upload-queue-header">
+                    <span class="upload-filename" id="formUploadFilename">📤 Subiendo archivo...</span>
+                    <span class="upload-status-text" id="formUploadPercent">0%</span>
+                  </div>
+                  <div class="progress-track">
+                    <div class="progress-fill" id="formUploadBar" style="width: 0%;"></div>
+                  </div>
+                </div>
+
+                <!-- Contenedor de Previsualización en Vivo en el Formulario -->
+                <div id="formMediaPreviewWrapper" style="display: none; margin-bottom: 12px; background: rgba(0,0,0,0.6); border: 1px solid var(--border-accent); border-radius: var(--radius-sm); padding: 12px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 0.85rem; color: #38bdf8; font-weight: 600;">✨ Vista previa del archivo cargado:</span>
+                    <button type="button" class="btn-outline" id="btnClearMediaPreview" style="padding: 2px 8px; font-size: 0.75rem; color: #f87171;">✕ Quitar</button>
+                  </div>
+                  <div id="formMediaPreviewContainer" style="max-height: 240px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 6px; background: #000;"></div>
+                </div>
+
+                <!-- Campo de Ruta o URL manual -->
                 <div style="display: flex; gap: 10px;">
                   <input type="text" id="campMediaUrl" class="form-control" placeholder="Ej: assets/videos/demo_promo.mp4 o https://..." required style="flex: 1;">
                   <button type="button" class="btn-outline" id="btnTestMediaPreview" style="flex-shrink: 0;">👁️ Probar Creativo</button>
                 </div>
-                <small style="color: #64748b; margin-top: 4px;">Para videos se recomienda formato MP4 horizontal 1080p. Para banners imagen JPG/PNG/WebP.</small>
+                <small style="color: #64748b; margin-top: 4px;">Al subir un video o seleccionarlo de la biblioteca, la ruta se completa sola y se ajusta el formato publicitario.</small>
               </div>
 
               <!-- Código de Cupón -->
@@ -340,6 +378,76 @@
               </button>
             </div>
           </form>
+        </div>
+      </section>
+
+      <!-- ==================== TAB: BIBLIOTECA DE MEDIOS & VIDEOS ==================== -->
+      <section id="tabMediaLibrary" class="tab-pane">
+        <div class="card-section">
+          <div class="section-header-row">
+            <div>
+              <h3 class="section-heading">🎬 Biblioteca de Creativos & Videos</h3>
+              <p class="section-desc">Sube y gestiona todos los videos MP4 e imágenes alojados en el servidor para tus anuncios.</p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button class="btn-outline" id="btnRefreshMedia">🔄 Actualizar</button>
+              <button class="btn-primary" id="btnTriggerBatchUpload">➕ Subir Videos</button>
+            </div>
+          </div>
+
+          <!-- Métricas de Almacenamiento -->
+          <div style="display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">
+            <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px 18px; display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 1.8rem;">🎬</span>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Total Videos</div>
+                <div id="mediaStatVideos" style="font-size: 1.25rem; font-weight: 800; color: #38bdf8;">0</div>
+              </div>
+            </div>
+            <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px 18px; display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 1.8rem;">🖼️</span>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Total Imágenes</div>
+                <div id="mediaStatImages" style="font-size: 1.25rem; font-weight: 800; color: #a855f7;">0</div>
+              </div>
+            </div>
+            <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px 18px; display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 1.8rem;">💾</span>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Espacio Usado</div>
+                <div id="mediaStatSize" style="font-size: 1.25rem; font-weight: 800; color: #34d399;">0 MB</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Zona de Subida Masiva (Batch Dropzone) -->
+          <div id="batchUploadDropzone" class="upload-dropzone" style="margin-bottom: 24px;">
+            <input type="file" id="batchFileInput" multiple accept="video/mp4,video/webm,video/quicktime,video/x-m4v,image/*" style="display: none;">
+            <div class="dropzone-icon">🚀</div>
+            <div class="dropzone-title">Subida Masiva de Videos y Creativos</div>
+            <div class="dropzone-subtitle">Arrastra múltiples videos simultáneamente o haz clic para explorar tu PC (hasta 50 archivos a la vez)</div>
+            <div class="dropzone-actions">
+              <button type="button" class="btn-primary" id="btnSelectBatchFiles">📁 Seleccionar Videos de mi PC</button>
+            </div>
+          </div>
+
+          <!-- Cola de Subidas en Progreso -->
+          <div id="batchUploadQueue" class="upload-queue" style="margin-bottom: 24px; display: none;"></div>
+
+          <!-- Barra de Filtros y Búsqueda -->
+          <div class="media-toolbar">
+            <input type="text" id="mediaSearchInput" class="form-control media-search-input" placeholder="🔍 Buscar archivo por nombre...">
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-outline active" id="btnFilterAllMedia" style="font-size: 0.8rem; padding: 6px 12px;">Todos</button>
+              <button class="btn-outline" id="btnFilterVideosOnly" style="font-size: 0.8rem; padding: 6px 12px;">🎬 Solo Videos</button>
+              <button class="btn-outline" id="btnFilterImagesOnly" style="font-size: 0.8rem; padding: 6px 12px;">🖼️ Solo Imágenes</button>
+            </div>
+          </div>
+
+          <!-- Grid de Archivos Multimedia -->
+          <div id="mediaLibraryGrid" class="media-grid">
+            <!-- Inyectado dinámicamente -->
+          </div>
         </div>
       </section>
 
@@ -459,6 +567,24 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL SELECTOR DE MEDIOS ==================== -->
+  <div id="mediaPickerModal" class="preview-modal-overlay">
+    <div class="preview-modal-body media-modal-dialog">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+        <h4 style="font-size: 1.15rem; font-weight: 700;">📂 Seleccionar Creativo de la Biblioteca</h4>
+        <button id="btnCloseMediaPicker" class="btn-outline" style="padding: 4px 10px; border-radius: 50%;">✕</button>
+      </div>
+      <div style="margin-top: 14px; margin-bottom: 8px;">
+        <input type="text" id="pickerSearchInput" class="form-control" placeholder="🔍 Filtrar videos o imágenes por nombre...">
+      </div>
+      <div class="media-modal-body">
+        <div id="pickerMediaGrid" class="media-grid">
+          <!-- Inyectado dinámicamente -->
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== SCRIPTS ==================== -->
   <script src="src/campaignManager.js"></script>
   <script>
@@ -519,6 +645,7 @@
           pane.classList.toggle('active', pane.id === tabId);
         });
         if (tabId === 'tabReports') loadReportTab();
+        if (tabId === 'tabMediaLibrary') loadMediaLibrary();
       }
 
       navButtons.forEach(btn => {
@@ -547,6 +674,7 @@
         renderDashboardQuickTable();
         renderCampaignsTable();
         renderFleet();
+        loadMediaLibrary();
       }
 
       function renderKPIs() {
@@ -696,6 +824,7 @@
         formTitleHeading.textContent = 'Nueva Campaña Publicitaria';
         btnCancelEdit.style.display = 'none';
         groupScheduleHours.style.display = 'none';
+        clearFormMediaPreview();
         document.getElementById('campStartDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('campEndDate').value = '2027-12-31';
       }
@@ -778,6 +907,7 @@
 
         formTitleHeading.textContent = `Editar Campaña: ${camp.clientName}`;
         btnCancelEdit.style.display = 'inline-block';
+        updateFormMediaPreview(camp.mediaUrl);
         switchTab('tabNewCampaign');
       };
 
@@ -963,6 +1093,512 @@
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;');
       }
+
+      // ─── GESTIÓN DE SUBIDAS Y BIBLIOTECA DE MEDIOS ────────────────────
+      const API_BASE = (window.location.protocol === 'file:' || window.location.port === '5500' || window.location.port === '3000')
+        ? 'http://localhost:3008/api'
+        : '/api';
+
+      let cachedMediaFiles = [];
+      let currentMediaFilter = 'all';
+
+      // Función universal para subir archivo con seguimiento de progreso XHR
+      function uploadMediaFile(file, onProgress) {
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          const formData = new FormData();
+          formData.append('file', file);
+
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable && onProgress) {
+              const percent = Math.round((e.loaded / e.total) * 100);
+              onProgress({ loaded: e.loaded, total: e.total, percent });
+            }
+          });
+
+          xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const res = JSON.parse(xhr.responseText);
+                resolve(res);
+              } catch (err) {
+                resolve({ success: true, file: { url: 'assets/videos/' + file.name, name: file.name, type: 'video' } });
+              }
+            } else {
+              try {
+                const errRes = JSON.parse(xhr.responseText);
+                reject(new Error(errRes.error || `Error ${xhr.status}`));
+              } catch (e) {
+                reject(new Error(`Error ${xhr.status}: ${xhr.statusText}`));
+              }
+            }
+          });
+
+          xhr.addEventListener('error', () => reject(new Error('Error de conexión con el servidor')));
+          xhr.addEventListener('abort', () => reject(new Error('Subida cancelada')));
+
+          xhr.open('POST', `${API_BASE}/upload`);
+          xhr.send(formData);
+        });
+      }
+
+      // ─── PREVIEW EN EL FORMULARIO DE PAUTA ────────────────────────────
+      const formMediaPreviewWrapper = document.getElementById('formMediaPreviewWrapper');
+      const formMediaPreviewContainer = document.getElementById('formMediaPreviewContainer');
+      const btnClearMediaPreview = document.getElementById('btnClearMediaPreview');
+
+      function updateFormMediaPreview(url) {
+        if (!url) {
+          clearFormMediaPreview();
+          return;
+        }
+        const isVideo = url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov') || url.includes('/videos/');
+        if (isVideo) {
+          formMediaPreviewContainer.innerHTML = `<video src="${url}" controls autoplay muted style="width:100%; max-height:220px; object-fit:contain; border-radius:4px;"></video>`;
+        } else {
+          formMediaPreviewContainer.innerHTML = `<img src="${url}" alt="Preview" style="max-width:100%; max-height:220px; object-fit:contain; border-radius:4px;">`;
+        }
+        formMediaPreviewWrapper.style.display = 'block';
+      }
+
+      function clearFormMediaPreview() {
+        formMediaPreviewContainer.innerHTML = '';
+        formMediaPreviewWrapper.style.display = 'none';
+      }
+
+      btnClearMediaPreview.addEventListener('click', () => {
+        clearFormMediaPreview();
+        document.getElementById('campMediaUrl').value = '';
+      });
+
+      document.getElementById('campMediaUrl').addEventListener('input', (e) => {
+        const val = e.target.value.trim();
+        if (val) updateFormMediaPreview(val);
+        else clearFormMediaPreview();
+      });
+
+      // ─── SUBIDA INDIVIDUAL DESDE FORMULARIO (DROPDOWN / EXPLORADOR) ──
+      const formUploadDropzone = document.getElementById('formUploadDropzone');
+      const formFileInput = document.getElementById('formFileInput');
+      const btnBrowseFile = document.getElementById('btnBrowseFile');
+      const formUploadProgressContainer = document.getElementById('formUploadProgressContainer');
+      const formUploadFilename = document.getElementById('formUploadFilename');
+      const formUploadPercent = document.getElementById('formUploadPercent');
+      const formUploadBar = document.getElementById('formUploadBar');
+
+      btnBrowseFile.addEventListener('click', (e) => {
+        e.stopPropagation();
+        formFileInput.click();
+      });
+
+      formUploadDropzone.addEventListener('click', () => {
+        formFileInput.click();
+      });
+
+      formUploadDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        formUploadDropzone.classList.add('dragover');
+      });
+
+      formUploadDropzone.addEventListener('dragleave', () => {
+        formUploadDropzone.classList.remove('dragover');
+      });
+
+      formUploadDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        formUploadDropzone.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          handleFormFileUpload(e.dataTransfer.files[0]);
+        }
+      });
+
+      formFileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          handleFormFileUpload(e.target.files[0]);
+        }
+      });
+
+      async function handleFormFileUpload(file) {
+        if (!file) return;
+
+        formUploadProgressContainer.style.display = 'block';
+        formUploadFilename.textContent = `📤 Subiendo: ${file.name}`;
+        formUploadBar.style.width = '0%';
+        formUploadPercent.textContent = '0%';
+        formUploadBar.className = 'progress-fill';
+
+        try {
+          const res = await uploadMediaFile(file, (p) => {
+            formUploadBar.style.width = `${p.percent}%`;
+            formUploadPercent.textContent = `${p.percent}%`;
+          });
+
+          formUploadBar.classList.add('success');
+          formUploadPercent.textContent = '¡100% Completado!';
+          
+          const uploadedFile = res.file || (res.files && res.files[0]);
+          const url = uploadedFile ? uploadedFile.url : `assets/videos/${file.name}`;
+
+          document.getElementById('campMediaUrl').value = url;
+          
+          // Auto-asignar formato
+          const isVideo = file.type.startsWith('video/') || url.endsWith('.mp4') || url.endsWith('.webm');
+          if (isVideo) {
+            document.getElementById('campFormat').value = 'video_spotlight';
+          } else {
+            const currentFmt = document.getElementById('campFormat').value;
+            if (currentFmt === 'video_spotlight') {
+              document.getElementById('campFormat').value = 'deal';
+            }
+          }
+
+          updateFormMediaPreview(url);
+
+          setTimeout(() => {
+            formUploadProgressContainer.style.display = 'none';
+          }, 2000);
+
+          // Refrescar biblioteca en segundo plano
+          loadMediaLibrary();
+        } catch (err) {
+          formUploadBar.classList.add('error');
+          formUploadPercent.textContent = 'Error';
+          alert(`No se pudo subir el archivo: ${err.message}`);
+          setTimeout(() => {
+            formUploadProgressContainer.style.display = 'none';
+          }, 3000);
+        }
+      }
+
+      // ─── CARGAR BIBLIOTECA DE MEDIOS ──────────────────────────────────
+      const mediaStatVideos = document.getElementById('mediaStatVideos');
+      const mediaStatImages = document.getElementById('mediaStatImages');
+      const mediaStatSize = document.getElementById('mediaStatSize');
+      const mediaLibraryGrid = document.getElementById('mediaLibraryGrid');
+      const mediaSearchInput = document.getElementById('mediaSearchInput');
+
+      async function loadMediaLibrary() {
+        try {
+          const res = await fetch(`${API_BASE}/media`);
+          if (!res.ok) throw new Error('Servidor no disponible');
+          const data = await res.json();
+          if (data.success && Array.isArray(data.files)) {
+            cachedMediaFiles = data.files;
+            mediaStatVideos.textContent = data.videoCount || 0;
+            mediaStatImages.textContent = data.imageCount || 0;
+            mediaStatSize.textContent = data.totalSizeFormatted || '0 B';
+            renderMediaGrid(filterMediaFiles());
+          }
+        } catch (err) {
+          console.warn('[MEDIA LIBRARY] API no responde, usando lista local por defecto:', err.message);
+          // Fallback a archivos estándar de la app si API no responde
+          cachedMediaFiles = [
+            { name: 'anuncia_aqui_autobotec.mp4', url: 'assets/videos/anuncia_aqui_autobotec.mp4', type: 'video', sizeFormatted: '142 KB' },
+            { name: 'demo_promo.mp4', url: 'assets/videos/demo_promo.mp4', type: 'video', sizeFormatted: '142 KB' }
+          ];
+          mediaStatVideos.textContent = '2';
+          mediaStatImages.textContent = '0';
+          mediaStatSize.textContent = '284 KB';
+          renderMediaGrid(filterMediaFiles());
+        }
+      }
+
+      function filterMediaFiles() {
+        const query = (mediaSearchInput.value || '').toLowerCase().trim();
+        return cachedMediaFiles.filter(f => {
+          const matchType = currentMediaFilter === 'all' || 
+            (currentMediaFilter === 'video' && f.type === 'video') ||
+            (currentMediaFilter === 'image' && f.type === 'image');
+          const matchQuery = !query || f.name.toLowerCase().includes(query) || (f.url && f.url.toLowerCase().includes(query));
+          return matchType && matchQuery;
+        });
+      }
+
+      function renderMediaGrid(files) {
+        if (!files || files.length === 0) {
+          mediaLibraryGrid.innerHTML = `
+            <div class="media-empty-state">
+              <div class="media-empty-icon">📁</div>
+              <div style="font-size: 1.1rem; font-weight:600; color:#f8fafc; margin-bottom:4px;">No se encontraron creativos</div>
+              <div style="font-size: 0.85rem;">Arrastra videos a la zona de subida para añadirlos a tu biblioteca.</div>
+            </div>
+          `;
+          return;
+        }
+
+        mediaLibraryGrid.innerHTML = files.map(f => {
+          const isVideo = f.type === 'video';
+          const previewHtml = isVideo
+            ? `<video src="${f.url}" preload="metadata" muted onmouseover="this.play()" onmouseout="this.pause()"></video>`
+            : `<img src="${f.url}" loading="lazy" alt="${escapeHtml(f.name)}">`;
+
+          return `
+            <div class="media-card">
+              <div class="media-preview-box">
+                <span class="media-type-badge">${isVideo ? '🎬 VIDEO' : '🖼️ IMAGEN'}</span>
+                <span class="media-size-badge">${f.sizeFormatted || ''}</span>
+                ${previewHtml}
+              </div>
+              <div class="media-body">
+                <div class="media-title" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div>
+                <div class="media-meta">${f.mtime ? new Date(f.mtime).toLocaleDateString() : 'Activo'} · ${f.url}</div>
+                <div class="media-card-actions">
+                  <button class="btn-primary" onclick="useMediaInCampaign('${escapeHtml(f.url)}', '${f.type}')" title="Usar en nueva campaña">
+                    <span>➕ Usar</span>
+                  </button>
+                  <button class="btn-outline" onclick="copyMediaUrl('${escapeHtml(f.url)}')" title="Copiar enlace">
+                    <span>🔗</span>
+                  </button>
+                  <button class="btn-outline" onclick="previewMediaDirect('${escapeHtml(f.url)}', '${f.type}', '${escapeHtml(f.name)}')" title="Ver en grande">
+                    <span>👁️</span>
+                  </button>
+                  <button class="btn-outline" style="color:#f87171;" onclick="deleteMediaFile('${escapeHtml(f.url)}')" title="Eliminar del servidor">
+                    <span>🗑️</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Filtros de Medios
+      const btnFilterAllMedia = document.getElementById('btnFilterAllMedia');
+      const btnFilterVideosOnly = document.getElementById('btnFilterVideosOnly');
+      const btnFilterImagesOnly = document.getElementById('btnFilterImagesOnly');
+
+      function setFilter(type, btn) {
+        currentMediaFilter = type;
+        [btnFilterAllMedia, btnFilterVideosOnly, btnFilterImagesOnly].forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderMediaGrid(filterMediaFiles());
+      }
+
+      btnFilterAllMedia.addEventListener('click', () => setFilter('all', btnFilterAllMedia));
+      btnFilterVideosOnly.addEventListener('click', () => setFilter('video', btnFilterVideosOnly));
+      btnFilterImagesOnly.addEventListener('click', () => setFilter('image', btnFilterImagesOnly));
+      mediaSearchInput.addEventListener('input', () => renderMediaGrid(filterMediaFiles()));
+
+      document.getElementById('btnRefreshMedia').addEventListener('click', () => {
+        loadMediaLibrary();
+      });
+
+      // ─── ACCIONES DE MEDIOS (USAR, COPIAR, ELIMINAR, PREVIEW) ─────────
+      window.useMediaInCampaign = function(url, type) {
+        document.getElementById('campMediaUrl').value = url;
+        if (type === 'video') {
+          document.getElementById('campFormat').value = 'video_spotlight';
+        } else {
+          const currentFmt = document.getElementById('campFormat').value;
+          if (currentFmt === 'video_spotlight') {
+            document.getElementById('campFormat').value = 'deal';
+          }
+        }
+        updateFormMediaPreview(url);
+        switchTab('tabNewCampaign');
+      };
+
+      window.copyMediaUrl = function(url) {
+        navigator.clipboard.writeText(url).then(() => {
+          alert(`Ruta copiada al portapapeles:\n${url}`);
+        }).catch(() => {
+          prompt('Copia esta ruta:', url);
+        });
+      };
+
+      window.previewMediaDirect = function(url, type, name) {
+        previewModalTitle.textContent = name || 'Previsualización de Medio';
+        if (type === 'video' || url.endsWith('.mp4') || url.endsWith('.webm')) {
+          previewContainer.innerHTML = `<video src="${url}" controls autoplay style="width:100%; border-radius:8px;"></video>`;
+        } else {
+          previewContainer.innerHTML = `<img src="${url}" alt="Preview" style="width:100%; max-height:360px; object-fit:contain; border-radius:8px;">`;
+        }
+        previewDetails.innerHTML = `<div><strong>Ruta en Servidor:</strong> <code>${url}</code></div>`;
+        previewModal.classList.add('active');
+      };
+
+      window.deleteMediaFile = async function(url) {
+        if (!confirm(`¿Deseas eliminar permanentemente este archivo del servidor?\n\n${url}`)) return;
+        try {
+          const res = await fetch(`${API_BASE}/media`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: url })
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert('Archivo eliminado correctamente.');
+            loadMediaLibrary();
+          } else {
+            alert(`No se pudo eliminar: ${data.error}`);
+          }
+        } catch (err) {
+          alert(`Error al eliminar: ${err.message}`);
+        }
+      };
+
+      // ─── SUBIDA MASIVA EN LOTE (BATCH UPLOAD) ─────────────────────────
+      const batchUploadDropzone = document.getElementById('batchUploadDropzone');
+      const batchFileInput = document.getElementById('batchFileInput');
+      const btnSelectBatchFiles = document.getElementById('btnSelectBatchFiles');
+      const btnTriggerBatchUpload = document.getElementById('btnTriggerBatchUpload');
+      const batchUploadQueue = document.getElementById('batchUploadQueue');
+
+      btnSelectBatchFiles.addEventListener('click', (e) => {
+        e.stopPropagation();
+        batchFileInput.click();
+      });
+
+      btnTriggerBatchUpload.addEventListener('click', () => {
+        batchFileInput.click();
+      });
+
+      batchUploadDropzone.addEventListener('click', () => {
+        batchFileInput.click();
+      });
+
+      batchUploadDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        batchUploadDropzone.classList.add('dragover');
+      });
+
+      batchUploadDropzone.addEventListener('dragleave', () => {
+        batchUploadDropzone.classList.remove('dragover');
+      });
+
+      batchUploadDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        batchUploadDropzone.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          handleBatchFiles(Array.from(e.dataTransfer.files));
+        }
+      });
+
+      batchFileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          handleBatchFiles(Array.from(e.target.files));
+        }
+      });
+
+      async function handleBatchFiles(files) {
+        if (!files || files.length === 0) return;
+
+        batchUploadQueue.style.display = 'flex';
+        batchUploadQueue.innerHTML = '';
+
+        // Crear elementos visuales en la cola
+        const queueItems = files.map((file, idx) => {
+          const itemId = `queue-item-${idx}`;
+          const itemEl = document.createElement('div');
+          itemEl.className = 'upload-queue-item';
+          itemEl.id = itemId;
+          itemEl.innerHTML = `
+            <div class="upload-queue-header">
+              <span class="upload-filename">🎬 ${escapeHtml(file.name)}</span>
+              <span class="upload-status-text" id="${itemId}-status">En espera...</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="${itemId}-bar" style="width: 0%;"></div>
+            </div>
+          `;
+          batchUploadQueue.appendChild(itemEl);
+          return { file, id: itemId };
+        });
+
+        // Subir secuencialmente para no saturar ancho de banda
+        let successCount = 0;
+        for (const item of queueItems) {
+          const statusEl = document.getElementById(`${item.id}-status`);
+          const barEl = document.getElementById(`${item.id}-bar`);
+
+          statusEl.textContent = 'Subiendo... 0%';
+          try {
+            await uploadMediaFile(item.file, (p) => {
+              barEl.style.width = `${p.percent}%`;
+              statusEl.textContent = `Subiendo... ${p.percent}%`;
+            });
+            barEl.classList.add('success');
+            statusEl.textContent = '¡Completado! ✅';
+            successCount++;
+          } catch (err) {
+            barEl.classList.add('error');
+            statusEl.textContent = `Error: ${err.message}`;
+          }
+        }
+
+        // Recargar biblioteca al finalizar
+        loadMediaLibrary();
+        alert(`Subida masiva finalizada: ${successCount} de ${files.length} archivos cargados exitosamente.`);
+      }
+
+      // ─── MODAL SELECTOR DE MEDIOS PARA CAMPAÑAS ──────────────────────
+      const btnOpenMediaPicker = document.getElementById('btnOpenMediaPicker');
+      const mediaPickerModal = document.getElementById('mediaPickerModal');
+      const btnCloseMediaPicker = document.getElementById('btnCloseMediaPicker');
+      const pickerSearchInput = document.getElementById('pickerSearchInput');
+      const pickerMediaGrid = document.getElementById('pickerMediaGrid');
+
+      btnOpenMediaPicker.addEventListener('click', () => {
+        renderPickerGrid();
+        mediaPickerModal.classList.add('active');
+        pickerSearchInput.value = '';
+        pickerSearchInput.focus();
+      });
+
+      btnCloseMediaPicker.addEventListener('click', () => {
+        mediaPickerModal.classList.remove('active');
+      });
+
+      pickerSearchInput.addEventListener('input', () => {
+        renderPickerGrid();
+      });
+
+      function renderPickerGrid() {
+        const query = (pickerSearchInput.value || '').toLowerCase().trim();
+        const files = cachedMediaFiles.filter(f => !query || f.name.toLowerCase().includes(query));
+
+        if (files.length === 0) {
+          pickerMediaGrid.innerHTML = '<div style="color:#94a3b8; text-align:center; padding:20px; grid-column:1/-1;">No hay archivos que coincidan.</div>';
+          return;
+        }
+
+        pickerMediaGrid.innerHTML = files.map(f => {
+          const isVideo = f.type === 'video';
+          const previewHtml = isVideo
+            ? `<video src="${f.url}" preload="metadata" muted style="width:100%; height:120px; object-fit:cover;"></video>`
+            : `<img src="${f.url}" loading="lazy" style="width:100%; height:120px; object-fit:cover;">`;
+
+          return `
+            <div class="media-card" style="cursor:pointer;" onclick="selectMediaFromPicker('${escapeHtml(f.url)}', '${f.type}')">
+              <div class="media-preview-box" style="height:110px;">
+                <span class="media-type-badge">${isVideo ? '🎬 VIDEO' : '🖼️ IMAGEN'}</span>
+                <span class="media-size-badge">${f.sizeFormatted || ''}</span>
+                ${previewHtml}
+              </div>
+              <div class="media-body" style="padding:10px;">
+                <div class="media-title" style="font-size:0.82rem;">${escapeHtml(f.name)}</div>
+                <button class="btn-primary" style="margin-top:6px; width:100%; font-size:0.75rem; padding:4px 8px;">
+                  ✓ Seleccionar
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      window.selectMediaFromPicker = function(url, type) {
+        document.getElementById('campMediaUrl').value = url;
+        if (type === 'video') {
+          document.getElementById('campFormat').value = 'video_spotlight';
+        } else {
+          const currentFmt = document.getElementById('campFormat').value;
+          if (currentFmt === 'video_spotlight') {
+            document.getElementById('campFormat').value = 'deal';
+          }
+        }
+        updateFormMediaPreview(url);
+        mediaPickerModal.classList.remove('active');
+      };
 
       // Inicializar
       resetForm();

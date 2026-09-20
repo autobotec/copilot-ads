@@ -1,0 +1,15 @@
+{
+  "name": "tablet-app",
+  "version": "1.0.0",
+  "description": "Aplicación interactiva diseñada para pantallas y tablets de pasajeros en vehículos rideshare (Uber, Lyft, taxis), inspirada en sistemas como PlayOctopus con una estética **Holi / Paint Color Splash Explosion**.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "busboy": "^1.6.0"
+  }
+}
